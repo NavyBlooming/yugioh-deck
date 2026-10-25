@@ -8,9 +8,9 @@
 
 ## 2. Firebase の準備
 
-- [ ] 2.1 `firestore.rules` と `firebase.json`（エミュレーターの設定）をリポジトリに置く
-- [ ] 2.2 JDK 21 を G: ドライブに展開し、`npx firebase-tools emulators:start --only auth,firestore` が起動することを確かめる
-- [ ] 2.3 エミュレーターに対し、ログインしていない読み取り・他人の `uid` への書き込みが拒否され、本人の読み書きが通ることを確かめる試験を書いて通す
+- [x] 2.1 `firestore.rules` と `firebase.json`（エミュレーターの設定）をリポジトリに置く
+- [x] 2.2 JDK 21 を G: ドライブに展開し、`npx firebase-tools emulators:start --only auth,firestore` が起動することを確かめる
+- [x] 2.3 エミュレーターに対し、ログインしていない読み取り・他人の `uid` への書き込みが拒否され、本人の読み書きが通ることを確かめる試験を書いて通す
 
 ## 3. 画面への組み込み
 

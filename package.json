@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test \"tests/js/**/*.test.js\""
+    "test": "node --test \"tests/js/**/*.test.js\"",
+    "test:emulator": "node --test \"tests/emulator/**/*.test.js\""
   }
 }
