@@ -31,17 +31,22 @@ The system SHALL keep working without sign-in, storing data only on the device a
 
 ### Requirement: クラウドへの保存
 
-While signed in, the system SHALL save decks and purchase notes to the cloud within a few seconds after the user stops editing, and SHALL also keep them on the device.
+While signed in, the system SHALL keep every edit on the device immediately, and SHALL save to the cloud at most once every 30 seconds while editing continues, and immediately when the page is hidden or closed. Edits not yet saved to the cloud SHALL be saved the next time the page is opened.
 
 #### Scenario: 編集がクラウドに残る
 
-- **WHEN** ログイン中にカードを追加し、数秒待ってからページを閉じる
-- **THEN** 別の端末で同じアカウントにログインすると、そのカードが入っている
+- **WHEN** ログイン中にカードを追加し、ほかのアプリに切り替える
+- **THEN** 別の端末で同じアカウントのページを開くと、そのカードが入っている
 
 #### Scenario: 連打してもまとめて保存する
 
-- **WHEN** 2秒の間にカードを10回追加する
-- **THEN** クラウドへの保存は、追加が止まった後にまとめて行われる
+- **WHEN** 2分間、カードを5秒おきに追加し続ける
+- **THEN** クラウドへの保存は4回以下で、最後の追加まで保存される
+
+#### Scenario: 保存の前にページが閉じられた
+
+- **WHEN** クラウドへの保存が済む前にブラウザが終了し、後でページを開き直す
+- **THEN** 端末に残っていた変更がクラウドに保存される
 
 ### Requirement: 初めてログインしたときのデータの扱い
 
@@ -64,16 +69,21 @@ On sign-in, the system SHALL use the cloud data when the device has no decks and
 
 ### Requirement: 他の端末での変更の反映
 
-While signed in and with no unsaved local edits, the system SHALL reflect changes saved from another device without reopening the page.
+While signed in, the system SHALL fetch the cloud data when the page is opened and each time the page becomes visible again, and SHALL reflect changes saved from another device if this device has no edits waiting to be saved. When this device has edits waiting, they SHALL be saved and kept. The system SHALL NOT keep a continuous connection that watches for changes.
 
 #### Scenario: PC で足したカードがスマホに出る
 
-- **WHEN** スマホでページを開いたまま、PC で同じアカウントのデッキにカードを足す
-- **THEN** 数秒のうちにスマホのデッキにもそのカードが出る
+- **WHEN** PC で同じアカウントのデッキにカードを足して保存された後、スマホでほかのアプリからこのページに戻る
+- **THEN** スマホのデッキにもそのカードが出る
+
+#### Scenario: 戻ったときに手元に未保存の変更がある
+
+- **WHEN** スマホで電波の無いときに編集し、電波が戻ってからこのページに戻る
+- **THEN** スマホの変更がクラウドに保存され、そのまま表示される
 
 ### Requirement: 電波の無い場所での編集
 
-While signed in and offline, the system SHALL accept edits, keep them on the device, and save them to the cloud when the connection returns.
+While signed in and offline, the system SHALL accept edits, keep them on the device, and save them to the cloud when the connection returns or the next time the page is opened.
 
 #### Scenario: 店内で電波が無い
 
