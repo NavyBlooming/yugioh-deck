@@ -168,6 +168,38 @@ test("sortedEntries: 種類順、同名は隣", () => {
   );
 });
 
+test("sortedEntries: モンスターはレベルの低い順、魔法罠は種類の順、同じなら追加順", () => {
+  const lv = parseCards({
+    version: 2,
+    cards: [
+      [21, "効果L8", "", "effect", "effect", 3, 8, ""],
+      [22, "効果L3", "", "effect", "effect", 3, 3, ""],
+      [23, "効果L4a", "", "effect", "effect", 3, 4, ""],
+      [24, "効果L4b", "", "effect", "effect", 3, 4, ""],
+      [31, "永続魔法", "", "spell", "spell", 3, 0, "continuous"],
+      [32, "速攻魔法", "", "spell", "spell", 3, 0, "quickplay"],
+      [33, "通常魔法", "", "spell", "spell", 3, 0, "normal"],
+      [34, "儀式魔法", "", "spell", "spell", 3, 0, "ritual"],
+      [41, "カウンター罠", "", "trap", "trap", 3, 0, "counter"],
+      [42, "通常罠", "", "trap", "trap", 3, 0, "normal"],
+      [51, "リンク3", "", "link", "link", 3, 3, ""],
+      [52, "リンク1", "", "link", "link", 3, 1, ""],
+    ],
+  });
+  let { state, id } = setup();
+  for (const cid of [21, 23, 22, 24, 23, 31, 34, 32, 33, 41, 42, 51, 52]) {
+    const r = addCard(state, id, lv.get(cid), "deck");
+    assert.ok(r.ok, r.reason);
+    state = r.state;
+  }
+  const deck = deckOf(state, id);
+  assert.deepEqual(
+    sortedEntries(deck, lv, "main").map((e) => e.cid),
+    [22, 23, 24, 21, 33, 32, 31, 34, 42, 41],
+  );
+  assert.deepEqual(sortedEntries(deck, lv, "extra").map((e) => e.cid), [52, 51]);
+});
+
 test("sortedEntries: cand は main 群の後に extra 群、未知 cid は末尾", () => {
   const { state: s0, id } = setup();
   let state = add(s0, id, 12, 1, "cand");

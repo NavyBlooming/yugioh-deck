@@ -73,16 +73,26 @@ The system SHALL let the user remove one copy of a card, and move one copy betwe
 
 ### Requirement: 並び順
 
-The main deck SHALL be displayed grouped in the order normal monsters, effect monsters, spells, traps. The extra deck SHALL be grouped in the order fusion, synchro, Xyz, link. The candidate area SHALL use the main deck groups followed by the extra deck groups. Within a group, cards SHALL appear in the order first added, with copies of the same card adjacent.
+The main deck SHALL be displayed grouped in the order normal monsters, effect monsters, spells, traps. The extra deck SHALL be grouped in the order fusion, synchro, Xyz, link. The candidate area SHALL use the main deck groups followed by the extra deck groups. Within a monster group, cards SHALL be ordered by level, rank, or link rating from lowest to highest. Within the spell group the order SHALL be normal, quick-play, continuous, equip, field, ritual, and within the trap group normal, continuous, counter. Ties SHALL keep the order first added, with copies of the same card adjacent.
 
 #### Scenario: 種類ごとにまとまる
 
 - **WHEN** 罠、効果モンスター、魔法、通常モンスターの順にカードを追加する
 - **THEN** メインデッキは通常モンスター、効果モンスター、魔法、罠の順に並ぶ
 
+#### Scenario: モンスターはレベルの低い順
+
+- **WHEN** レベル8の効果モンスター、レベル3の効果モンスターの順に追加する
+- **THEN** 効果モンスターの中はレベル3、レベル8の順に並ぶ
+
+#### Scenario: 魔法は種類の順
+
+- **WHEN** 永続魔法、速攻魔法、通常魔法の順に追加する
+- **THEN** 魔法の中は通常魔法、速攻魔法、永続魔法の順に並ぶ
+
 #### Scenario: 同名カードは隣に並ぶ
 
-- **WHEN** 効果モンスターA、効果モンスターB、効果モンスターAの順に追加する
+- **WHEN** レベル4の効果モンスターA、レベル4の効果モンスターB、Aの順に追加する
 - **THEN** 効果モンスターの中は A、A、B の順に並ぶ
 
 ### Requirement: ルール違反の警告

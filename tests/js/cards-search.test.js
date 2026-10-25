@@ -16,7 +16,9 @@ const RAW = {
 test("parseCards は cid をキーにした Map を返す", () => {
   const m = parseCards(RAW);
   assert.equal(m.size, 4);
-  assert.deepEqual(m.get(1), { cid: 1, name: "灰流うらら", ruby: "はるうらら", group: "effect", frame: "effect", limit: 2 });
+  assert.deepEqual(m.get(1), {
+    cid: 1, name: "灰流うらら", ruby: "はるうらら", group: "effect", frame: "effect", limit: 2, level: 0, sub: "",
+  });
   assert.equal(m.get(3).limit, null);
 });
 

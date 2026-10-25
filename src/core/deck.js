@@ -1,4 +1,4 @@
-import { MAIN_GROUPS, EXTRA_GROUPS, areaOf } from "./cards.js";
+import { MAIN_GROUPS, EXTRA_GROUPS, SUB_ORDER, areaOf } from "./cards.js";
 
 const LIMITS = { main: 60, extra: 15, cand: 15 };
 const FULL = { main: "main-full", extra: "extra-full", cand: "cand-full" };
@@ -89,16 +89,20 @@ export function tapCopy(state, deckId, cid, area, tappedMissing) {
 
 export function sortedEntries(deck, cards, area) {
   const order = area === "main" ? MAIN_GROUPS : area === "extra" ? EXTRA_GROUPS : [...MAIN_GROUPS, ...EXTRA_GROUPS];
-  const rank = (e) => {
+  // 群 → 群の中の順（モンスターはレベル、魔法・罠は種類）→ 追加順
+  const key = (e) => {
     const card = cards.get(e.cid);
-    return card ? order.indexOf(card.group) : Infinity;
+    if (!card) return [Infinity, 0, e.seq];
+    const inner = card.group === "spell" || card.group === "trap" ? SUB_ORDER.indexOf(card.sub) : card.level ?? 0;
+    return [order.indexOf(card.group), inner, e.seq];
   };
+  const keys = new Map(deck.entries.map((e) => [e, key(e)]));
   return deck.entries
     .filter((e) => e.area === area)
     .sort((a, b) => {
-      const ra = rank(a);
-      const rb = rank(b);
-      return ra === rb ? a.seq - b.seq : ra < rb ? -1 : 1;
+      const ka = keys.get(a);
+      const kb = keys.get(b);
+      return ka[0] - kb[0] || ka[1] - kb[1] || ka[2] - kb[2];
     });
 }
 

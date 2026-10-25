@@ -8,7 +8,17 @@
 
 ### Requirement: カードの基本情報
 
-The system SHALL provide, for every OCG card, its official database card ID, Japanese name, reading (ruby), deck area (main or extra), display group, and frame type. Tokens SHALL be excluded.
+The system SHALL provide, for every OCG card, its official database card ID, Japanese name, reading (ruby), deck area (main or extra), display group, frame type, level (rank or link rating for those monsters, 0 for spells and traps), and for spells and traps their kind (normal, quick-play, continuous, equip, field, ritual, or counter). Tokens SHALL be excluded.
+
+#### Scenario: ペンデュラムモンスターのレベル
+
+- **WHEN** レベル5のペンデュラムモンスター「星読みの魔術師」を参照する
+- **THEN** レベルは5である（スケールの値は混ざらない）
+
+#### Scenario: 魔法の種類
+
+- **WHEN** 装備魔法「伝説の剣」を参照する
+- **THEN** 種類は装備である
 
 #### Scenario: 読み仮名つきのカード
 

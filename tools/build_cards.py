@@ -13,6 +13,8 @@ ZIP_URL = "https://ygocdb.com/api/v0/cards.zip"
 YPD_URL = "https://db.ygoprodeck.com/api/v7/cardinfo.php?misc=yes"
 LIMITS_URL = "https://www.db.yugioh-card.com/yugiohdb/forbidden_limited.action?request_locale=ja"
 UA = "yugioh-deck (https://github.com/NavyBlooming/yugioh-deck)"
+# cards.json の行の形を変えたら上げる。元データが同じでも作り直させるため
+FORMAT = 2
 
 SPELL, TRAP, NORMAL, EFFECT = 0x2, 0x4, 0x10, 0x20
 TOKEN, PENDULUM = 0x4000, 0x1000000
@@ -42,6 +44,19 @@ def frame_from_bits(t: int) -> str | None:
     if base is None:
         base = "normal" if t & NORMAL and not t & EFFECT else "effect"
     return base + ("_pendulum" if t & PENDULUM else "")
+
+
+SUB_BITS = [(0x80, "ritual"), (0x10000, "quickplay"), (0x20000, "continuous"),
+            (0x40000, "equip"), (0x80000, "field"), (0x100000, "counter")]  # fmt: skip
+YPD_SUBS = {"Normal": "normal", "Quick-Play": "quickplay", "Continuous": "continuous",
+            "Equip": "equip", "Field": "field", "Ritual": "ritual", "Counter": "counter"}  # fmt: skip
+
+
+def sub_of(t: int) -> str:
+    """魔法・罠の種類。モンスターは空文字。"""
+    if not t & (SPELL | TRAP):
+        return ""
+    return next((name for bit, name in SUB_BITS if t & bit), "normal")
 
 
 def frame_from_ypd(frame_type: str) -> str | None:
@@ -90,14 +105,19 @@ def build(cdb: dict, ypd: dict, limits: dict) -> tuple[list, list]:
         t = c.get("data", {}).get("type")
         if t is not None:
             frame = frame_from_bits(t)
+            # ペンデュラムは上位にスケールが詰まっているので下位8ビットだけ取る
+            level = c["data"].get("level", 0) & 0xFF if t & 0x1 else 0
+            sub = sub_of(t)
         elif y is not None:
             frame = frame_from_ypd(y["frameType"])
+            level = y.get("linkval") or y.get("level") or 0
+            sub = YPD_SUBS.get(y.get("race"), "normal") if frame in ("spell", "trap") else ""
         else:
             excluded.append({"cid": cid, "name": name, "reason": "no_type"})
             continue
         if frame is None:
             continue
-        rows.append([cid, name, c.get("jp_ruby") or name, group_of(frame), frame, limit_of(cid, limits)])
+        rows.append([cid, name, c.get("jp_ruby") or name, group_of(frame), frame, limit_of(cid, limits), level, sub])
     rows.sort(key=lambda r: r[0])
     excluded.sort(key=lambda e: e["cid"])
     return rows, excluded
@@ -115,7 +135,7 @@ def main(fetch_text, fetch_bytes, out_dir: Path) -> int:
     meta_path = out_dir / "meta.json"
     if meta_path.exists():
         old = json.loads(meta_path.read_text(encoding="utf-8"))
-        if old.get("source_md5") == md5 and old.get("limits_hash") == lhash:
+        if old.get("source_md5") == md5 and old.get("limits_hash") == lhash and old.get("format") == FORMAT:
             print("unchanged")
             return 0
     with zipfile.ZipFile(io.BytesIO(fetch_bytes(ZIP_URL))) as z:
@@ -123,8 +143,9 @@ def main(fetch_text, fetch_bytes, out_dir: Path) -> int:
     ypd = json.loads(fetch_text(YPD_URL))
     rows, excluded = build(cdb, ypd, limits)
     out_dir.mkdir(parents=True, exist_ok=True)
-    _write(out_dir / "cards.json", {"version": 1, "cards": rows}, separators=(",", ":"))
+    _write(out_dir / "cards.json", {"version": FORMAT, "cards": rows}, separators=(",", ":"))
     meta = {
+        "format": FORMAT,
         "source_md5": md5,
         "updated": datetime.date.today().isoformat(),
         "limits_hash": lhash,

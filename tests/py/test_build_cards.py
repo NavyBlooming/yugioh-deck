@@ -69,8 +69,13 @@ def test_parse_limits_broken():
 def test_build():
     rows, excluded = bc.build(CDB, YPD, LIMITS)
     by = {r[0]: r for r in rows}
-    assert by[12950] == [12950, "灰流うらら", "はるうらら", "effect", "effect", 2]
+    assert by[12950] == [12950, "灰流うらら", "はるうらら", "effect", "effect", 2, 3, ""]
     assert by[5925][4] == "effect"
+    assert by[11134][6] == 5  # ペンデュラムはスケールが混ざらない
+    assert by[13034][6] == 1  # リンクはリンクの数
+    assert by[9575][6] == 4  # エクシーズはランク
+    assert by[4307][6:] == [0, "equip"]
+    assert by[4335][6:] == [0, "continuous"]
     assert 5297 not in by and 19359 not in by and 99999 not in by
     reasons = {e["cid"]: e["reason"] for e in excluded}
     assert reasons[5297] == "no_type"
@@ -78,6 +83,28 @@ def test_build():
     assert 99999 not in reasons
     assert by[19092][5] == 3
     assert [r[0] for r in rows] == sorted(r[0] for r in rows)
+
+
+@pytest.mark.parametrize(
+    "t, sub",
+    [
+        (0x2, "normal"), (0x10002, "quickplay"), (0x20002, "continuous"), (0x40002, "equip"),
+        (0x80002, "field"), (0x82, "ritual"), (0x4, "normal"), (0x20004, "continuous"),
+        (0x100004, "counter"), (0x21, ""),
+    ],
+)  # fmt: skip
+def test_sub_of(t, sub):
+    assert bc.sub_of(t) == sub
+
+
+def test_main_regenerates_when_format_changes(tmp_path):
+    ft, fb = make_fetchers()
+    bc.main(ft, fb, tmp_path)
+    meta = json.loads((tmp_path / "meta.json").read_text(encoding="utf-8"))
+    meta["format"] = 1
+    (tmp_path / "meta.json").write_text(json.dumps(meta), encoding="utf-8")
+    bc.main(ft, fb, tmp_path)
+    assert json.loads((tmp_path / "meta.json").read_text(encoding="utf-8"))["format"] == bc.FORMAT
 
 
 def make_fetchers(ypd_text=None, md5="abc123\n", html=HTML):
@@ -104,7 +131,7 @@ def test_main_writes_and_skips(tmp_path):
     assert bc.main(ft, fb, tmp_path) == 0
     cards = json.loads((tmp_path / "cards.json").read_text(encoding="utf-8"))
     meta = json.loads((tmp_path / "meta.json").read_text(encoding="utf-8"))
-    assert cards["version"] == 1 and meta["source_md5"] == "abc123"
+    assert cards["version"] == 2 and meta["source_md5"] == "abc123"
     assert meta["count"] == len(cards["cards"])
     assert meta["limits_hash"] == bc.limits_hash(LIMITS)
     assert meta["limits_count"] == {"forbidden": 1, "limited": 1, "semi_limited": 1}
