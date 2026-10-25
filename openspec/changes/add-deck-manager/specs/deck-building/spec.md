@@ -104,7 +104,7 @@ The system SHALL show a warning, without blocking edits, when the main deck has 
 - **WHEN** 禁止カードがメインデッキに1枚入っている
 - **THEN** そのカード名を挙げた警告が表示される
 
-#### Scenario: 状態が不明なカード
+#### Scenario: 無制限のカード
 
-- **WHEN** 禁止制限の状態が不明なカードを3枚入れている
+- **WHEN** 無制限のカードを3枚入れている
 - **THEN** そのカードについての禁止制限の警告は出ない

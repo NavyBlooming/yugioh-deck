@@ -1,0 +1,363 @@
+{
+ "source_md5": "\"eb35414c019fc735d276f840b219b8f1\"",
+ "updated": "2026-10-25",
+ "limits_hash": "22d8ccec6ccf3cd6e9a68de1801444f2503186d2f3d628e28b0f517f0ba6e549",
+ "limits_count": {
+  "forbidden": 94,
+  "limited": 95,
+  "semi_limited": 13
+ },
+ "count": 14273,
+ "excluded": [
+  {
+   "cid": 5297,
+   "name": "遺言の札",
+   "reason": "no_type"
+  },
+  {
+   "cid": 6959,
+   "name": "Armament of the Lethal Lords",
+   "reason": "no_type"
+  },
+  {
+   "cid": 7992,
+   "name": "Tyr, the Vanquishing Warlord",
+   "reason": "no_type"
+  },
+  {
+   "cid": 7993,
+   "name": "Lorelei, the Symphonic Arsenal",
+   "reason": "no_type"
+  },
+  {
+   "cid": 8610,
+   "name": "Aggiba, the Malevolent Sh'nn S'yo",
+   "reason": "no_type"
+  },
+  {
+   "cid": 8611,
+   "name": "Skuna, the Leonine Rakan",
+   "reason": "no_type"
+  },
+  {
+   "cid": 9247,
+   "name": "Stardust Divinity",
+   "reason": "no_type"
+  },
+  {
+   "cid": 9248,
+   "name": "Grizzly, the Red Star Beast",
+   "reason": "no_type"
+  },
+  {
+   "cid": 9850,
+   "name": "King Landia the Goldfang",
+   "reason": "no_type"
+  },
+  {
+   "cid": 9851,
+   "name": "Queen Nereia the Silvercrown",
+   "reason": "no_type"
+  },
+  {
+   "cid": 10321,
+   "name": "伝説の白き龍",
+   "reason": "no_type"
+  },
+  {
+   "cid": 10322,
+   "name": "伝説の闇の魔導師",
+   "reason": "no_type"
+  },
+  {
+   "cid": 10685,
+   "name": "希望の創造者",
+   "reason": "no_type"
+  },
+  {
+   "cid": 10828,
+   "name": "勝利の方程式",
+   "reason": "no_type"
+  },
+  {
+   "cid": 10845,
+   "name": "悠久の黄金都市 グランポリス",
+   "reason": "no_type"
+  },
+  {
+   "cid": 10846,
+   "name": "E☆HERO 盤面の執行者",
+   "reason": "no_type"
+  },
+  {
+   "cid": 11124,
+   "name": "奇跡の創造者",
+   "reason": "no_type"
+  },
+  {
+   "cid": 11455,
+   "name": "牙狼の双王 ロムルス－レムス",
+   "reason": "no_type"
+  },
+  {
+   "cid": 11456,
+   "name": "輝銀の天空船－レオ号",
+   "reason": "no_type"
+  },
+  {
+   "cid": 12045,
+   "name": "陰陽神 クズノハ",
+   "reason": "no_type"
+  },
+  {
+   "cid": 12046,
+   "name": "極刀の武者 左京",
+   "reason": "no_type"
+  },
+  {
+   "cid": 12732,
+   "name": "天空の女神 ジュノー",
+   "reason": "no_type"
+  },
+  {
+   "cid": 12733,
+   "name": "異界より来たるシェルガ",
+   "reason": "no_type"
+  },
+  {
+   "cid": 14796,
+   "name": "天元の荒鷲王",
+   "reason": "no_type"
+  },
+  {
+   "cid": 14797,
+   "name": "黒き森の航天閣",
+   "reason": "no_type"
+  },
+  {
+   "cid": 19359,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 19391,
+   "name": "聖域に仕えし練達の魔導師",
+   "reason": "no_type"
+  },
+  {
+   "cid": 19392,
+   "name": "臨界竜ゲートブリジオ",
+   "reason": "no_type"
+  },
+  {
+   "cid": 20691,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 20700,
+   "name": "聖域を守護せし光の龍",
+   "reason": "no_type"
+  },
+  {
+   "cid": 20701,
+   "name": "エルテェイス－The MASTER of DUEL",
+   "reason": "no_type"
+  },
+  {
+   "cid": 21967,
+   "name": "闘者を導く光",
+   "reason": "no_type"
+  },
+  {
+   "cid": 21968,
+   "name": "貴婦人の守護者",
+   "reason": "no_type"
+  },
+  {
+   "cid": 23296,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23297,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23298,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23299,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23300,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23301,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23302,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23303,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23304,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23305,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23306,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23307,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23308,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23309,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23310,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23311,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23414,
+   "name": "Moonlight at Dawn",
+   "reason": "no_type"
+  },
+  {
+   "cid": 23415,
+   "name": "Silver Belfry Battery Bastion",
+   "reason": "no_type"
+  },
+  {
+   "cid": 23419,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23420,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23421,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23513,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23514,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23515,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23516,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23517,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23518,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23519,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23520,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23521,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23522,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23523,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23524,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23525,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23526,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23527,
+   "name": null,
+   "reason": "no_jp_name"
+  },
+  {
+   "cid": 23528,
+   "name": null,
+   "reason": "no_jp_name"
+  }
+ ]
+}
