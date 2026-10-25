@@ -73,12 +73,16 @@ The system SHALL let the user remove one copy of a card, and move one copy betwe
 
 ### Requirement: 並び順
 
-The main deck SHALL be displayed grouped in the order normal monsters, effect monsters, spells, traps. The extra deck SHALL be grouped in the order fusion, synchro, Xyz, link. The candidate area SHALL use the main deck groups followed by the extra deck groups. Within a monster group, cards SHALL be ordered by level, rank, or link rating from lowest to highest. Within the spell group the order SHALL be normal, quick-play, continuous, equip, field, ritual, and within the trap group normal, continuous, counter. Ties SHALL keep the order first added, with copies of the same card adjacent.
+The main deck SHALL be displayed grouped in the order normal monsters, effect monsters, spells, traps. The extra deck SHALL be grouped in the order fusion, synchro, Xyz, link. The candidate area SHALL use the main deck groups followed by the extra deck groups.
 
 #### Scenario: 種類ごとにまとまる
 
 - **WHEN** 罠、効果モンスター、魔法、通常モンスターの順にカードを追加する
 - **THEN** メインデッキは通常モンスター、効果モンスター、魔法、罠の順に並ぶ
+
+### Requirement: 群の中の並び順
+
+Within a monster group, cards SHALL be ordered by level, rank, or link rating from lowest to highest. Within the spell group the order SHALL be normal, quick-play, continuous, equip, field, ritual, and within the trap group normal, continuous, counter. Ties SHALL keep the order first added, with copies of the same card adjacent.
 
 #### Scenario: モンスターはレベルの低い順
 
