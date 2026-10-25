@@ -54,6 +54,15 @@ def index(repo):
     return json.loads((repo / "art" / "index.json").read_text(encoding="utf-8"))
 
 
+def test_parallel_workers_same_result(repo):
+    stats = run(repo, Net(missing={1020}), workers=3)
+    assert index(repo) == [10, 30]
+    assert stats["new"] == 2 and stats["no_image"] == 1
+    key = ac.key_from_meta(json.loads((repo / "art" / "meta.json").read_text(encoding="utf-8")), PASS)
+    for cid in (10, 30):
+        assert ac.decrypt(key, (repo / "art" / f"{cid}.bin").read_bytes())[8:12] == b"WEBP"
+
+
 def test_creates_meta_bins_and_index(repo):
     stats = run(repo, Net())
     assert (repo / "art" / "meta.json").exists()

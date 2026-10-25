@@ -152,6 +152,8 @@ input[type="text"], input[type="number"], select {
 /* ---- 設定 ---- */
 .view section.panel p { margin-bottom: 8px; }
 .import-label { display: grid; gap: 6px; margin-top: 12px; }
+.art-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.art-row input { flex: 1; min-width: 0; }
 .import-label input { color: var(--sub); }
 
 /* ---- ダイアログ・シート ---- */

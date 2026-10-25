@@ -5,6 +5,7 @@ import json
 import os
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from PIL import Image
@@ -55,7 +56,7 @@ def to_webp(jpeg: bytes) -> bytes:
     return out.getvalue()
 
 
-def build_art(repo, passphrase, fetch_ypd, fetch_image, limit=None, iterations=300000, sleep=time.sleep):
+def build_art(repo, passphrase, fetch_ypd, fetch_image, limit=None, iterations=300000, sleep=time.sleep, workers=1):
     art = repo / "art"
     meta_path = art / "meta.json"
     index_path = art / "index.json"
@@ -85,9 +86,7 @@ def build_art(repo, passphrase, fetch_ypd, fetch_image, limit=None, iterations=3
         _write_json(meta_path, meta)
     cache = repo / ".cache" / "art"
     cache.mkdir(parents=True, exist_ok=True)
-    stats = {"processed": 0, "new": 0, "no_image": 0, "failed": 0, "bytes": 0}
-    for cid in targets:
-        stats["processed"] += 1
+    def one(cid):
         pw = pw_of[cid]
         try:
             cached = cache / f"{pw}.jpg"
@@ -101,17 +100,24 @@ def build_art(repo, passphrase, fetch_ypd, fetch_image, limit=None, iterations=3
                 _write_bytes(cached, jpeg)
             blob = art_crypto.encrypt(key, to_webp(jpeg))
         except ImageNotFound:
-            stats["no_image"] += 1
-            continue
+            return "no_image", 0
         except Exception:
-            stats["failed"] += 1
-            continue
+            return "failed", 0
         _write_bytes(art / f"{cid}.bin", blob)
-        index.add(cid)
-        stats["new"] += 1
-        stats["bytes"] += len(blob)
-        if stats["new"] % FLUSH_EVERY == 0:
-            _write_json(index_path, sorted(index))
+        return "new", len(blob)
+
+    stats = {"processed": 0, "new": 0, "no_image": 0, "failed": 0, "bytes": 0}
+    # 応答の遅い画像で全体が止まらないよう並行で取る。index の更新はこのスレッドだけで行う
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for cid, (result, size) in zip(targets, pool.map(one, targets)):
+            stats["processed"] += 1
+            stats[result] += 1
+            if result != "new":
+                continue
+            index.add(cid)
+            stats["bytes"] += size
+            if stats["new"] % FLUSH_EVERY == 0:
+                _write_json(index_path, sorted(index))
     _write_json(index_path, sorted(index))
     return stats
 
@@ -126,8 +132,11 @@ def _summary(s: dict) -> str:
 if __name__ == "__main__":
     import requests
 
+    session = requests.Session()
+    session.headers["User-Agent"] = UA
+
     def _get(url):
-        r = requests.get(url, headers={"User-Agent": UA}, timeout=60)
+        r = session.get(url, timeout=(10, 15))
         if r.status_code == 404:
             raise ImageNotFound(url)
         r.raise_for_status()
@@ -141,5 +150,6 @@ if __name__ == "__main__":
         lambda: json.loads(_get(YPD_URL).content.decode("utf-8")),
         lambda pw: _get(IMG_URL.format(pw)).content,
         limit=limit,
+        workers=2,
     )
     print(_summary(stats))

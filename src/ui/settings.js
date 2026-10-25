@@ -1,5 +1,6 @@
 import { exportFileName, exportJson, parseImport } from "../core/storage.js";
 import { h } from "./dom.js";
+import { artState, clearPassphrase, setPassphrase } from "./art.js";
 import { toast } from "./dialogs.js";
 
 export function settingsView(ctx) {
@@ -37,7 +38,44 @@ export function settingsView(ctx) {
       h("button", { class: "btn primary", type: "button", id: "export-btn", onclick: download }, "書き出し"),
       h("label", { class: "import-label" }, "読み込み", fileInput),
     ),
-    h("section", { id: "art-settings" }),
+    artSection(ctx),
   );
   return { el, refresh() {} };
+}
+
+const ART_STATUS = {
+  none: "絵のデータはまだありません。",
+  off: "合言葉が入っていません。カードは枠の色と名前で表示しています。",
+  on: "合言葉が入っています。カードに絵を表示しています。",
+};
+
+function artSection(ctx) {
+  const status = h("p", { class: "muted", id: "art-status" }, ART_STATUS[artState()]);
+  const input = h("input", { type: "text", id: "art-pass", autocomplete: "off", spellcheck: "false", placeholder: "合言葉" });
+  const save = h("button", { class: "btn primary", type: "button", id: "art-save" }, "合言葉を保存");
+  const clear = h("button", { class: "btn", type: "button", id: "art-clear" }, "合言葉を消す");
+  save.addEventListener("click", async () => {
+    const pass = input.value.trim();
+    if (!pass) return;
+    save.disabled = true;
+    save.textContent = "確かめています…";
+    const ok = await setPassphrase(pass);
+    save.disabled = false;
+    save.textContent = "合言葉を保存";
+    if (!ok) return toast("合言葉が違うようです");
+    toast("合言葉が正しいです。絵を表示します");
+    ctx.rerender();
+  });
+  clear.addEventListener("click", () => {
+    clearPassphrase();
+    ctx.rerender();
+  });
+  const off = artState() === "none";
+  if (off) save.disabled = clear.disabled = input.disabled = true;
+  return h("section", { class: "panel", id: "art-settings" },
+    h("h2", {}, "カードの絵"),
+    status,
+    h("div", { class: "art-row" }, input, save),
+    artState() === "on" ? clear : null,
+  );
 }

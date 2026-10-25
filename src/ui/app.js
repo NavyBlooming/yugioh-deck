@@ -1,6 +1,7 @@
 import { parseCards } from "../core/cards.js";
 import { buildIndex } from "../core/search.js";
 import { loadState, saveState } from "../core/storage.js";
+import { initArt } from "./art.js";
 import { deckView } from "./deck.js";
 import { listView } from "./list.js";
 import { settingsView } from "./settings.js";
@@ -18,6 +19,7 @@ const ctx = {
     saveState(localStorage, next);
     current?.refresh();
   },
+  rerender: () => route(),
 };
 const app = document.getElementById("app");
 
@@ -63,6 +65,8 @@ async function boot() {
   }
   window.addEventListener("hashchange", route);
   route();
+  // 鍵の計算に時間がかかるので、画面を先に出し、絵が使えるようになったら描き直す
+  if (await initArt()) route();
 }
 
 boot();
