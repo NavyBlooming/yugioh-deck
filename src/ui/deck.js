@@ -161,12 +161,21 @@ export function deckView(ctx, deckId) {
       for (const b of destBtns) b.setAttribute("aria-pressed", String(b.dataset.dest === dest));
     } }, label),
   );
+  const clearBtn = h("button", { class: "search-clear", type: "button", id: "search-clear", "aria-label": "入力を消す", hidden: true }, "×");
   let timer = null;
   input.addEventListener("input", () => {
+    clearBtn.hidden = !input.value;
     clearTimeout(timer);
     timer = setTimeout(() => {
       results.replaceChildren(...search(ctx.index, input.value, 60).map((c) => tileEl(c, { area: "search" })));
     }, 150);
+  });
+  clearBtn.addEventListener("click", () => {
+    clearTimeout(timer);
+    input.value = "";
+    clearBtn.hidden = true;
+    results.replaceChildren();
+    input.focus();
   });
   results.addEventListener("click", (e) => {
     const tile = e.target.closest(".tile");
@@ -177,7 +186,7 @@ export function deckView(ctx, deckId) {
     else toast(REASON[r.reason] ?? "追加できません");
   });
   const panel = h("aside", { class: "search-panel", id: "search-panel" },
-    h("div", { class: "search-top" }, input, h("div", { class: "seg-group", role: "group", "aria-label": "追加先" }, h("span", { class: "muted" }, "追加先"), destBtns)),
+    h("div", { class: "search-top" }, h("div", { class: "search-box" }, input, clearBtn), h("div", { class: "seg-group", role: "group", "aria-label": "追加先" }, h("span", { class: "muted" }, "追加先"), destBtns)),
     results,
   );
 

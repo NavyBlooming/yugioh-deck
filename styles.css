@@ -127,6 +127,14 @@ input[type="text"], input[type="number"], select {
   background: #0f1b38; border-top: 1px solid var(--line); padding: 8px 12px;
 }
 .search-top { display: grid; gap: 6px; margin-bottom: 6px; }
+.search-box { position: relative; }
+.search-box input { padding-right: 44px; }
+.search-clear {
+  position: absolute; top: 0; right: 0; width: 44px; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: 0; color: var(--sub); font-size: 22px; line-height: 1; cursor: pointer;
+}
+.search-clear[hidden] { display: none; }
 .seg-group { display: flex; align-items: center; gap: 6px; }
 .seg { min-height: 34px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--line); background: #1a2d52; color: var(--text); font: inherit; font-weight: 600; cursor: pointer; }
 .seg[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
