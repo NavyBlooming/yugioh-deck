@@ -144,9 +144,10 @@ export function deckView(ctx, deckId) {
         ),
       );
     });
+    // replaceChildren は null を「null」という文字で出すので、警告が無いときは渡さない
     body.replaceChildren(
       head,
-      warns.length ? h("div", { class: "warnings" }, warns.map((w) => h("p", {}, "⚠ " + warningText(w)))) : null,
+      ...(warns.length ? [h("div", { class: "warnings" }, warns.map((w) => h("p", {}, "⚠ " + warningText(w))))] : []),
       ...sections,
     );
   }
@@ -190,6 +191,12 @@ export function deckView(ctx, deckId) {
     results,
   );
 
+  // 検索結果の有無でパネルの高さが変わるので、そのつど余白を合わせる
+  const ro = new ResizeObserver(() => {
+    if (!panel.isConnected) return ro.disconnect();
+    document.documentElement.style.setProperty("--search-h", panel.offsetHeight + "px");
+  });
+  ro.observe(panel);
   root.append(body, panel);
   refresh();
   return { el: root, refresh, hasSearch: true };

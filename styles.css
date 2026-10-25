@@ -35,8 +35,8 @@ a { color: inherit; }
 .muted { color: var(--sub); font-size: 12px; }
 
 #app { padding: 12px 12px calc(var(--tabs-h) + 24px + env(safe-area-inset-bottom)); max-width: 1400px; margin: 0 auto; }
-/* 検索パネルが最後の行を隠さないよう、下に余白を取る */
-#app.has-search { padding-bottom: calc(var(--tabs-h) + 38vh + 130px); }
+/* 検索パネルが最後の行を隠さないよう、パネルの実際の高さ（--search-h、deck.js が測る）だけ下に余白を取る */
+#app.has-search { padding-bottom: calc(var(--tabs-h) + var(--search-h, 38vh) + 16px + env(safe-area-inset-bottom)); }
 
 /* ---- 下部タブ ---- */
 #tabs {
@@ -105,10 +105,9 @@ input[type="text"], input[type="number"], select {
 .tile[data-missing="true"] { filter: brightness(.55) saturate(.6); }
 .tile-empty { width: 100%; aspect-ratio: 59 / 86; border: 2px dashed var(--line); border-radius: 3px; }
 
-.grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; }
+/* スマホは1段8枚（メイン40枚で5段）。候補は広い画面で1段に収める */
+.grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; }
 @media (min-width: 600px) { .grid { grid-template-columns: repeat(10, 1fr); } }
-/* 候補は最大15枚なので小さく並べ、スマホで2段、広い画面で1段に収める */
-.area[data-area="cand"] .grid { grid-template-columns: repeat(8, 1fr); }
 @media (min-width: 600px) { .area[data-area="cand"] .grid { grid-template-columns: repeat(15, 1fr); } }
 
 /* ---- デッキ一覧 ---- */
