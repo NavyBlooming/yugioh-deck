@@ -41,7 +41,7 @@ While signed in, the system SHALL keep every edit on the device immediately, and
 #### Scenario: 連打してもまとめて保存する
 
 - **WHEN** 2分間、カードを5秒おきに追加し続ける
-- **THEN** クラウドへの保存は4回以下で、最後の追加まで保存される
+- **THEN** クラウドへの保存は5回以下（最初の1回と、30秒ごとに1回）で、最後の追加まで保存される
 
 #### Scenario: 保存の前にページが閉じられた
 
