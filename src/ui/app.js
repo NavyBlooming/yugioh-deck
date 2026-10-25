@@ -2,6 +2,7 @@ import { parseCards } from "../core/cards.js";
 import { buildIndex } from "../core/search.js";
 import { loadState, saveState } from "../core/storage.js";
 import { initArt } from "./art.js";
+import { cloudChanged, initCloud } from "./cloud.js";
 import { deckView } from "./deck.js";
 import { listView } from "./list.js";
 import { settingsView } from "./settings.js";
@@ -17,8 +18,10 @@ const ctx = {
   commit(next) {
     ctx.state = next;
     saveState(localStorage, next);
+    cloudChanged();
     current?.refresh();
   },
+  refresh: () => current?.refresh(),
   rerender: () => route(),
 };
 const app = document.getElementById("app");
@@ -66,6 +69,7 @@ async function boot() {
   }
   window.addEventListener("hashchange", route);
   route();
+  initCloud(ctx);
   // 鍵の計算に時間がかかるので、画面を先に出し、絵が使えるようになったら描き直す
   // 設定画面は絵の状態を表示しているので、合言葉が無くても描き直す
   if ((await initArt()) || location.hash === "#/settings") route();

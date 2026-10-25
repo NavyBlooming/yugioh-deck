@@ -2,6 +2,7 @@ import { exportFileName, exportJson, parseImport } from "../core/storage.js";
 import { h } from "./dom.js";
 import { artState, clearPassphrase, setPassphrase } from "./art.js";
 import { toast } from "./dialogs.js";
+import { cloud, signIn, signOutCloud } from "./cloud.js";
 
 export function settingsView(ctx) {
   const download = () => {
@@ -28,6 +29,7 @@ export function settingsView(ctx) {
   const m = ctx.meta;
   const el = h("div", { class: "view" },
     h("div", { class: "page-head" }, h("h1", {}, "設定")),
+    cloudSection(),
     h("section", { class: "panel" },
       h("h2", {}, "カードデータ"),
       h("p", { id: "meta-line" }, `カードデータ: ${m.updated} 更新（${m.count.toLocaleString("ja-JP")}枚）`),
@@ -57,6 +59,24 @@ async function reloadLatest(e) {
   }
   await Promise.all([...urls].map((u) => fetch(u, { cache: "reload" }).catch(() => {})));
   location.reload();
+}
+
+function cloudSection() {
+  if (cloud.status === "off") return null;
+  const body = {
+    loading: [h("p", { class: "muted" }, "準備しています…")],
+    out: [
+      h("p", { class: "muted" }, "ログインすると、同じ Google アカウントのスマホと PC で、デッキと購入メモが同じになります。合言葉は送りません。"),
+      h("button", { class: "btn primary", type: "button", id: "login", onclick: signIn }, "Google でログイン"),
+    ],
+    deciding: [h("p", { class: "muted" }, `${cloud.email} でログインしています。クラウドのデータを確かめています…`)],
+    in: [
+      h("p", { id: "login-line" }, `ログイン中: ${cloud.email}`),
+      h("p", { class: "muted" }, "変更はこの端末に保存し、クラウドには30秒に1回まで、ほかのアプリに切り替えたときにも保存します。"),
+      h("button", { class: "btn", type: "button", id: "logout", onclick: () => signOutCloud() }, "ログアウト"),
+    ],
+  }[cloud.status];
+  return h("section", { class: "panel", id: "cloud-settings" }, h("h2", {}, "ログインと同期"), body);
 }
 
 const ART_STATUS = {
