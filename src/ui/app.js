@@ -48,8 +48,9 @@ function route() {
 
 async function boot() {
   try {
+    // Pages は10分の手元保存を許すので、データは毎回サーバーに変化の有無を問い合わせる
     const get = (url) =>
-      fetch(url).then((r) => {
+      fetch(url, { cache: "no-cache" }).then((r) => {
         if (!r.ok) throw new Error(url + " " + r.status);
         return r.json();
       });
@@ -66,7 +67,8 @@ async function boot() {
   window.addEventListener("hashchange", route);
   route();
   // 鍵の計算に時間がかかるので、画面を先に出し、絵が使えるようになったら描き直す
-  if (await initArt()) route();
+  // 設定画面は絵の状態を表示しているので、合言葉が無くても描き直す
+  if ((await initArt()) || location.hash === "#/settings") route();
 }
 
 boot();

@@ -31,6 +31,8 @@ export function settingsView(ctx) {
     h("section", { class: "panel" },
       h("h2", {}, "カードデータ"),
       h("p", { id: "meta-line" }, `カードデータ: ${m.updated} 更新（${m.count.toLocaleString("ja-JP")}枚）`),
+      h("p", { class: "muted" }, "表示が古いと感じたら、最新の版を取り直してください。デッキと購入メモは消えません。"),
+      h("button", { class: "btn", type: "button", id: "reload-latest", onclick: reloadLatest }, "最新の版に更新"),
     ),
     h("section", { class: "panel" },
       h("h2", {}, "データの書き出しと読み込み"),
@@ -43,8 +45,22 @@ export function settingsView(ctx) {
   return { el, refresh() {} };
 }
 
+// このページが読み込んだ同じサイトのファイルを、ブラウザの手元の写しを使わずに取り直してから開き直す。
+// 絵の本体（.bin）は中身が変わらないので取り直さない。
+async function reloadLatest(e) {
+  e.currentTarget.disabled = true;
+  e.currentTarget.textContent = "取り直しています…";
+  const urls = new Set([location.href.split("#")[0]]);
+  for (const r of performance.getEntriesByType("resource")) {
+    const u = new URL(r.name);
+    if (u.origin === location.origin && !u.pathname.endsWith(".bin")) urls.add(u.href);
+  }
+  await Promise.all([...urls].map((u) => fetch(u, { cache: "reload" }).catch(() => {})));
+  location.reload();
+}
+
 const ART_STATUS = {
-  none: "絵のデータはまだありません。",
+  none: "絵のデータが見つかりません。上の「最新の版に更新」を押してください。",
   off: "合言葉が入っていません。カードは枠の色と名前で表示しています。",
   on: "合言葉が入っています。カードに絵を表示しています。",
 };

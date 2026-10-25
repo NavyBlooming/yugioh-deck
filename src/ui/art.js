@@ -68,8 +68,8 @@ async function keyFor(pass) {
 export async function initArt() {
   try {
     const [m, i] = await Promise.all([
-      fetch("art/meta.json").then((r) => (r.ok ? r.json() : null)),
-      fetch("art/index.json").then((r) => (r.ok ? r.json() : [])),
+      fetch("art/meta.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)),
+      fetch("art/index.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : [])),
     ]);
     meta = m;
     index = new Set(i);
