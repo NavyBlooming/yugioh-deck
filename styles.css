@@ -141,6 +141,7 @@ input[type="text"], input[type="number"], select {
 }
 .search-clear[hidden] { display: none; }
 .seg-group { display: flex; align-items: center; gap: 6px; }
+.dest-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .seg { min-height: 34px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--line); background: #1a2d52; color: var(--text); font: inherit; font-weight: 600; cursor: pointer; }
 .seg[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .results { max-height: 38vh; overflow-y: auto; align-content: start; }

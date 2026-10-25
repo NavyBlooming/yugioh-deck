@@ -276,21 +276,21 @@ const ht = parseCards({
     [1, "通常A", "", "normal", "normal", 3, 4, ""],
   ],
 });
-const candOf = (s, id) => Object.fromEntries(deckOf(s, id).entries.filter((e) => e.area === "cand").map((e) => [e.cid, e.count]));
+const mainOf = (s, id) => Object.fromEntries(deckOf(s, id).entries.filter((e) => e.area === "main").map((e) => [e.cid, e.count]));
 
-test("addHandTraps: 空のデッキなら上限まで候補に入る", () => {
+test("addHandTraps: 空のデッキなら上限までメインに入る", () => {
   const { state, id } = setup();
   const r = addHandTraps(state, id, ht);
   assert.equal(r.added, 9);
   assert.equal(r.full, false);
-  assert.deepEqual(candOf(r.state, id), { 9455: 1, 12950: 2, 20500: 3, 13631: 3 });
+  assert.deepEqual(mainOf(r.state, id), { 9455: 1, 12950: 2, 20500: 3, 13631: 3 });
 });
 
-test("addHandTraps: デッキに入っている分は数える", () => {
+test("addHandTraps: 候補に入っている分も数える", () => {
   let { state, id } = setup();
-  state = addCard(state, id, ht.get(12950), "deck").state;
+  state = addCard(state, id, ht.get(12950), "cand").state;
   const r = addHandTraps(state, id, ht);
-  assert.equal(candOf(r.state, id)[12950], 1);
+  assert.equal(mainOf(r.state, id)[12950], 1);
   assert.equal(r.added, 8);
 });
 
@@ -299,15 +299,16 @@ test("addHandTraps: 上限まで入っていれば何も増えない", () => {
   const once = addHandTraps(state, id, ht).state;
   const r = addHandTraps(once, id, ht);
   assert.equal(r.added, 0);
-  assert.deepEqual(candOf(r.state, id), candOf(once, id));
+  assert.deepEqual(mainOf(r.state, id), mainOf(once, id));
 });
 
-test("addHandTraps: 候補が埋まったら止まる", () => {
+test("addHandTraps: メインが60枚になったら止まる", () => {
   let { state, id } = setup();
-  const fill = parseCards({ version: 2, cards: [1, 2, 3, 4].map((c) => [100 + c, "x" + c, "", "normal", "normal", 3, 4, ""]) });
-  for (const c of [101, 102, 103, 104]) for (let i = 0; i < 3; i++) state = addCard(state, id, fill.get(c), "cand").state;
+  const fill = parseCards({ version: 2, cards: Array.from({ length: 19 }, (_, i) => [100 + i, "x" + i, "", "normal", "normal", 3, 4, ""]) });
+  for (const c of fill.values()) for (let i = 0; i < 3; i++) state = addCard(state, id, c, "deck").state;
   const r = addHandTraps(state, id, ht);
   assert.equal(r.added, 3);
   assert.equal(r.full, true);
-  assert.deepEqual(candOf(r.state, id), { 101: 3, 102: 3, 103: 3, 104: 3, 9455: 1, 12950: 2 });
+  assert.equal(Object.values(mainOf(r.state, id)).reduce((a, b) => a + b, 0), 60);
+  assert.deepEqual([mainOf(r.state, id)[9455], mainOf(r.state, id)[12950]], [1, 2]);
 });

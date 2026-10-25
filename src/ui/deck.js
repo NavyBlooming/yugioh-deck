@@ -68,9 +68,9 @@ export function deckView(ctx, deckId) {
   const addHandTrapsClick = () => {
     const r = addHandTraps(ctx.state, deckId, ctx.cards);
     if (r.added) ctx.commit(r.state);
-    if (r.added && r.full) toast(`${r.added}枚入れたところで候補がいっぱいになりました`);
-    else if (r.added) toast(`汎用誘発を${r.added}枚、候補に入れました`);
-    else toast(r.full ? "候補がいっぱいです" : "汎用誘発はすでに上限まで入っています");
+    if (r.added && r.full) toast(`${r.added}枚入れたところでメインデッキがいっぱいになりました`);
+    else if (r.added) toast(`汎用誘発を${r.added}枚、メインデッキに入れました`);
+    else toast(r.full ? "メインデッキがいっぱいです" : "汎用誘発はすでに上限まで入っています");
   };
 
   const parseTile = (tile) => ({ cid: Number(tile.dataset.cid), area: tile.dataset.area, missing: tile.dataset.missing === "true" });
@@ -145,7 +145,6 @@ export function deckView(ctx, deckId) {
       return h("section", { class: "area", "data-area": area },
         h("div", { class: "area-head" },
           h("h2", { class: "area-title" }, `${label} `, h("span", { class: "area-count", "data-area": area }, `${total}/${max}`)),
-          area === "cand" ? h("button", { class: "btn small", type: "button", id: "add-hand-traps", onclick: addHandTrapsClick }, "汎用誘発を追加") : null,
         ),
         h("div", { class: "grid" },
           entries.flatMap((e) => {
@@ -198,7 +197,7 @@ export function deckView(ctx, deckId) {
     else toast(REASON[r.reason] ?? "追加できません");
   });
   const panel = h("aside", { class: "search-panel", id: "search-panel" },
-    h("div", { class: "search-top" }, h("div", { class: "search-box" }, input, clearBtn), h("div", { class: "seg-group", role: "group", "aria-label": "追加先" }, h("span", { class: "muted" }, "追加先"), destBtns)),
+    h("div", { class: "search-top" }, h("div", { class: "search-box" }, input, clearBtn), h("div", { class: "dest-row" }, h("div", { class: "seg-group", role: "group", "aria-label": "追加先" }, h("span", { class: "muted" }, "追加先"), destBtns), h("button", { class: "btn small", type: "button", id: "add-hand-traps", onclick: addHandTrapsClick }, "汎用誘発を追加"))),
     results,
   );
 
