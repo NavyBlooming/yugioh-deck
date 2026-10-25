@@ -1,4 +1,4 @@
-import { addCard, deleteDeck, moveOne, removeOne, renameDeck, sortedEntries, tapCopy, tilesOf, warnings } from "../core/deck.js";
+import { addCard, addHandTraps, deleteDeck, moveOne, removeOne, renameDeck, sortedEntries, tapCopy, tilesOf, warnings } from "../core/deck.js";
 import { cardRushUrl, officialDbUrl } from "../core/shopping.js";
 import { search } from "../core/search.js";
 import { h } from "./dom.js";
@@ -64,6 +64,14 @@ export function deckView(ctx, deckId) {
 
   const root = h("div", { class: "view deck-view" });
   const body = h("div", { class: "deck-body" });
+
+  const addHandTrapsClick = () => {
+    const r = addHandTraps(ctx.state, deckId, ctx.cards);
+    if (r.added) ctx.commit(r.state);
+    if (r.added && r.full) toast(`${r.added}枚入れたところで候補がいっぱいになりました`);
+    else if (r.added) toast(`汎用誘発を${r.added}枚、候補に入れました`);
+    else toast(r.full ? "候補がいっぱいです" : "汎用誘発はすでに上限まで入っています");
+  };
 
   const parseTile = (tile) => ({ cid: Number(tile.dataset.cid), area: tile.dataset.area, missing: tile.dataset.missing === "true" });
 
@@ -135,7 +143,10 @@ export function deckView(ctx, deckId) {
       const entries = sortedEntries(deck, ctx.cards, area);
       const total = entries.reduce((n, e) => n + e.count, 0);
       return h("section", { class: "area", "data-area": area },
-        h("h2", { class: "area-title" }, `${label} `, h("span", { class: "area-count", "data-area": area }, `${total}/${max}`)),
+        h("div", { class: "area-head" },
+          h("h2", { class: "area-title" }, `${label} `, h("span", { class: "area-count", "data-area": area }, `${total}/${max}`)),
+          area === "cand" ? h("button", { class: "btn small", type: "button", id: "add-hand-traps", onclick: addHandTrapsClick }, "汎用誘発を追加") : null,
+        ),
         h("div", { class: "grid" },
           entries.flatMap((e) => {
             const card = cardOr(ctx.cards, e.cid);

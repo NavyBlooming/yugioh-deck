@@ -4,7 +4,7 @@ import { parseCards } from "../../src/core/cards.js";
 import { emptyState } from "../../src/core/storage.js";
 import {
   createDeck, renameDeck, deleteDeck, addCard, removeOne, moveOne, tapCopy,
-  sortedEntries, tilesOf, warnings, deckSummary,
+  sortedEntries, tilesOf, warnings, deckSummary, addHandTraps,
 } from "../../src/core/deck.js";
 
 const cards = parseCards({
@@ -263,4 +263,51 @@ test("deckSummary", () => {
   assert.equal(deckSummary(d, cards).coverCid, 5);
   d.cover = 77;
   assert.equal(deckSummary(d, cards).coverCid, 1);
+});
+
+// 汎用誘発: 増殖するG(制限) 灰流うらら(準制限) マルチャミー・フワロス 無限泡影(無制限)
+const ht = parseCards({
+  version: 2,
+  cards: [
+    [9455, "増殖するG", "", "effect", "effect", 1, 2, ""],
+    [12950, "灰流うらら", "", "effect", "effect", 2, 3, ""],
+    [20500, "マルチャミー・フワロス", "", "effect", "effect", 3, 1, ""],
+    [13631, "無限泡影", "", "trap", "trap", 3, 0, "normal"],
+    [1, "通常A", "", "normal", "normal", 3, 4, ""],
+  ],
+});
+const candOf = (s, id) => Object.fromEntries(deckOf(s, id).entries.filter((e) => e.area === "cand").map((e) => [e.cid, e.count]));
+
+test("addHandTraps: 空のデッキなら上限まで候補に入る", () => {
+  const { state, id } = setup();
+  const r = addHandTraps(state, id, ht);
+  assert.equal(r.added, 9);
+  assert.equal(r.full, false);
+  assert.deepEqual(candOf(r.state, id), { 9455: 1, 12950: 2, 20500: 3, 13631: 3 });
+});
+
+test("addHandTraps: デッキに入っている分は数える", () => {
+  let { state, id } = setup();
+  state = addCard(state, id, ht.get(12950), "deck").state;
+  const r = addHandTraps(state, id, ht);
+  assert.equal(candOf(r.state, id)[12950], 1);
+  assert.equal(r.added, 8);
+});
+
+test("addHandTraps: 上限まで入っていれば何も増えない", () => {
+  const { state, id } = setup();
+  const once = addHandTraps(state, id, ht).state;
+  const r = addHandTraps(once, id, ht);
+  assert.equal(r.added, 0);
+  assert.deepEqual(candOf(r.state, id), candOf(once, id));
+});
+
+test("addHandTraps: 候補が埋まったら止まる", () => {
+  let { state, id } = setup();
+  const fill = parseCards({ version: 2, cards: [1, 2, 3, 4].map((c) => [100 + c, "x" + c, "", "normal", "normal", 3, 4, ""]) });
+  for (const c of [101, 102, 103, 104]) for (let i = 0; i < 3; i++) state = addCard(state, id, fill.get(c), "cand").state;
+  const r = addHandTraps(state, id, ht);
+  assert.equal(r.added, 3);
+  assert.equal(r.full, true);
+  assert.deepEqual(candOf(r.state, id), { 101: 3, 102: 3, 103: 3, 104: 3, 9455: 1, 12950: 2 });
 });

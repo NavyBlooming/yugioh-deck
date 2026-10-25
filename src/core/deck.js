@@ -132,3 +132,27 @@ export function deckSummary(deck, cards) {
   else coverCid = sortedEntries(deck, cards, "main")[0]?.cid ?? null;
   return { missing, hasWarning: warnings(deck, cards).length > 0, coverCid };
 }
+
+// 汎用誘発（増殖するG、灰流うらら、マルチャミー・フワロス、無限泡影）。この順に入れる
+export const HAND_TRAPS = [9455, 12950, 20500, 13631];
+const MAX_BY_LIMIT = { 0: 0, 1: 1, 2: 2 };
+
+// 全区分の合計が禁止制限の上限に届くまで候補に入れる。候補が埋まったら止める
+export function addHandTraps(state, deckId, cards) {
+  let s = state;
+  let added = 0;
+  for (const cid of HAND_TRAPS) {
+    const card = cards.get(cid);
+    if (!card) continue;
+    const max = MAX_BY_LIMIT[card.limit] ?? 3;
+    let have = findDeck(s, deckId).entries.reduce((n, e) => (e.cid === cid ? n + e.count : n), 0);
+    while (have < max) {
+      const r = addCard(s, deckId, card, "cand");
+      if (!r.ok) return { ok: true, state: s, added, full: r.reason === "cand-full" };
+      s = r.state;
+      have++;
+      added++;
+    }
+  }
+  return { ok: true, state: s, added, full: false };
+}
