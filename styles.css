@@ -92,7 +92,9 @@ input[type="text"], input[type="number"], select {
 .tile .art { flex: 0 0 60%; position: relative; background: linear-gradient(rgba(0, 0, 0, .35), rgba(0, 0, 0, .35)), var(--c); }
 .tile .art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; -webkit-user-drag: none; }
 .tile .name {
-  flex: 1; padding: 2px 3px; font-size: 9px; line-height: 1.2; overflow: hidden;
+  /* 箱を伸ばすと line-clamp の3行目が見えるので、2行分の高さで止める */
+  /* 行の高さは端数があると次の行がにじむので整数の px にする */
+  flex: none; max-height: 26px; padding: 2px 3px; font-size: 9px; line-height: 11px; overflow: hidden;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-all;
 }
 .tile .lim {
@@ -105,6 +107,9 @@ input[type="text"], input[type="number"], select {
 
 .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; }
 @media (min-width: 600px) { .grid { grid-template-columns: repeat(10, 1fr); } }
+/* 候補は最大15枚なので小さく並べ、スマホで2段、広い画面で1段に収める */
+.area[data-area="cand"] .grid { grid-template-columns: repeat(8, 1fr); }
+@media (min-width: 600px) { .area[data-area="cand"] .grid { grid-template-columns: repeat(15, 1fr); } }
 
 /* ---- デッキ一覧 ---- */
 .deck-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
