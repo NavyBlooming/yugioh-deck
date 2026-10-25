@@ -1,0 +1,180 @@
+{
+ "data": [
+  {
+   "id": 14558127,
+   "name": "Ash Blossom & Joyous Spring",
+   "type": "Tuner Monster",
+   "frameType": "effect",
+   "banlist_info": {
+    "ban_ocg": "Semi-Limited"
+   },
+   "misc_info": [
+    {
+     "konami_id": 12950
+    }
+   ]
+  },
+  {
+   "id": 89631139,
+   "name": "Blue-Eyes White Dragon",
+   "type": "Normal Monster",
+   "frameType": "normal",
+   "misc_info": [
+    {
+     "konami_id": 4007
+    }
+   ]
+  },
+  {
+   "id": 63519819,
+   "name": "Thousand-Eyes Restrict",
+   "type": "Fusion Monster",
+   "frameType": "fusion",
+   "misc_info": [
+    {
+     "konami_id": 4740
+    }
+   ]
+  },
+  {
+   "id": 88643579,
+   "name": "Dark End Dragon",
+   "type": "Synchro Monster",
+   "frameType": "synchro",
+   "misc_info": [
+    {
+     "konami_id": 7371
+    }
+   ]
+  },
+  {
+   "id": 84013237,
+   "name": "Number 39: Utopia",
+   "type": "XYZ Monster",
+   "frameType": "xyz",
+   "misc_info": [
+    {
+     "konami_id": 9575
+    }
+   ]
+  },
+  {
+   "id": 98978921,
+   "name": "Link Spider",
+   "type": "Link Monster",
+   "frameType": "link",
+   "misc_info": [
+    {
+     "konami_id": 13034
+    }
+   ]
+  },
+  {
+   "id": 33951077,
+   "name": "Super War-Lion",
+   "type": "Ritual Monster",
+   "frameType": "ritual",
+   "misc_info": [
+    {
+     "konami_id": 4362
+    }
+   ]
+  },
+  {
+   "id": 17390179,
+   "name": "Flash Knight",
+   "type": "Pendulum Normal Monster",
+   "frameType": "normal_pendulum",
+   "misc_info": [
+    {
+     "konami_id": 11210
+    }
+   ]
+  },
+  {
+   "id": 94415058,
+   "name": "Stargazer Magician",
+   "type": "Pendulum Effect Monster",
+   "frameType": "effect_pendulum",
+   "misc_info": [
+    {
+     "konami_id": 11134
+    }
+   ]
+  },
+  {
+   "id": 61854111,
+   "name": "Legendary Sword",
+   "type": "Spell Card",
+   "frameType": "spell",
+   "misc_info": [
+    {
+     "konami_id": 4307
+    }
+   ]
+  },
+  {
+   "id": 50045299,
+   "name": "Dragon Capture Jar",
+   "type": "Trap Card",
+   "frameType": "trap",
+   "misc_info": [
+    {
+     "konami_id": 4335
+    }
+   ]
+  },
+  {
+   "id": 95727991,
+   "name": "Catapult Turtle",
+   "type": "Effect Monster",
+   "frameType": "effect",
+   "banlist_info": {
+    "ban_ocg": "Forbidden"
+   },
+   "misc_info": [
+    {
+     "konami_id": 4095
+    }
+   ]
+  },
+  {
+   "id": 8124921,
+   "name": "Right Leg of the Forbidden One",
+   "type": "Normal Monster",
+   "frameType": "normal",
+   "banlist_info": {
+    "ban_tcg": "Limited",
+    "ban_ocg": "Limited",
+    "ban_goat": "Limited"
+   },
+   "misc_info": [
+    {
+     "konami_id": 4023
+    }
+   ]
+  },
+  {
+   "id": 86893702,
+   "name": "Anotherverse Gluttonia",
+   "type": "Normal Monster",
+   "frameType": "normal",
+   "misc_info": [
+    {
+     "konami_id": 19359
+    }
+   ]
+  },
+  {
+   "id": 501000000,
+   "name": "Ulevo",
+   "type": "Effect Monster",
+   "frameType": "effect",
+   "misc_info": [
+    {
+     "konami_id": 5925
+    }
+   ]
+  }
+ ]
+}

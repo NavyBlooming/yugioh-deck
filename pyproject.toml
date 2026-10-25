@@ -1,0 +1,19 @@
+[project]
+name = "yugioh-deck-tools"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "cryptography",
+    "pillow",
+    "requests",
+]
+
+[dependency-groups]
+dev = ["pytest"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests/py"]
+pythonpath = ["tools"]

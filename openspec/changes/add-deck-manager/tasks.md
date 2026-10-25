@@ -2,8 +2,8 @@
 
 ## 1. 土台
 
-- [ ] 1.1 `package.json`（`"type": "module"`、`npm test` で `node --test`）、`pyproject.toml`（uv、pytest・cryptography・Pillow・requests）、`.gitignore`（`.env`、画像キャッシュ、`node_modules`）を作り、`npm test` と `uv run pytest` が「テスト0件」で正常終了することを確かめる
-- [ ] 1.2 ygocdb の `cards.zip` と YGOPRODeck の応答から、灰流うらら・遺言の札・シンクロ・儀式・通常ペンデュラム・トークン・日本語名なしの各1件を抜いた見本データを `tests/fixtures/` に置き、各見本が意図した種類を含むことを目で確かめる
+- [x] 1.1 `package.json`（`"type": "module"`、`npm test` で `node --test`）、`pyproject.toml`（uv、pytest・cryptography・Pillow・requests）、`.gitignore`（`.env`、画像キャッシュ、`node_modules`）を作り、`npm test` と `uv run pytest` が「テスト0件」で正常終了することを確かめる
+- [x] 1.2 ygocdb の `cards.zip` と YGOPRODeck の応答から、灰流うらら・遺言の札・シンクロ・儀式・通常ペンデュラム・トークン・日本語名なしの各1件を抜いた見本データを `tests/fixtures/` に置き、各見本が意図した種類を含むことを目で確かめる
 
 ## 2. カードデータの生成（card-catalog）
 

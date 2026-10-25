@@ -1,0 +1,442 @@
+{
+ "4007": {
+  "cid": 4007,
+  "id": 89631139,
+  "cn_name": "青眼白龙",
+  "sc_name": "青眼白龙",
+  "md_name": "青眼白龙",
+  "nwbbs_n": "青眼白龙",
+  "cnocg_n": "蓝眼白龙",
+  "jp_ruby": "ブルーアイズ・ホワイト・ドラゴン",
+  "jp_name": "青眼の白龍",
+  "en_name": "Blue-Eyes White Dragon",
+  "text": {
+   "types": "",
+   "pdesc": "",
+   "desc": ""
+  },
+  "data": {
+   "ot": 11,
+   "setcode": 221,
+   "type": 17,
+   "atk": 3000,
+   "def": 2500,
+   "level": 8,
+   "race": 8192,
+   "attribute": 16
+  }
+ },
+ "4023": {
+  "cid": 4023,
+  "id": 8124921,
+  "cn_name": "被封印者的右足",
+  "sc_name": "被封印者的右足",
+  "md_name": "被封印的右足",
+  "nwbbs_n": "被封印者的右足",
+  "cnocg_n": "被封印者的右足",
+  "jp_ruby": "ふういんされしもののみぎあし",
+  "jp_name": "封印されし者の右足",
+  "en_name": "Right Leg of the Forbidden One",
+  "text": {
+   "types": "",
+   "pdesc": "",
+   "desc": ""
+  },
+  "data": {
+   "ot": 11,
+   "setcode": 64,
+   "type": 17,
+   "atk": 200,
+   "def": 300,
+   "level": 1,
+   "race": 2,
+   "attribute": 32
+  }
+ },
+ "4095": {
+  "cid": 4095,
+  "id": 95727991,
+  "cn_name": "弹射龟",
+  "md_name": "飞箭龟",
+  "nwbbs_n": "弹射龟",
+  "cnocg_n": "弹射龟",
+  "jp_ruby": "カタパルト・タートル",
+  "jp_name": "カタパルト・タートル",
+  "en_name": "Catapult Turtle",
+  "text": {
+   "types": "",
+   "pdesc": "",
+   "desc": ""
+  },
+  "data": {
+   "ot": 3,
+   "setcode": 0,
+   "type": 33,
+   "atk": 1000,
+   "def": 2000,
+   "level": 5,
+   "race": 64,
+   "attribute": 2
+  }
+ },
+ "4307": {
+  "cid": 4307,
+  "id": 61854111,
+  "cn_name": "传说之剑",
+  "md_name": "传说之剑",
+  "nwbbs_n": "传说之剑",
+  "cnocg_n": "传说之剑",
+  "jp_ruby": "でんせつのけん",
+  "jp_name": "伝説の剣",
+  "en_name": "Legendary Sword",
+  "text": {
+   "types": "",
+   "pdesc": "",
+   "desc": ""
+  },
+  "data": {
+   "ot": 3,
+   "setcode": 0,
+   "type": 262146,
+   "atk": 0,
+   "def": 0,
+   "level": 0,
+   "race": 0,
+   "attribute": 0
+  }
+ },
+ "4335": {
+  "cid": 4335,
+  "id": 50045299,
+  "cn_name": "龙族封印之壶",
+  "md_name": "龙族・封印之壶",
+  "nwbbs_n": "龙族封印之壶",
+  "cnocg_n": "龙族封印之壶",
+  "jp_ruby": "ドラゴンぞく・ふういんのつぼ",
+  "jp_name": "ドラゴン族・封印の壺",
+  "en_name": "Dragon Capture Jar",
+  "text": {
+   "types": "",
+   "pdesc": "",
+   "desc": ""
+  },
+  "data": {
+   "ot": 3,
+   "setcode": 0,
+   "type": 131076,
+   "atk": 0,
+   "def": 0,
+   "level": 0,
+   "race": 0,
+   "attribute": 0
+  }
+ },
+ "4362": {
+  "cid": 4362,
+  "id": 33951077,
+  "cn_name": "超级战狮",
+  "md_name": "超级战狮",
+  "nwbbs_n": "超级战狮",
+  "cnocg_n": "超级战狮",
+  "jp_ruby": "スーパー・ウォー・ライオン",
+  "jp_name": "スーパー・ウォー・ライオン",
+  "en_name": "Super War-Lion",
+  "text": {
+   "types": "",
+   "pdesc": "",
+   "desc": ""
+  },
+  "data": {
+   "ot": 3,
+   "setcode": 0,
+   "type": 129,
+   "atk": 2300,
+   "def": 2100,
+   "level": 7,
+   "race": 16384,
+   "attribute": 1
+  }
+ },
+ "4740": {
+  "cid": 4740,
+  "id": 63519819,
+  "cn_name": "千眼纳祭神",
+  "sc_name": "千眼纳祭魔",
+  "md_name": "千眼纳祭魔",
+  "nwbbs_n": "千眼纳祭神",
+  "cnocg_n": "千眼纳祭魔",
+  "jp_ruby": "サウザンド・アイズ・サクリファイス",
+  "jp_name": "サウザンド・アイズ・サクリファイス",
+  "en_name": "Thousand-Eyes Restrict",
+  "text": {
+   "types": "",
+   "pdesc": "",
+   "desc": ""
+  },
+  "data": {
+   "ot": 11,
+   "setcode": 4368,
+   "type": 97,
+   "atk": 0,
+   "def": 0,
+   "level": 1,
+   "race": 2,
+   "attribute": 32
+  }
+ },
+ "5297": {
+  "cid": 5297,
+  "id": 0,
+  "jp_ruby": "ゆいごんのふだ",
+  "jp_name": "遺言の札",
+  "en_name": "Card of Last Will",
+  "text": {
+   "types": "",
+   "pdesc": "",
+   "desc": ""
+  }
+ },
+ "5925": {
+  "cid": 5925,
+  "id": 0,
+  "jp_ruby": "Ulevo",
+  "jp_name": "Ulevo",
+  "en_name": "Ulevo",
+  "text": {
+   "types": "",
+   "pdesc": "",
+   "desc": ""
+  }
+ },
+ "7371": {
+  "cid": 7371,
+  "id": 88643579,
+  "cn_name": "暗黑终结龙",
+  "sc_name": "暗黑终极龙",
+  "md_name": "暗黑终结龙",
+  "nwbbs_n": "暗黑终结龙",
+  "cnocg_n": "暗之终焉龙",
+  "jp_ruby": "ダークエンド・ドラゴン",
+  "jp_name": "ダークエンド・ドラゴン",
+  "en_name": "Dark End Dragon",
+  "text": {
+   "types": "",
+   "pdesc": "",
+   "desc": ""
+  },
+  "data": {
+   "ot": 11,
+   "setcode": 0,
+   "type": 8225,
+   "atk": 2600,
+   "def": 2100,
+   "level": 8,
+   "race": 8192,
+   "attribute": 32
+  }
+ },
+ "9575": {
+  "cid": 9575,
+  "id": 84013237,
+  "cn_name": "No.39 希望皇 霍普",
+  "sc_name": "编号39 希望皇霍普",
+  "md_name": "编号39 希望皇霍普",
+  "nwbbs_n": "No.39 希望皇 霍普",
+  "cnocg_n": "No.39 希望皇 霍普",
+  "jp_ruby": "ナンバーズ３９　きぼうおうホープ",
+  "jp_name": "No.39 希望皇ホープ",
+  "en_name": "Number 39: Utopia",
+  "text": {
+   "types": "",
+   "pdesc": "",
+   "desc": ""
+  },
+  "data": {
+   "ot": 11,
+   "setcode": 276758600,
+   "type": 8388641,
+   "atk": 2500,
+   "def": 2000,
+   "level": 4,
+   "race": 1,
+   "attribute": 16
+  }
+ },
+ "11134": {
+  "cid": 11134,
+  "id": 94415058,
+  "cn_name": "星读之魔术师",
+  "sc_name": "星读的魔术师",
+  "md_name": "星读的魔术师",
+  "nwbbs_n": "星读之魔术师",
+  "cnocg_n": "星读魔术师",
+  "jp_ruby": "ほしよみのまじゅつし",
+  "jp_name": "星読みの魔術師",
+  "en_name": "Stargazer Magician",
+  "text": {
+   "types": "",
+   "pdesc": "",
+   "desc": ""
+  },
+  "data": {
+   "ot": 11,
+   "setcode": 152,
+   "type": 16777249,
+   "atk": 1200,
+   "def": 2400,
+   "level": 16842757,
+   "race": 2,
+   "attribute": 32
+  }
+ },
+ "11210": {
+  "cid": 11210,
+  "id": 17390179,
+  "cn_name": "闪光之骑士",
+  "sc_name": "闪光骑士",
+  "md_name": "闪光的骑士",
+  "nwbbs_n": "闪光之骑士",
+  "cnocg_n": "闪光骑士",
+  "jp_ruby": "せんこうのきし",
+  "jp_name": "閃光の騎士",
+  "en_name": "Flash Knight",
+  "text": {
+   "types": "",
+   "pdesc": "",
+   "desc": ""
+  },
+  "data": {
+   "ot": 11,
+   "setcode": 0,
+   "type": 16777233,
+   "atk": 1800,
+   "def": 600,
+   "level": 117899268,
+   "race": 1,
+   "attribute": 16
+  }
+ },
+ "12950": {
+  "cid": 12950,
+  "id": 14558127,
+  "cn_name": "灰流丽",
+  "sc_name": "灰流丽",
+  "md_name": "灰流丽",
+  "nwbbs_n": "灰流丽",
+  "cnocg_n": "灰流丽",
+  "jp_ruby": "はるうらら",
+  "jp_name": "灰流うらら",
+  "en_name": "Ash Blossom & Joyous Spring",
+  "text": {
+   "types": "",
+   "pdesc": "",
+   "desc": ""
+  },
+  "data": {
+   "ot": 11,
+   "setcode": 0,
+   "type": 4129,
+   "atk": 0,
+   "def": 1800,
+   "level": 3,
+   "race": 16,
+   "attribute": 4
+  }
+ },
+ "13034": {
+  "cid": 13034,
+  "id": 98978921,
+  "cn_name": "连接蜘蛛",
+  "sc_name": "连接蜘蛛",
+  "md_name": "连接蜘蛛",
+  "nwbbs_n": "连接蜘蛛",
+  "cnocg_n": "链接蜘蛛",
+  "jp_ruby": "リンク・スパイダー",
+  "jp_name": "リンク・スパイダー",
+  "en_name": "Link Spider",
+  "text": {
+   "types": "",
+   "pdesc": "",
+   "desc": ""
+  },
+  "data": {
+   "ot": 11,
+   "setcode": 0,
+   "type": 67108897,
+   "atk": 1000,
+   "def": 2,
+   "level": 1,
+   "race": 16777216,
+   "attribute": 1
+  }
+ },
+ "19092": {
+  "cid": 19092,
+  "id": 5405695,
+  "cn_name": "混沌战士",
+  "nwbbs_n": "混沌战士",
+  "cnocg_n": "混沌戦士",
+  "jp_ruby": "カオス・ソルジャー",
+  "jp_name": "カオス・ソルジャー",
+  "wiki_en": "Black Luster Soldier",
+  "text": {
+   "types": "",
+   "pdesc": "",
+   "desc": ""
+  },
+  "data": {
+   "ot": 1,
+   "setcode": 4303,
+   "type": 17,
+   "atk": 3000,
+   "def": 2500,
+   "level": 8,
+   "race": 1,
+   "attribute": 1
+  }
+ },
+ "19359": {
+  "cid": 19359,
+  "id": 86893702,
+  "cn_name": "异宇宙暴食魔",
+  "cnocg_n": "异宇宙暴食者",
+  "en_name": "Anotherverse Gluttonia",
+  "text": {
+   "types": "",
+   "pdesc": "",
+   "desc": ""
+  },
+  "data": {
+   "ot": 2,
+   "setcode": 0,
+   "type": 17,
+   "atk": 2500,
+   "def": 2000,
+   "level": 8,
+   "race": 8,
+   "attribute": 32
+  }
+ },
+ "99999999": {
+  "cid": 99999,
+  "id": 99999999,
+  "jp_ruby": "てすととーくん",
+  "jp_name": "テストトークン",
+  "en_name": "Test Token",
+  "text": {
+   "types": "",
+   "pdesc": "",
+   "desc": ""
+  },
+  "data": {
+   "ot": 1,
+   "setcode": 0,
+   "type": 16401,
+   "atk": 0,
+   "def": 0,
+   "level": 1,
+   "race": 1,
+   "attribute": 1
+  }
+ }
+}
