@@ -1,0 +1,30 @@
+schema: spec-driven
+
+context: |
+  Language: ja
+  All artifacts must be written in ja.
+  Keep OpenSpec structural headings and SHALL/MUST keywords in English.
+
+  紙の遊戯王OCGのデッキと、デッキごとに未所持で買いたいカードを管理する、スマホ中心の静的Webアプリ。
+  GitHub Pages（個人アカウント NavyBlooming）で公開する。ビルド工程は持たない。
+  画面: 素の HTML / CSS / JavaScript（ES modules）。テストは node --test。
+  データ生成: Python（uv）。テストは pytest。週1回 GitHub Actions で再生成する。
+  利用者のデータはブラウザ内に保存し、JSON の書き出し・読み込みで端末間を移す。
+  開発は TDD。失敗するテストを先に書き、通る最小の実装を足す。
+
+rules:
+  tasks:
+    - 各機能の作業は「テストを書く（失敗を確認）→ 実装 → テストが通ることを確認」の順に並べる
+    - 区切り（セクション）ごとにコミットできる粒度にする
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing
