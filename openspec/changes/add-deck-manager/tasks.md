@@ -54,8 +54,8 @@
 ## 9. 公開と定期更新
 
 - [x] 9.1 `NavyBlooming/yugioh-deck` を作って push し、Pages を main のルートから配信する設定にして、公開URLで画面が開くことを確かめる
-- [ ] 9.2 週1回と手動実行の GitHub Actions を作り、合言葉を Secrets に入れて手動実行し、MD5 が同じときは commit が増えないことをログで確かめる
-- [ ] 9.3 公開URLをスマホ幅で開き、7.2 の流れと合言葉での絵の表示を通しで確かめる。README に使い方と合言葉の入れ方を書く
+- [x] 9.2 週1回と手動実行の GitHub Actions を作り、合言葉を Secrets に入れて手動実行し、MD5 が同じときは commit が増えないことをログで確かめる
+- [x] 9.3 公開URLをスマホ幅で開き、7.2 の流れと合言葉での絵の表示を通しで確かめる。README に使い方と合言葉の入れ方を書く
 
 ## Workflow follow-up
 
