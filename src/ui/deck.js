@@ -208,9 +208,26 @@ export function deckView(ctx, deckId) {
       });
     }
     if (panelTab !== "search") return;
-    const found = textIndex ? searchWithText(ctx.index, textIndex, input.value, 60) : search(ctx.index, input.value, 60);
-    results.replaceChildren(...found.map((c) => tileEl(c, { area: "search" })));
+    found = textIndex ? searchWithText(ctx.index, textIndex, input.value) : search(ctx.index, input.value);
+    shown = 0;
+    results.replaceChildren();
+    showMore();
   };
+  // 結果は全部出すが、描くのは60枚ずつ。下の端の目印が見えたら次を足す
+  const PAGE = 60;
+  let found = [];
+  let shown = 0;
+  const more = h("div", { class: "results-more" });
+  const showMore = () => {
+    more.remove();
+    results.append(...found.slice(shown, shown + PAGE).map((c) => tileEl(c, { area: "search", lazy: true })));
+    shown = Math.min(found.length, shown + PAGE);
+    if (shown < found.length) results.append(more);
+  };
+  const moreSeen = new IntersectionObserver((items) => {
+    if (items.some((it) => it.isIntersecting) && panelTab === "search" && more.isConnected) showMore();
+  }, { root: results, rootMargin: "200px" });
+  moreSeen.observe(more);
 
   // 検索・履歴・お気に入りのタブ。履歴とお気に入りでは入力欄を隠し、同じ場所にカードを並べる
   let panelTab = "search";

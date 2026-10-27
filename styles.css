@@ -149,6 +149,7 @@ input[type="text"], input[type="number"], select {
 }
 .hist-mark.in { background: #2e8b57; }
 .hist-mark.out { background: #6b6b6b; }
+.results-more { grid-column: 1 / -1; height: 1px; }
 .list-empty { grid-column: 1 / -1; padding: 12px 0; text-align: center; }
 .search-box input { padding-right: 44px; }
 .search-clear {

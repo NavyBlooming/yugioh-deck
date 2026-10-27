@@ -12,7 +12,18 @@ const LIMIT_MARK = { 0: "禁", 1: "1", 2: "2" };
 export const cardOr = (cards, cid) =>
   cards.get(cid) ?? { cid, name: "(不明なカード)", ruby: "", group: "normal", frame: "normal", limit: 3 };
 
-export function tileEl(card, { missing = false, area = "", index = null } = {}) {
+// lazy のタイルは、画面に見えたときに初めて絵を取る
+const lazyArt = new Map(); // タイル → 絵を取り始める関数
+const seen = typeof IntersectionObserver === "undefined" ? null : new IntersectionObserver((items) => {
+  for (const it of items) {
+    if (!it.isIntersecting) continue;
+    seen.unobserve(it.target);
+    lazyArt.get(it.target)?.();
+    lazyArt.delete(it.target);
+  }
+});
+
+export function tileEl(card, { missing = false, area = "", index = null, lazy = false } = {}) {
   const pend = card.frame.endsWith("_pendulum");
   const base = pend ? card.frame.slice(0, -"_pendulum".length) : card.frame;
   const art = h("div", { class: "art" });
@@ -30,12 +41,17 @@ export function tileEl(card, { missing = false, area = "", index = null } = {}) 
     h("div", { class: "name" }, card.name),
     LIMIT_MARK[card.limit] ? h("span", { class: "lim" }, LIMIT_MARK[card.limit]) : null,
   );
-  Promise.resolve(provider(card.cid))
-    .then((url) => {
-      if (!url) return;
-      art.append(h("img", { src: url, alt: "", draggable: "false" }));
-      el.classList.add("has-art");
-    })
-    .catch(() => {});
+  const load = () =>
+    Promise.resolve(provider(card.cid))
+      .then((url) => {
+        if (!url) return;
+        art.append(h("img", { src: url, alt: "", draggable: "false" }));
+        el.classList.add("has-art");
+      })
+      .catch(() => {});
+  if (lazy && seen) {
+    lazyArt.set(el, load);
+    seen.observe(el);
+  } else load();
   return el;
 }

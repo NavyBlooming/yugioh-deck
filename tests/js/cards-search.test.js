@@ -48,8 +48,29 @@ test("読み・カタカナ・名前の一部・記号違いで当たる", () =>
   assert.ok(names("ABCドラゴンバスター").includes("ABC－ドラゴン・バスター"));
 });
 
-test("前方一致が先", () => {
-  assert.deepEqual(names("うらら"), ["うららの舞", "灰流うらら"]);
+test("結果はデッキと同じ並び（効果モンスターが魔法より先）", () => {
+  assert.deepEqual(names("うらら"), ["灰流うらら", "うららの舞"]);
+});
+
+test("結果は種類 → レベルや魔法・罠の種類 → 読みの順で、件数を絞らなければ全部返す", () => {
+  const many = parseCards({
+    version: 2,
+    cards: [
+      [10, "竜の融合", "りゅうのゆうごう", "fusion", "fusion", 3, 8, ""],
+      [11, "竜の罠", "りゅうのわな", "trap", "trap", 3, 0, "normal"],
+      [12, "竜の速攻", "りゅうのそっこう", "spell", "spell", 3, 0, "quickplay"],
+      [13, "竜の場", "りゅうのば", "spell", "spell", 3, 0, "field"],
+      [14, "竜L4い", "りゅうい", "effect", "effect", 3, 4, ""],
+      [15, "竜L4あ", "りゅうあ", "effect", "effect", 3, 4, ""],
+      [16, "竜L2", "りゅうに", "effect", "effect", 3, 2, ""],
+      [17, "竜の通常", "りゅうのつうじょう", "normal", "normal", 3, 7, ""],
+      ...Array.from({ length: 70 }, (_, i) => [100 + i, "竜" + i, "りゅう" + i, "effect", "effect", 3, 12, ""]),
+    ],
+  });
+  const r = search(buildIndex([...many.values()]), "竜");
+  assert.equal(r.length, 78);
+  assert.deepEqual(r.slice(0, 4).map((c) => c.cid), [17, 16, 15, 14]);
+  assert.deepEqual(r.slice(-4).map((c) => c.cid), [13, 12, 11, 10]);
 });
 
 test("空白だけは空", () => {
@@ -75,14 +96,14 @@ test("searchWithText: スペースで区切った語をすべて含む効果テ�
   const t = buildTextIndex(TEXTS);
   assert.deepEqual(searchWithText(idx, t, "手札から捨てて 無効").map((c) => c.cid), [1]);
   assert.deepEqual(searchWithText(idx, t, "てふだ").map((c) => c.cid), []);
-  assert.deepEqual(searchWithText(idx, t, "手札 捨て").map((c) => c.cid), [3, 1]); // 読み順
+  assert.deepEqual(searchWithText(idx, t, "手札 捨て").map((c) => c.cid), [1, 3]); // デッキと同じ並び
 });
 
 test("searchWithText: 名前で当たるカードを先に並べ、同じカードは二度出さない", () => {
   const idx = buildIndex([...parseCards(RAW).values()]);
   const t = buildTextIndex(TEXTS);
   const r = searchWithText(idx, t, "うらら").map((c) => c.cid);
-  assert.deepEqual(r, [3, 1, 2]);
+  assert.deepEqual(r, [1, 3, 2]); // 名前で当たる 灰流うらら・うららの舞 の後に、効果テキストだけで当たるカード
 });
 
 test("searchWithText: 空の入力は何も返さない", () => {

@@ -16,3 +16,10 @@ export const SUB_ORDER = ["normal", "field", "equip", "continuous", "quickplay",
 export function areaOf(card) {
   return EXTRA_GROUPS.includes(card.group) ? "extra" : "main";
 }
+
+// デッキと同じ並び（メインの群 → EXの群 → モンスターはレベル、魔法・罠は種類 → 読み）でカードを比べる
+const ALL_GROUPS = [...MAIN_GROUPS, ...EXTRA_GROUPS];
+export function compareCards(a, b) {
+  const inner = (c) => (c.group === "spell" || c.group === "trap" ? SUB_ORDER.indexOf(c.sub) : c.level ?? 0);
+  return ALL_GROUPS.indexOf(a.group) - ALL_GROUPS.indexOf(b.group) || inner(a) - inner(b) || (a.ruby < b.ruby ? -1 : a.ruby > b.ruby ? 1 : 0);
+}
