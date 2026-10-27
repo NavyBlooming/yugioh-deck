@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { parseCards, areaOf, MAIN_GROUPS, EXTRA_GROUPS } from "../../src/core/cards.js";
-import { normalize, buildIndex, search } from "../../src/core/search.js";
+import { normalize, buildIndex, search, buildTextIndex, searchWithText } from "../../src/core/search.js";
 
 const RAW = {
   version: 1,
@@ -62,4 +62,30 @@ test("読みにカタカナと全角が混ざっても当たる", () => {
 
 test("limit で件数を絞る", () => {
   assert.equal(search(index, "うらら", 1).length, 1);
+});
+
+const TEXTS = {
+  1: "このカードを手札から捨てて発動できる。その効果を無効にする。",
+  2: "「うらら」と名のついたカードを素材にする。",
+  3: "相手は手札から捨てる。",
+};
+
+test("searchWithText: スペースで区切った語をすべて含む効果テキストに当たる", () => {
+  const idx = buildIndex([...parseCards(RAW).values()]);
+  const t = buildTextIndex(TEXTS);
+  assert.deepEqual(searchWithText(idx, t, "手札から捨てて 無効").map((c) => c.cid), [1]);
+  assert.deepEqual(searchWithText(idx, t, "てふだ").map((c) => c.cid), []);
+  assert.deepEqual(searchWithText(idx, t, "手札 捨て").map((c) => c.cid), [3, 1]); // 読み順
+});
+
+test("searchWithText: 名前で当たるカードを先に並べ、同じカードは二度出さない", () => {
+  const idx = buildIndex([...parseCards(RAW).values()]);
+  const t = buildTextIndex(TEXTS);
+  const r = searchWithText(idx, t, "うらら").map((c) => c.cid);
+  assert.deepEqual(r, [3, 1, 2]);
+});
+
+test("searchWithText: 空の入力は何も返さない", () => {
+  const idx = buildIndex([...parseCards(RAW).values()]);
+  assert.deepEqual(searchWithText(idx, buildTextIndex(TEXTS), "   "), []);
 });

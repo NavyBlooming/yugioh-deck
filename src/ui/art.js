@@ -1,4 +1,5 @@
-import { checkKey, decryptArt, deriveKey } from "../core/art.js";
+import { checkKey, decryptArt, decryptTexts, deriveKey } from "../core/art.js";
+import { buildTextIndex } from "../core/search.js";
 import { setArtProvider } from "./tile.js";
 
 const PASS_KEY = "ygo.pass.v1";
@@ -7,6 +8,7 @@ let meta = null;
 let index = new Set();
 let key = null;
 const urls = new Map(); // cid → Promise<objectURL|null>
+let texts = null; // Promise<Map cid → 正規化した効果テキスト | null>
 
 const store = {
   get: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
@@ -95,8 +97,29 @@ export async function setPassphrase(pass) {
   return true;
 }
 
+// 効果テキストは初めて使うときに取り、塩ごとに1件だけ置く。hash が変われば取り直す
+async function fetchTexts() {
+  const tm = await fetch("art/texts-meta.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null));
+  if (!tm) return null;
+  const k = `${meta.salt}:texts`;
+  const saved = await idb("readonly", (s) => s.get(k));
+  if (saved?.hash === tm.hash) return buildTextIndex(saved.texts);
+  const r = await fetch(`art/texts.bin?h=${tm.hash}`);
+  if (!r.ok) return null;
+  const t = await decryptTexts(key, await r.arrayBuffer());
+  await idb("readwrite", (s) => s.put({ hash: tm.hash, texts: t }, k));
+  return buildTextIndex(t);
+}
+
+export function loadTexts() {
+  if (!key) return Promise.resolve(null);
+  if (!texts) texts = fetchTexts().catch(() => null).then((t) => (t ? t : ((texts = null), null)));
+  return texts;
+}
+
 export function clearPassphrase() {
   key = null;
   urls.clear();
+  texts = null;
   store.del(PASS_KEY);
 }

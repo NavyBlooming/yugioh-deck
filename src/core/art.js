@@ -27,3 +27,10 @@ export async function checkKey(key, meta) {
     return false;
   }
 }
+
+// 効果テキストは cid → 文の JSON を gzip で圧縮してから暗号化してある（tools/build_texts.py）
+export async function decryptTexts(key, buffer) {
+  const gz = await decryptArt(key, buffer);
+  const stream = new Blob([gz]).stream().pipeThrough(new DecompressionStream("gzip"));
+  return JSON.parse(await new Response(stream).text());
+}

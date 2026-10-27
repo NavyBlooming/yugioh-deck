@@ -1,6 +1,7 @@
 import { addCard, addHandTraps, deleteDeck, moveOne, removeOne, renameDeck, sortedEntries, tapCopy, tilesOf, warnings } from "../core/deck.js";
 import { cardRushUrl, officialDbUrl } from "../core/shopping.js";
-import { search } from "../core/search.js";
+import { search, searchWithText } from "../core/search.js";
+import { artState, loadTexts } from "./art.js";
 import { h } from "./dom.js";
 import { nameDialog, noteDialog, openModal, toast } from "./dialogs.js";
 import { cardOr, tileEl } from "./tile.js";
@@ -189,13 +190,31 @@ export function deckView(ctx, deckId) {
     } }, label),
   );
   const clearBtn = h("button", { class: "search-clear", type: "button", id: "search-clear", "aria-label": "入力を消す", hidden: true }, "×");
+  // 効果テキストでも探す切り替え。合言葉があるときだけ出す
+  let textIndex = null;
+  const textBtn = h("button", { class: "search-text", type: "button", id: "search-text", "aria-pressed": "false", hidden: artState() !== "on" }, "効果");
+  const runSearch = () => {
+    const found = textIndex ? searchWithText(ctx.index, textIndex, input.value, 60) : search(ctx.index, input.value, 60);
+    results.replaceChildren(...found.map((c) => tileEl(c, { area: "search" })));
+  };
+  textBtn.addEventListener("click", async () => {
+    if (textIndex) {
+      textIndex = null;
+    } else {
+      textBtn.disabled = true;
+      toast("効果テキストを読み込んでいます…");
+      textIndex = await loadTexts();
+      textBtn.disabled = false;
+      if (!textIndex) toast("効果テキストを読み込めませんでした");
+    }
+    textBtn.setAttribute("aria-pressed", String(Boolean(textIndex)));
+    runSearch();
+  });
   let timer = null;
   input.addEventListener("input", () => {
     clearBtn.hidden = !input.value;
     clearTimeout(timer);
-    timer = setTimeout(() => {
-      results.replaceChildren(...search(ctx.index, input.value, 60).map((c) => tileEl(c, { area: "search" })));
-    }, 150);
+    timer = setTimeout(runSearch, 150);
   });
   clearBtn.addEventListener("click", () => {
     clearTimeout(timer);
@@ -213,7 +232,7 @@ export function deckView(ctx, deckId) {
     else toast(REASON[r.reason] ?? "追加できません");
   });
   const panel = h("aside", { class: "search-panel", id: "search-panel" },
-    h("div", { class: "search-top" }, h("div", { class: "search-box" }, input, clearBtn), h("div", { class: "dest-row" }, h("div", { class: "seg-group", role: "group", "aria-label": "追加先" }, h("span", { class: "muted" }, "追加先"), destBtns), h("button", { class: "btn small", type: "button", id: "add-hand-traps", onclick: addHandTrapsClick }, "汎用誘発を追加"))),
+    h("div", { class: "search-top" }, h("div", { class: "search-box" }, input, textBtn, clearBtn), h("div", { class: "dest-row" }, h("div", { class: "seg-group", role: "group", "aria-label": "追加先" }, h("span", { class: "muted" }, "追加先"), destBtns), h("button", { class: "btn small", type: "button", id: "add-hand-traps", onclick: addHandTrapsClick }, "汎用誘発を追加"))),
     results,
   );
 

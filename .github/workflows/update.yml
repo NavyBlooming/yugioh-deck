@@ -20,6 +20,9 @@ jobs:
       - run: uv run tools/build_art.py
         env:
           YGO_ART_PASSPHRASE: ${{ secrets.YGO_ART_PASSPHRASE }}
+      - run: uv run tools/build_texts.py
+        env:
+          YGO_ART_PASSPHRASE: ${{ secrets.YGO_ART_PASSPHRASE }}
       - name: 変化があればコミット
         run: |
           git add data art

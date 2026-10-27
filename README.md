@@ -8,6 +8,7 @@
 
 - **デッキを作る**: 「デッキ」タブの「＋ 新しいデッキ」。
 - **カードを入れる**: デッキを開き、下の検索欄にカード名か読み（ひらがな・カタカナどちらでも）を入れて、結果のカードをタップ。
+  - 合言葉を入れていれば、検索欄の「効果」を押すと効果テキストでも探せる。スペースで区切った語をすべて含むカードに絞り込む。
   - 「追加先」を「候補」にすると候補カード欄（15枚まで）に入る。
   - 同じカードはメイン・EX・候補の合計で3枚まで。メインは60枚、EXは15枚まで。
 - **手元に無いカードの印**: デッキ内のカードをタップすると、その1枚が暗くなる（もう一度タップで戻る）。
@@ -31,9 +32,9 @@
 
 ## カードの絵
 
-カードの絵は暗号化して置いてあり、合言葉を知っている人にだけ表示されます。合言葉は「設定」タブの「カードの絵」に入れてください。合言葉が無くても、絵の代わりに枠の色とカード名で表示され、ほかの機能はすべて使えます。
+カードの絵と効果テキストは暗号化して置いてあり、合言葉を知っている人にだけ表示されます。合言葉は「設定」タブの「カードの絵」に入れてください。合言葉が無くても、絵の代わりに枠の色とカード名で表示され、ほかの機能はすべて使えます。
 
-合言葉を変えるときは、`.env` の `YGO_ART_PASSPHRASE` と GitHub の Secrets を新しい値にし、`art/` を消してから `uv run tools/build_art.py` で作り直します。
+合言葉を変えるときは、`.env` の `YGO_ART_PASSPHRASE` と GitHub の Secrets を新しい値にし、`art/` を消してから `uv run tools/build_art.py` と `uv run tools/build_texts.py` で作り直します。
 
 ## データの出典
 
@@ -42,6 +43,7 @@
 | カード名・読み仮名・カードの種類 | [ygocdb](https://ygocdb.com/api) の `cards.zip` | 全カードを1回で取得。`cards.zip.md5` で更新の有無を判定 |
 | 禁止・制限・準制限 | [公式カードデータベースのリミットレギュレーション](https://www.db.yugioh-card.com/yugiohdb/forbidden_limited.action) | 一覧に無いカードは無制限 |
 | 種類の補完 | [YGOPRODeck](https://ygoprodeck.com/api-guide/) の `cardinfo.php?misc=yes` | ygocdb に種類が無いカードだけ。`misc_info[0].konami_id` を公式のカードIDとして結び付ける |
+| 効果テキスト | [mycard/ygopro-database](https://github.com/mycard/ygopro-database) の `locales/ja-JP/cards.cdb` | パスワードから ygocdb の対応で公式のカードIDに結び付け、合言葉で暗号化して `art/texts.bin` に置く |
 | 日本版の収録パック（型番） | [YGOResources](https://db.ygoresources.com/about/api) の `/data/card/<cid>` | 購入メモを開いたときに、そのカードの分だけ画面から取得 |
 
 日本語名の無いカードと、どの取得元にも種類の情報が無いカードは除き、`data/meta.json` の `excluded` に載せています。
@@ -54,7 +56,7 @@ uv run tools/build_cards.py
 
 カードの元データも禁止制限の一覧も前回から変わっていなければ `unchanged` と出て、何も書き換えません。
 
-GitHub Actions が毎週月曜3時（日本時間）に、カードデータの更新と、新しいカードの絵の追加を行います。「Actions」タブから手動でも動かせます。
+GitHub Actions が毎週月曜3時（日本時間）に、カードデータの更新と、新しいカードの絵の追加、効果テキストの更新を行います。「Actions」タブから手動でも動かせます。
 
 ## テスト
 
