@@ -1,4 +1,4 @@
-import { sortedEntries } from "./deck.js";
+import { bitCount, maskOf, sortedEntries } from "./deck.js";
 
 export function buildShoppingList(state, cards) {
   const row = (e) => {
@@ -35,7 +35,12 @@ export function buildShoppingList(state, cards) {
 export function markBought(state, deckId, cid, area) {
   const s = structuredClone(state);
   const e = s.decks.find((d) => d.id === deckId)?.entries.find((x) => x.cid === cid && x.area === area);
-  if (e) e.missing = Math.max(0, e.missing - 1);
+  // 左の暗い1枚から明るくする
+  if (e) {
+    const mask = maskOf(e);
+    e.mask = mask & (mask - 1);
+    e.missing = bitCount(e.mask);
+  }
   return s;
 }
 

@@ -121,7 +121,7 @@ test("制限・禁止でも追加できる", () => {
 test("removeOne は未所持から先に減らし、0で要素を消す", () => {
   let { state, id } = setup();
   state = add(state, id, 2, 3);
-  state = tapCopy(state, id, 2, "main", false).state;
+  state = tapCopy(state, id, 2, "main", 0).state;
   state = removeOne(state, id, 2, "main").state;
   assert.deepEqual([entry(state, id, 2, "main").count, entry(state, id, 2, "main").missing], [2, 0]);
   state = removeOne(removeOne(state, id, 2, "main").state, id, 2, "main").state;
@@ -131,7 +131,7 @@ test("removeOne は未所持から先に減らし、0で要素を消す", () => 
 test("moveOne: 候補からデッキへ。未所持が付いてくる", () => {
   let { state, id } = setup();
   state = add(state, id, 6, 2, "cand");
-  state = tapCopy(state, id, 6, "cand", false).state;
+  state = tapCopy(state, id, 6, "cand", 1).state;
   const r = moveOne(state, id, 6, "cand", "deck", c(6));
   assert.ok(r.ok);
   assert.deepEqual([entry(r.state, id, 6, "cand").count, entry(r.state, id, 6, "cand").missing], [1, 0]);
@@ -147,13 +147,52 @@ test("moveOne: 移動先が満杯なら拒否、同名3枚でも移動は通る"
   assert.deepEqual([r.ok, r.reason], [false, "cand-full"]);
 });
 
-test("tapCopy: 上限と下限", () => {
+test("tapCopy: 押した1枚だけが切り替わる", () => {
+  let { state, id } = setup();
+  state = add(state, id, 2, 3);
+  state = tapCopy(state, id, 2, "main", 0).state;
+  assert.deepEqual(tilesOf(entry(state, id, 2, "main")).map((t) => t.missing), [true, false, false]);
+  assert.equal(entry(state, id, 2, "main").missing, 1);
+  state = tapCopy(state, id, 2, "main", 2).state;
+  assert.deepEqual(tilesOf(entry(state, id, 2, "main")).map((t) => t.missing), [true, false, true]);
+  state = tapCopy(state, id, 2, "main", 0).state;
+  assert.deepEqual(tilesOf(entry(state, id, 2, "main")).map((t) => t.missing), [false, false, true]);
+  assert.equal(entry(state, id, 2, "main").missing, 1);
+});
+
+test("足した1枚は右端に明るく入り、暗い位置は変わらない", () => {
   let { state, id } = setup();
   state = add(state, id, 2, 2);
-  for (let i = 0; i < 3; i++) state = tapCopy(state, id, 2, "main", false).state;
-  assert.equal(entry(state, id, 2, "main").missing, 2);
-  for (let i = 0; i < 3; i++) state = tapCopy(state, id, 2, "main", true).state;
-  assert.equal(entry(state, id, 2, "main").missing, 0);
+  state = tapCopy(state, id, 2, "main", 0).state;
+  state = add(state, id, 2, 1);
+  assert.deepEqual(tilesOf(entry(state, id, 2, "main")).map((t) => t.missing), [true, false, false]);
+});
+
+test("removeOne: 位置を指定するとその1枚を抜く", () => {
+  let { state, id } = setup();
+  state = add(state, id, 2, 3);
+  state = tapCopy(state, id, 2, "main", 0).state;
+  state = removeOne(state, id, 2, "main", 1).state;
+  assert.deepEqual(tilesOf(entry(state, id, 2, "main")).map((t) => t.missing), [true, false]);
+  state = removeOne(state, id, 2, "main", 0).state;
+  assert.deepEqual([entry(state, id, 2, "main").count, entry(state, id, 2, "main").missing], [1, 0]);
+});
+
+test("removeOne: 位置の指定が無ければ暗い方から抜く", () => {
+  let { state, id } = setup();
+  state = add(state, id, 2, 3);
+  state = tapCopy(state, id, 2, "main", 1).state;
+  state = removeOne(state, id, 2, "main").state;
+  assert.deepEqual(tilesOf(entry(state, id, 2, "main")).map((t) => t.missing), [false, false]);
+});
+
+test("moveOne: 位置を指定するとその1枚の状態で移る", () => {
+  let { state, id } = setup();
+  state = add(state, id, 6, 2, "cand");
+  state = tapCopy(state, id, 6, "cand", 1).state;
+  const r = moveOne(state, id, 6, "cand", "deck", c(6), 0);
+  assert.deepEqual(tilesOf(entry(r.state, id, 6, "cand")).map((t) => t.missing), [true]);
+  assert.equal(entry(r.state, id, 6, "extra").missing, 0);
 });
 
 test("sortedEntries: 種類順、同名は隣", () => {
@@ -212,8 +251,12 @@ test("sortedEntries: cand は main 群の後に extra 群、未知 cid は末尾
   assert.equal(sortedEntries(deck, cards, "cand").at(-1).cid, 999);
 });
 
-test("tilesOf: 明るい札のあとに暗い札", () => {
+test("tilesOf: 位置の記録が無い前の形は、明るい札のあとに暗い札", () => {
   assert.deepEqual(tilesOf({ count: 3, missing: 1 }), [{ missing: false }, { missing: false }, { missing: true }]);
+});
+
+test("tilesOf: 位置の記録どおりに暗くする", () => {
+  assert.deepEqual(tilesOf({ count: 3, missing: 1, mask: 1 }), [{ missing: true }, { missing: false }, { missing: false }]);
 });
 
 test("warnings", () => {
@@ -253,7 +296,7 @@ test("deckSummary", () => {
   state = add(state, id, 6, 1);
   state = add(state, id, 5, 1, "cand");
   for (const [cid, area] of [[4, "main"], [6, "extra"], [5, "cand"]]) {
-    state = tapCopy(state, id, cid, area, false).state;
+    state = tapCopy(state, id, cid, area, 0).state;
   }
   const d = deckOf(state, id);
   const s = deckSummary(d, cards);

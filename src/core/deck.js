@@ -11,6 +11,15 @@ const ok = (state) => ({ ok: true, state });
 const ng = (reason) => ({ ok: false, reason });
 const destArea = (card, dest) => (dest === "cand" ? "cand" : areaOf(card));
 
+// 何枚目が未所持かを、左から1枚目をビット0とした数で持つ（mask）。
+// mask が無い前の形は、右端から missing 枚を未所持とみなす。
+export const bitCount = (n) => n.toString(2).replace(/0/g, "").length;
+export const maskOf = (e) => e.mask ?? ((1 << e.count) - 1) ^ ((1 << (e.count - e.missing)) - 1);
+const setMask = (e, mask) => {
+  e.mask = mask;
+  e.missing = bitCount(mask);
+};
+
 export function createDeck(state, name) {
   const s = clone(state);
   const deckId = crypto.randomUUID();
@@ -30,23 +39,28 @@ export function deleteDeck(state, deckId) {
   return ok(s);
 }
 
-// 追加先の区分に1枚足す。missing が true なら未所持として足す。
+// 追加先の区分の右端に1枚足す。missing が true なら未所持として足す。
 function put(s, deck, cid, area, missing) {
   const e = findEntry(deck, cid, area);
   if (e) {
+    const mask = maskOf(e) | (missing ? 1 << e.count : 0);
     e.count += 1;
-    if (missing) e.missing += 1;
+    setMask(e, mask);
   } else {
-    deck.entries.push({ cid, area, count: 1, missing: missing ? 1 : 0, seq: s.nextSeq++ });
+    deck.entries.push({ cid, area, count: 1, missing: missing ? 1 : 0, mask: missing ? 1 : 0, seq: s.nextSeq++ });
   }
 }
 
-// 未所持から先に1枚減らす。減らした1枚が未所持だったかを返す。
-function take(deck, cid, area) {
+// index 枚目（左から0）を1枚減らす。index が無ければ右端の未所持、未所持が無ければ右端。
+// 減らした1枚が未所持だったかを返す。
+function take(deck, cid, area, index) {
   const e = findEntry(deck, cid, area);
-  const wasMissing = e.missing > 0;
-  if (wasMissing) e.missing -= 1;
+  const mask = maskOf(e);
+  const i = index ?? (mask ? 31 - Math.clz32(mask) : e.count - 1);
+  const wasMissing = Boolean(mask & (1 << i));
+  const low = mask & ((1 << i) - 1);
   e.count -= 1;
+  setMask(e, low | ((mask >> (i + 1)) << i));
   if (e.count === 0) deck.entries.splice(deck.entries.indexOf(e), 1);
   return wasMissing;
 }
@@ -62,28 +76,29 @@ export function addCard(state, deckId, card, dest) {
   return ok(s);
 }
 
-export function removeOne(state, deckId, cid, area) {
+export function removeOne(state, deckId, cid, area, index) {
   const s = clone(state);
-  take(findDeck(s, deckId), cid, area);
+  take(findDeck(s, deckId), cid, area, index);
   return ok(s);
 }
 
 // to が "deck" のとき移動先の区分を決めるため card が要る。
-export function moveOne(state, deckId, cid, from, to, card) {
+export function moveOne(state, deckId, cid, from, to, card, index) {
   const area = destArea(card, to);
   if (area === from) return ok(state);
   if (areaTotal(findDeck(state, deckId), area) >= LIMITS[area]) return ng(FULL[area]);
   const s = clone(state);
   const deck = findDeck(s, deckId);
-  const wasMissing = take(deck, cid, from);
+  const wasMissing = take(deck, cid, from, index);
   put(s, deck, cid, area, wasMissing);
   return ok(s);
 }
 
-export function tapCopy(state, deckId, cid, area, tappedMissing) {
+// index 枚目（左から0）の未所持を切り替える
+export function tapCopy(state, deckId, cid, area, index) {
   const s = clone(state);
   const e = findEntry(findDeck(s, deckId), cid, area);
-  e.missing = tappedMissing ? Math.max(0, e.missing - 1) : Math.min(e.count, e.missing + 1);
+  setMask(e, maskOf(e) ^ (1 << index));
   return ok(s);
 }
 
@@ -107,7 +122,8 @@ export function sortedEntries(deck, cards, area) {
 }
 
 export function tilesOf(entry) {
-  return Array.from({ length: entry.count }, (_, i) => ({ missing: i >= entry.count - entry.missing }));
+  const mask = maskOf(entry);
+  return Array.from({ length: entry.count }, (_, i) => ({ missing: Boolean(mask & (1 << i)) }));
 }
 
 export function warnings(deck, cards) {

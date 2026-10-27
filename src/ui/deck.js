@@ -76,23 +76,24 @@ export function deckView(ctx, deckId) {
   // タップしたときの動き。デッキを開くたびに「未所持」から始める
   let tapMode = "missing";
 
-  const parseTile = (tile) => ({ cid: Number(tile.dataset.cid), area: tile.dataset.area, missing: tile.dataset.missing === "true" });
+  // index は同じカードの中で左から何枚目か
+  const parseTile = (tile) => ({ cid: Number(tile.dataset.cid), area: tile.dataset.area, index: Number(tile.dataset.index) });
 
   bindTiles(body, {
     onTap(tile) {
       const t = parseTile(tile);
       if (tapMode === "remove") {
-        ctx.commit(removeOne(ctx.state, deckId, t.cid, t.area).state);
+        ctx.commit(removeOne(ctx.state, deckId, t.cid, t.area, t.index).state);
         toast(`${cardOr(ctx.cards, t.cid).name}を1枚抜きました`);
-      } else ctx.commit(tapCopy(ctx.state, deckId, t.cid, t.area, t.missing).state);
+      } else ctx.commit(tapCopy(ctx.state, deckId, t.cid, t.area, t.index).state);
     },
     onLong(tile) {
       const t = parseTile(tile);
-      openSheet(t.cid, t.area);
+      openSheet(t.cid, t.area, t.index);
     },
   });
 
-  function openSheet(cid, area) {
+  function openSheet(cid, area, index) {
     const card = cardOr(ctx.cards, cid);
     const act = (fn) => () => {
       close();
@@ -105,8 +106,8 @@ export function deckView(ctx, deckId) {
         h("h2", { class: "sheet-title" }, card.name),
         h("p", { class: "muted" }, LIMIT_TEXT[card.limit] ?? ""),
         h("button", { class: "btn", type: "button", onclick: act(() => apply(addCard(ctx.state, deckId, card, area === "cand" ? "cand" : "deck"))) }, "1枚増やす"),
-        h("button", { class: "btn", type: "button", onclick: act(() => ctx.commit(removeOne(ctx.state, deckId, cid, area).state)) }, "1枚抜く"),
-        h("button", { class: "btn", type: "button", onclick: act(() => apply(moveOne(ctx.state, deckId, cid, area, to, card))) }, area === "cand" ? "デッキへ移す" : "候補へ移す"),
+        h("button", { class: "btn", type: "button", onclick: act(() => ctx.commit(removeOne(ctx.state, deckId, cid, area, index).state)) }, "1枚抜く"),
+        h("button", { class: "btn", type: "button", onclick: act(() => apply(moveOne(ctx.state, deckId, cid, area, to, card, index))) }, area === "cand" ? "デッキへ移す" : "候補へ移す"),
         h("button", { class: "btn", type: "button", onclick: act(() => {
           const s = structuredClone(ctx.state);
           s.decks.find((d) => d.id === deckId).cover = cid;
@@ -163,7 +164,7 @@ export function deckView(ctx, deckId) {
         h("div", { class: "grid" },
           entries.flatMap((e) => {
             const card = cardOr(ctx.cards, e.cid);
-            return tilesOf(e).map((t) => tileEl(card, { missing: t.missing, area }));
+            return tilesOf(e).map((t, i) => tileEl(card, { missing: t.missing, area, index: i }));
           }),
         ),
       );

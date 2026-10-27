@@ -23,6 +23,9 @@ test("emptyState と STORAGE_KEY", () => {
 
 test("正しい形は通る", () => {
   assert.ok(isValidState(good()));
+  const m = good();
+  m.decks[0].entries[0].mask = 2;
+  assert.ok(isValidState(m));
   const s = good();
   s.decks[0].cover = null;
   assert.ok(isValidState(s));
@@ -31,6 +34,9 @@ test("正しい形は通る", () => {
 test("不正な形は拒否", () => {
   let s = good(); s.version = 2; assert.equal(isValidState(s), false);
   s = good(); s.decks[0].entries[0].missing = 4; assert.equal(isValidState(s), false);
+  s = good(); s.decks[0].entries[0].mask = 3; assert.equal(isValidState(s), false); // 暗い位置が2つで missing と合わない
+  s = good(); s.decks[0].entries[0].mask = 8; assert.equal(isValidState(s), false); // 4枚目の位置
+  s = good(); s.decks[0].entries[0].mask = 1.5; assert.equal(isValidState(s), false);
   s = good(); s.decks[0].entries[0].count = 0; assert.equal(isValidState(s), false);
   s = good(); s.decks[0].entries[0].area = "side"; assert.equal(isValidState(s), false);
   s = good(); s.notes[12950].price = "580"; assert.equal(isValidState(s), false);

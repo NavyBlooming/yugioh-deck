@@ -23,7 +23,7 @@ function build() {
   const e = createDeck(state, "空"); state = e.state;
   const put = (deck, cid, n, dest, area, miss) => {
     for (let i = 0; i < n; i++) state = addCard(state, deck, cards.get(cid), dest).state;
-    for (let i = 0; i < miss; i++) state = tapCopy(state, deck, cid, area, false).state;
+    for (let i = 0; i < miss; i++) state = tapCopy(state, deck, cid, area, i).state;
   };
   put(a.deckId, 1, 2, "deck", "main", 2);
   put(a.deckId, 3, 1, "deck", "main", 1);
@@ -55,7 +55,7 @@ test("580円x2 と単価未入力1枚 → 1160円・未入力1枚", () => {
   let state = emptyState();
   const a = createDeck(state, "A"); state = a.state;
   for (const cid of [1, 1, 3]) state = addCard(state, a.deckId, cards.get(cid), "deck").state;
-  for (const cid of [1, 1, 3]) state = tapCopy(state, a.deckId, cid, "main", false).state;
+  for (const [cid, i] of [[1, 0], [1, 1], [3, 0]]) state = tapCopy(state, a.deckId, cid, "main", i).state;
   state = setNote(state, 1, { price: 580 });
   const [d] = buildShoppingList(state, cards);
   assert.deepEqual([d.total, d.unpriced], [1160, 1]);
@@ -70,6 +70,13 @@ test("markBought は A の main だけ -1、0未満にならない", () => {
   assert.equal(m(state, A), 2);
   const s3 = markBought(markBought(markBought(state, A, 1, "main"), A, 1, "main"), A, 1, "main");
   assert.equal(m(s3, A), 0);
+});
+
+test("markBought は左の暗い1枚から明るくする", () => {
+  const { state, A } = build();
+  const e = (s) => s.decks.find((d) => d.id === A).entries.find((x) => x.cid === 1);
+  const s2 = markBought(state, A, 1, "main");
+  assert.deepEqual([e(s2).missing, e(s2).mask], [1, 2]);
 });
 
 test("setNote はマージ", () => {

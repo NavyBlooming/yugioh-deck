@@ -1,3 +1,5 @@
+import { bitCount } from "./deck.js";
+
 export const STORAGE_KEY = "ygo.data.v1";
 
 export function emptyState() {
@@ -14,6 +16,7 @@ function validEntry(e) {
     ["main", "extra", "cand"].includes(e.area) &&
     Number.isInteger(e.count) && e.count >= 1 &&
     Number.isInteger(e.missing) && e.missing >= 0 && e.missing <= e.count &&
+    (e.mask === undefined || (Number.isInteger(e.mask) && e.mask >= 0 && e.mask < 2 ** e.count && bitCount(e.mask) === e.missing)) &&
     isNum(e.seq)
   );
 }

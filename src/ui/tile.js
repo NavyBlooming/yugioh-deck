@@ -12,7 +12,7 @@ const LIMIT_MARK = { 0: "禁", 1: "1", 2: "2" };
 export const cardOr = (cards, cid) =>
   cards.get(cid) ?? { cid, name: "(不明なカード)", ruby: "", group: "normal", frame: "normal", limit: 3 };
 
-export function tileEl(card, { missing = false, area = "" } = {}) {
+export function tileEl(card, { missing = false, area = "", index = null } = {}) {
   const pend = card.frame.endsWith("_pendulum");
   const base = pend ? card.frame.slice(0, -"_pendulum".length) : card.frame;
   const art = h("div", { class: "art" });
@@ -23,6 +23,7 @@ export function tileEl(card, { missing = false, area = "" } = {}) {
       "data-cid": card.cid,
       "data-area": area,
       "data-missing": missing ? "true" : "false",
+      "data-index": index,
       title: card.name,
     },
     art,
