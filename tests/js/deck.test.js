@@ -219,14 +219,17 @@ test("sortedEntries: モンスターはレベルの低い順、魔法罠は種�
       [32, "速攻魔法", "", "spell", "spell", 3, 0, "quickplay"],
       [33, "通常魔法", "", "spell", "spell", 3, 0, "normal"],
       [34, "儀式魔法", "", "spell", "spell", 3, 0, "ritual"],
+      [35, "フィールド魔法", "", "spell", "spell", 3, 0, "field"],
+      [36, "装備魔法", "", "spell", "spell", 3, 0, "equip"],
       [41, "カウンター罠", "", "trap", "trap", 3, 0, "counter"],
       [42, "通常罠", "", "trap", "trap", 3, 0, "normal"],
+      [43, "永続罠", "", "trap", "trap", 3, 0, "continuous"],
       [51, "リンク3", "", "link", "link", 3, 3, ""],
       [52, "リンク1", "", "link", "link", 3, 1, ""],
     ],
   });
   let { state, id } = setup();
-  for (const cid of [21, 23, 22, 24, 23, 31, 34, 32, 33, 41, 42, 51, 52]) {
+  for (const cid of [21, 23, 22, 24, 23, 31, 34, 32, 36, 33, 35, 41, 43, 42, 51, 52]) {
     const r = addCard(state, id, lv.get(cid), "deck");
     assert.ok(r.ok, r.reason);
     state = r.state;
@@ -234,7 +237,8 @@ test("sortedEntries: モンスターはレベルの低い順、魔法罠は種�
   const deck = deckOf(state, id);
   assert.deepEqual(
     sortedEntries(deck, lv, "main").map((e) => e.cid),
-    [22, 23, 24, 21, 33, 32, 31, 34, 42, 41],
+    // 魔法: 通常・フィールド・装備・永続・速攻・儀式、罠: 通常・永続・カウンター（マスターデュエルの絞り込みの並び）
+    [22, 23, 24, 21, 33, 35, 36, 31, 32, 34, 42, 43, 41],
   );
   assert.deepEqual(sortedEntries(deck, lv, "extra").map((e) => e.cid), [52, 51]);
 });
