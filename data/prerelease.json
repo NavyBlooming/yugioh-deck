@@ -1,0 +1,842 @@
+{
+ "updated": "2026-10-28",
+ "cards": [
+  {
+   "cid": -983227917,
+   "name": "太陽神の詩詠者－ヘルポエマー",
+   "ruby": "たいようしんのしえいしゃ－ヘルポエマー",
+   "kind": "effect",
+   "level": 5,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -451383563,
+   "name": "太陽神の処刑人－マキュラ",
+   "ruby": "たいようしんのしょけいにん－マキュラ",
+   "kind": "effect",
+   "level": 4,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -523223500,
+   "name": "太陽神の殺戮機－ギル・ガース",
+   "ruby": "たいようしんのさつりくき－ギル・ガース",
+   "kind": "effect",
+   "level": 4,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -328941636,
+   "name": "太陽神の拷問具－バイサー・デス・ショック",
+   "ruby": "たいようしんのごうもんぐ－バイサー・デス・ショック",
+   "kind": "effect",
+   "level": 4,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -121865044,
+   "name": "アマゾネスの鎖使い－死に際の鎖舞い－",
+   "ruby": "アマゾネスのくさりつかい－しにぎわのくさりまい－",
+   "kind": "effect",
+   "level": 4,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -269870516,
+   "name": "アマゾネスの格闘戦士－蹴殺の舞い－",
+   "ruby": "アマゾネスのかくとうせんし－しゅうさつのまい－",
+   "kind": "effect",
+   "level": 4,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -954334129,
+   "name": "アマゾネスの呪詛師－呪印の舞い－",
+   "ruby": "アマゾネスのじゅそし－じゅいんのまい－",
+   "kind": "effect",
+   "level": 3,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -824033670,
+   "name": "ハーピィ・レディ－魅惑の舞い－",
+   "ruby": "ハーピィ・レディ－みわくのまい－",
+   "kind": "effect",
+   "level": 4,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -425007144,
+   "name": "白鴉の森の炎魔",
+   "ruby": "はくあのもりのえんま",
+   "kind": "effect",
+   "level": 1,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -883131582,
+   "name": "白鴉の騎士マルト",
+   "ruby": "はくあのきしマルト",
+   "kind": "effect",
+   "level": 4,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -603729069,
+   "name": "白鴉の騎士アン",
+   "ruby": "はくあのきしアン",
+   "kind": "effect",
+   "level": 4,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -615900437,
+   "name": "白鴉の森の罪宝",
+   "ruby": "はくあのもりのざいほう",
+   "kind": "effect",
+   "level": 7,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -559834789,
+   "name": "転生炎獣マーコール",
+   "ruby": "サラマングレイトマーコール",
+   "kind": "effect",
+   "level": 4,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -343978180,
+   "name": "転生炎獣バステラ",
+   "ruby": "サラマングレイトバステラ",
+   "kind": "effect",
+   "level": 3,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -131084223,
+   "name": "六花双精プリムローズ",
+   "ruby": "りっかそうせいプリムローズ",
+   "kind": "effect",
+   "level": 8,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -675101128,
+   "name": "六花のくろひめ",
+   "ruby": "りっかのくろひめ",
+   "kind": "effect",
+   "level": 6,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -642200053,
+   "name": "無敵のロケット戦士",
+   "ruby": "むてきのロケットせんし",
+   "kind": "effect",
+   "level": 4,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -522170981,
+   "name": "鬼神童鵄 タマヨリ",
+   "ruby": "アシュトラータ タマヨリ",
+   "kind": "effect",
+   "level": 1,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -692892766,
+   "name": "アトランティスの暴翼",
+   "ruby": "アトランティスのぼうよく",
+   "kind": "effect",
+   "level": 5,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -506051685,
+   "name": "バニリン：モカＭＯＤ",
+   "ruby": "バニリン：モカモッド",
+   "kind": "effect",
+   "level": 4,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -313337893,
+   "name": "災禍の根絶者",
+   "ruby": "ヘレティック・エラディケイター",
+   "kind": "effect",
+   "level": 7,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -962924578,
+   "name": "幻惑の綺羅星",
+   "ruby": "ナイトメア・トゥインクル",
+   "kind": "effect",
+   "level": 4,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -122280687,
+   "name": "お返し鶴秘姫",
+   "ruby": "おかえしつるひめ",
+   "kind": "effect",
+   "level": 1,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -540244685,
+   "name": "リインゼルム・アムルサ",
+   "ruby": "リインゼルム・アムルサ",
+   "kind": "ritual",
+   "level": 4,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -225157321,
+   "name": "リインゼルム・ルヴィアン",
+   "ruby": "リインゼルム・ルヴィアン",
+   "kind": "ritual",
+   "level": 4,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -454748395,
+   "name": "リインゼルム・カルカサス",
+   "ruby": "リインゼルム・カルカサス",
+   "kind": "ritual",
+   "level": 4,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -329678550,
+   "name": "リインゼルム・ギガロヴェンドラ",
+   "ruby": "リインゼルム・ギガロヴェンドラ",
+   "kind": "ritual",
+   "level": 8,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -55205448,
+   "name": "リインゼルム・ギリアカルマ",
+   "ruby": "リインゼルム・ギリアカルマ",
+   "kind": "ritual",
+   "level": 8,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -160361850,
+   "name": "盟約のジャベリンビートル",
+   "ruby": "めいやくのジャベリンビートル",
+   "kind": "ritual",
+   "level": 8,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -873642477,
+   "name": "暗黒の太陽神－ラーの翼神竜",
+   "ruby": "あんこくのたいようしん－ラーのよくしんりゅう",
+   "kind": "fusion",
+   "level": 10,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -169606169,
+   "name": "太陽神の鉄檻－ラヴァ・ゴーレム",
+   "ruby": "たいようしんのてつおり－ラヴァ・ゴーレム",
+   "kind": "fusion",
+   "level": 8,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -584687706,
+   "name": "アマゾネスの剣聖",
+   "ruby": "アマゾネスのけんせい",
+   "kind": "fusion",
+   "level": 7,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -249188939,
+   "name": "ハーピィ・レディ三姉妹・ＴＸ",
+   "ruby": "ハーピィ・レディさんしまい・トライアングル・エクスタシー",
+   "kind": "fusion",
+   "level": 8,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -809066927,
+   "name": "白鴉の森の女主人ディアベルゼ",
+   "ruby": "はくあのもりのおんなしゅじんディアベルゼ",
+   "kind": "fusion",
+   "level": 8,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -142340878,
+   "name": "終天獄神Ωヴィードリウム",
+   "ruby": "しゅうてんごくしんオメガヴィードリウム",
+   "kind": "fusion",
+   "level": 12,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -351242555,
+   "name": "幻のインセクト女王",
+   "ruby": "まぼろしのインセクトクイーン",
+   "kind": "fusion",
+   "level": 8,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -990691640,
+   "name": "白鴉の騎士ザルティス",
+   "ruby": "はくあのきしザルティス",
+   "kind": "synchro",
+   "level": 5,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -853516994,
+   "name": "白鴉の騎士アイトワラス",
+   "ruby": "はくあのきしアイトワラス",
+   "kind": "synchro",
+   "level": 5,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -603450394,
+   "name": "鬼神 夜魅",
+   "ruby": "アシュトラーマ ヨアミ",
+   "kind": "synchro",
+   "level": 8,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -284348462,
+   "name": "ダラダラサウルス",
+   "ruby": "ダラダラサウルス",
+   "kind": "synchro",
+   "level": 8,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -100495527,
+   "name": "六花深聖ティアドロップ",
+   "ruby": "りっかしんせいティアドロップ",
+   "kind": "xyz",
+   "level": 10,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -856392889,
+   "name": "六花深聖ストレナエ",
+   "ruby": "りっかしんせいストレナエ",
+   "kind": "xyz",
+   "level": 6,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -696056785,
+   "name": "Ｎｏ.９６ ブラック・マリオネッター",
+   "ruby": "ナンバーズ９６ ブラック・マリオネッター",
+   "kind": "xyz",
+   "level": 2,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -499176431,
+   "name": "高嶺の天仙カリン",
+   "ruby": "たかねのてんせんカリン",
+   "kind": "xyz",
+   "level": 7,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -797842177,
+   "name": "無垢なる絆 アルトメギア",
+   "ruby": "アルス＝マグナ アルトメギア",
+   "kind": "link",
+   "level": 4,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -155331609,
+   "name": "無垢なる血盟 ドゥームズ",
+   "ruby": "アルス＝マグナ ドゥームズ",
+   "kind": "link",
+   "level": 2,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -134118767,
+   "name": "無垢なる協奏 エルフェンノーツ",
+   "ruby": "アルス＝マグナ エルフェンノーツ",
+   "kind": "link",
+   "level": 2,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -738092358,
+   "name": "炎の平原を駆け抜ける百獣の王",
+   "ruby": "ほのおのへいげんをかけぬけるひゃくじゅうのおう",
+   "kind": "link",
+   "level": 3,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -207766473,
+   "name": "コダイダロス",
+   "ruby": "コダイダロス",
+   "kind": "link",
+   "level": 2,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -399029354,
+   "name": "竜魔導の降霊師",
+   "ruby": "りゅうまどうのこうれいし",
+   "kind": "link",
+   "level": 2,
+   "sub": "",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -728800334,
+   "name": "不死なる太陽神",
+   "ruby": "ふしなるたいようしん",
+   "kind": "spell",
+   "level": 0,
+   "sub": "quickplay",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -99051747,
+   "name": "闇へ誘う太陽神",
+   "ruby": "やみへいざなうたいようしん",
+   "kind": "spell",
+   "level": 0,
+   "sub": "continuous",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -237339008,
+   "name": "華麗なる三面鏡",
+   "ruby": "かれいなるさんめんきょう",
+   "kind": "spell",
+   "level": 0,
+   "sub": "normal",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -144155377,
+   "name": "ハーピィ＆アマゾネス －羅刹の陣－",
+   "ruby": "ハーピィアンドアマゾネス －らせつのじん－",
+   "kind": "spell",
+   "level": 0,
+   "sub": "quickplay",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -150232015,
+   "name": "竜の骸歌",
+   "ruby": "リインゼルム・コンクエスト",
+   "kind": "spell",
+   "level": 0,
+   "sub": "ritual",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -734542222,
+   "name": "無死なる竜の鼓動",
+   "ruby": "リインゼルム・カーネーション",
+   "kind": "spell",
+   "level": 0,
+   "sub": "field",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -966747788,
+   "name": "翅竜の羽撃",
+   "ruby": "リインゼルム・バタフライ",
+   "kind": "spell",
+   "level": 0,
+   "sub": "normal",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -360525305,
+   "name": "角竜の修練",
+   "ruby": "リインゼルム・プラクティス",
+   "kind": "spell",
+   "level": 0,
+   "sub": "normal",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -242117098,
+   "name": "白鴉の深き森",
+   "ruby": "はくあのふかきもり",
+   "kind": "spell",
+   "level": 0,
+   "sub": "field",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -104883258,
+   "name": "獄神封門－共滅の剣－",
+   "ruby": "ごくしんふうもん－きょうめつのつるぎ－",
+   "kind": "spell",
+   "level": 0,
+   "sub": "normal",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -73838480,
+   "name": "神幻学都アルス＝マグナ",
+   "ruby": "しんげんがくとアルス＝マグナ",
+   "kind": "spell",
+   "level": 0,
+   "sub": "field",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -760625945,
+   "name": "転生炎獣の神域",
+   "ruby": "サラマングレイト・サンガ",
+   "kind": "spell",
+   "level": 0,
+   "sub": "field",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -515929033,
+   "name": "転生炎獣の神剣",
+   "ruby": "サラマングレイト・ギア・ブレード",
+   "kind": "spell",
+   "level": 0,
+   "sub": "equip",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -857015246,
+   "name": "六花水月",
+   "ruby": "りっかすいげつ",
+   "kind": "spell",
+   "level": 0,
+   "sub": "normal",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -571706164,
+   "name": "カオス・バリアンズ・チェンジ",
+   "ruby": "カオス・バリアンズ・チェンジ",
+   "kind": "spell",
+   "level": 0,
+   "sub": "normal",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -414166856,
+   "name": "バニリン・エキストラクト",
+   "ruby": "バニリン・エキストラクト",
+   "kind": "spell",
+   "level": 0,
+   "sub": "continuous",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -503023901,
+   "name": "パワー・オブ・ザ・デュエリスト",
+   "ruby": "パワー・オブ・ザ・デュエリスト",
+   "kind": "spell",
+   "level": 0,
+   "sub": "quickplay",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -103927896,
+   "name": "ケペルの金字塔",
+   "ruby": "ケペルのきんじとう",
+   "kind": "spell",
+   "level": 0,
+   "sub": "normal",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -393976292,
+   "name": "魔獣の昂進",
+   "ruby": "カード・クロール",
+   "kind": "spell",
+   "level": 0,
+   "sub": "continuous",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -86146325,
+   "name": "キャッスル・オブ・ヴァンパイア",
+   "ruby": "キャッスル・オブ・ヴァンパイア",
+   "kind": "spell",
+   "level": 0,
+   "sub": "continuous",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -369054705,
+   "name": "秋",
+   "ruby": "あき",
+   "kind": "spell",
+   "level": 0,
+   "sub": "field",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -702663346,
+   "name": "太陽神の支配",
+   "ruby": "たいようしんのしはい",
+   "kind": "trap",
+   "level": 0,
+   "sub": "normal",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -929860686,
+   "name": "太陽神の守護者－神・スライム",
+   "ruby": "たいようしんのしゅごしゃ－ゴッド・スライム",
+   "kind": "trap",
+   "level": 0,
+   "sub": "continuous",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -712647009,
+   "name": "アマゾネス救出劇",
+   "ruby": "アマゾネスきゅうしゅつげき",
+   "kind": "trap",
+   "level": 0,
+   "sub": "normal",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -834417887,
+   "name": "誘惑の鏡壁",
+   "ruby": "ゆうわくのミラーウォール",
+   "kind": "trap",
+   "level": 0,
+   "sub": "continuous",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -624144265,
+   "name": "百竜の交戦",
+   "ruby": "リインゼルム・エンカウント",
+   "kind": "trap",
+   "level": 0,
+   "sub": "counter",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -559810915,
+   "name": "白鴉の魔女の光彩",
+   "ruby": "はくあのまじょのひかり",
+   "kind": "trap",
+   "level": 0,
+   "sub": "continuous",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -801985860,
+   "name": "白鴉の魔女の幻姿",
+   "ruby": "はくあのまじょのまぼろし",
+   "kind": "trap",
+   "level": 0,
+   "sub": "normal",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -65167663,
+   "name": "予幻なき世界に託す約束",
+   "ruby": "エフェメ・ラル・テオリアライズ",
+   "kind": "trap",
+   "level": 0,
+   "sub": "normal",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -25190464,
+   "name": "バニリン・ソフト",
+   "ruby": "バニリン・ソフト",
+   "kind": "trap",
+   "level": 0,
+   "sub": "continuous",
+   "set": "IMMORTAL PHOENIX"
+  },
+  {
+   "cid": -231225658,
+   "name": "無窮方界器プリティマ",
+   "ruby": "むきゅうほうかいきプリティマ",
+   "kind": "effect",
+   "level": 4,
+   "sub": "",
+   "set": "REVOLUTION BOOSTER －方界・マリンセス・ゴーストリック－"
+  },
+  {
+   "cid": -630043219,
+   "name": "燎炎方界神アルディティア・ヘル・ブレイズ",
+   "ruby": "りょうえんほうかいしんアルディティア・ヘル・ブレイズ",
+   "kind": "fusion",
+   "level": 6,
+   "sub": "",
+   "set": "REVOLUTION BOOSTER －方界・マリンセス・ゴーストリック－"
+  },
+  {
+   "cid": -614568987,
+   "name": "溟淵方界神アビス・ヴァグラーダ",
+   "ruby": "めいえんほうかいしんアビス・ヴァグラーダ",
+   "kind": "fusion",
+   "level": 8,
+   "sub": "",
+   "set": "REVOLUTION BOOSTER －方界・マリンセス・ゴーストリック－"
+  },
+  {
+   "cid": -519619153,
+   "name": "創世方界超神ディヴァイン・アニマ・インフィニティ",
+   "ruby": "そうせいほうかいちょうしんディヴァイン・アニマ・インフィニティ",
+   "kind": "fusion",
+   "level": 10,
+   "sub": "",
+   "set": "REVOLUTION BOOSTER －方界・マリンセス・ゴーストリック－"
+  },
+  {
+   "cid": -159937406,
+   "name": "方界覚",
+   "ruby": "ほうかいボーディ",
+   "kind": "spell",
+   "level": 0,
+   "sub": "continuous",
+   "set": "REVOLUTION BOOSTER －方界・マリンセス・ゴーストリック－"
+  },
+  {
+   "cid": -438475408,
+   "name": "海晶乙女アズリー",
+   "ruby": "マリンセスアズリー",
+   "kind": "effect",
+   "level": 3,
+   "sub": "",
+   "set": "REVOLUTION BOOSTER －方界・マリンセス・ゴーストリック－"
+  },
+  {
+   "cid": -757232500,
+   "name": "海晶乙女ウルピス",
+   "ruby": "マリンセスウルピス",
+   "kind": "effect",
+   "level": 5,
+   "sub": "",
+   "set": "REVOLUTION BOOSTER －方界・マリンセス・ゴーストリック－"
+  },
+  {
+   "cid": -985501685,
+   "name": "アクア・リヴァイアサン＠マリンセス",
+   "ruby": "アクア・リヴァイアサンアットマリンセス",
+   "kind": "ritual",
+   "level": 7,
+   "sub": "",
+   "set": "REVOLUTION BOOSTER －方界・マリンセス・ゴーストリック－"
+  },
+  {
+   "cid": -789842615,
+   "name": "海晶乙女トゥルースハート",
+   "ruby": "マリンセストゥルースハート",
+   "kind": "link",
+   "level": 4,
+   "sub": "",
+   "set": "REVOLUTION BOOSTER －方界・マリンセス・ゴーストリック－"
+  },
+  {
+   "cid": -144779849,
+   "name": "海晶乙女の礁湖",
+   "ruby": "マリンセス・リーフ・ラグーン",
+   "kind": "spell",
+   "level": 0,
+   "sub": "continuous",
+   "set": "REVOLUTION BOOSTER －方界・マリンセス・ゴーストリック－"
+  },
+  {
+   "cid": -924296231,
+   "name": "黒金の暴竜ガンドラＸ",
+   "ruby": "くろがねのぼうりゅうガンドラクロス",
+   "kind": "effect",
+   "level": 8,
+   "sub": "",
+   "set": "Yu-Gi-Oh! THE DARK SIDE OF DIMENSIONS 10th ANNIVERSARY MOVIE BOX"
+  },
+  {
+   "cid": -660559542,
+   "name": "時空鎖",
+   "ruby": "タイムチェーン",
+   "kind": "trap",
+   "level": 0,
+   "sub": "continuous",
+   "set": "Yu-Gi-Oh! THE DARK SIDE OF DIMENSIONS 10th ANNIVERSARY MOVIE BOX"
+  },
+  {
+   "cid": -1520381,
+   "name": "戦士の献身",
+   "ruby": "せんしのけんしん",
+   "kind": "trap",
+   "level": 0,
+   "sub": "normal",
+   "set": "Yu-Gi-Oh! THE DARK SIDE OF DIMENSIONS 10th ANNIVERSARY MOVIE BOX"
+  }
+ ]
+}
