@@ -134,6 +134,17 @@ input[type="text"], input[type="number"], select {
 }
 .search-top { display: grid; gap: 6px; margin-bottom: 6px; }
 .search-box { position: relative; }
+.search-box[hidden] { display: none; }
+.panel-tabs { display: flex; border-bottom: 1px solid var(--line); }
+.ptab { flex: 1; min-height: 32px; background: none; border: 0; color: var(--sub); font: inherit; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ptab[aria-selected="true"] { color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); }
+.hist-mark {
+  position: absolute; top: 2px; right: 2px; width: 14px; height: 14px; border-radius: 50%;
+  color: #fff; font-size: 11px; font-weight: 700; line-height: 14px; text-align: center; box-shadow: 0 0 0 1px #fff;
+}
+.hist-mark.in { background: #2e8b57; }
+.hist-mark.out { background: #6b6b6b; }
+.list-empty { grid-column: 1 / -1; padding: 12px 0; text-align: center; }
 .search-box input { padding-right: 44px; }
 .search-clear {
   position: absolute; top: 0; right: 0; width: 44px; height: 100%;

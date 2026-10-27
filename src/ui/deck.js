@@ -1,4 +1,4 @@
-import { addCard, addHandTraps, deleteDeck, moveOne, removeOne, renameDeck, sortedEntries, tapCopy, tilesOf, warnings } from "../core/deck.js";
+import { addCard, addHandTraps, deleteDeck, moveOne, removeOne, renameDeck, sortedEntries, tapCopy, tilesOf, toggleFavorite, warnings } from "../core/deck.js";
 import { cardRushUrl, officialDbUrl } from "../core/shopping.js";
 import { search, searchWithText } from "../core/search.js";
 import { artState, loadTexts } from "./art.js";
@@ -114,6 +114,10 @@ export function deckView(ctx, deckId) {
           s.decks.find((d) => d.id === deckId).cover = cid;
           ctx.commit(s);
         }) }, "表紙にする"),
+        h("button", { class: "btn", type: "button", onclick: act(() => {
+          ctx.commit(toggleFavorite(ctx.state, cid));
+          toast(ctx.state.favorites.includes(cid) ? "お気に入りに追加しました" : "お気に入りから外しました");
+        }) }, (ctx.state.favorites ?? []).includes(cid) ? "お気に入りから外す" : "お気に入りに追加"),
         h("button", { class: "btn", type: "button", onclick: act(() => noteDialog(ctx, cid)) }, "購入メモ"),
         h("a", { class: "btn", href: officialDbUrl(cid), target: "_blank", rel: "noopener" }, "公式DBで見る"),
         h("a", { class: "btn", href: cardRushUrl(card.name), target: "_blank", rel: "noopener" }, "カードラッシュで探す"),
@@ -177,6 +181,7 @@ export function deckView(ctx, deckId) {
       ...(warns.length ? [h("div", { class: "warnings" }, warns.map((w) => h("p", {}, "⚠ " + warningText(w))))] : []),
       ...sections,
     );
+    if (panelTab !== "search") renderList();
   }
 
   // 検索パネルは入力と追加先を保つため、refresh では作り直さない
@@ -202,9 +207,36 @@ export function deckView(ctx, deckId) {
         if (t) runSearch();
       });
     }
+    if (panelTab !== "search") return;
     const found = textIndex ? searchWithText(ctx.index, textIndex, input.value, 60) : search(ctx.index, input.value, 60);
     results.replaceChildren(...found.map((c) => tileEl(c, { area: "search" })));
   };
+
+  // 検索・履歴・お気に入りのタブ。履歴とお気に入りでは入力欄を隠し、同じ場所にカードを並べる
+  let panelTab = "search";
+  const searchBox = h("div", { class: "search-box" }, input, clearBtn);
+  const renderList = () => {
+    const items = panelTab === "history"
+      ? (deckOf()?.history ?? []).filter((x) => ctx.cards.has(x.cid)).map((x) => {
+          const el = tileEl(ctx.cards.get(x.cid), { area: "search" });
+          el.append(h("span", { class: `hist-mark ${x.op}`, title: x.op === "in" ? "入れた" : "抜いた" }, x.op === "in" ? "＋" : "−"));
+          return el;
+        })
+      : (ctx.state.favorites ?? []).map((cid) => ctx.cards.get(cid)).filter(Boolean)
+          .sort((a, b) => (a.ruby < b.ruby ? -1 : a.ruby > b.ruby ? 1 : 0))
+          .map((c) => tileEl(c, { area: "search" }));
+    const empty = panelTab === "history" ? "このデッキで入れたり抜いたりしたカードがここに出ます" : "長押しのメニューの「お気に入りに追加」で、ここに出ます";
+    results.replaceChildren(...(items.length ? items : [h("p", { class: "muted list-empty" }, empty)]));
+  };
+  const tabBtns = [["search", "検索"], ["history", "履歴"], ["fav", "お気に入り"]].map(([v, label]) =>
+    h("button", { class: "ptab", type: "button", role: "tab", "data-ptab": v, "aria-selected": String(v === panelTab), onclick: () => {
+      panelTab = v;
+      for (const b of tabBtns) b.setAttribute("aria-selected", String(b.dataset.ptab === panelTab));
+      searchBox.hidden = panelTab !== "search";
+      if (panelTab === "search") runSearch();
+      else renderList();
+    } }, label),
+  );
   let timer = null;
   input.addEventListener("input", () => {
     clearBtn.hidden = !input.value;
@@ -227,7 +259,7 @@ export function deckView(ctx, deckId) {
     else toast(REASON[r.reason] ?? "追加できません");
   });
   const panel = h("aside", { class: "search-panel", id: "search-panel" },
-    h("div", { class: "search-top" }, h("div", { class: "search-box" }, input, clearBtn), h("div", { class: "dest-row" }, h("div", { class: "seg-group", role: "group", "aria-label": "追加先" }, h("span", { class: "muted" }, "追加先"), destBtns), h("button", { class: "btn small", type: "button", id: "add-hand-traps", onclick: addHandTrapsClick }, "汎用誘発を追加"))),
+    h("div", { class: "search-top" }, h("div", { class: "panel-tabs", role: "tablist" }, tabBtns), searchBox, h("div", { class: "dest-row" }, h("div", { class: "seg-group", role: "group", "aria-label": "追加先" }, h("span", { class: "muted" }, "追加先"), destBtns), h("button", { class: "btn small", type: "button", id: "add-hand-traps", onclick: addHandTrapsClick }, "汎用誘発を追加"))),
     results,
   );
 
