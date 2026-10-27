@@ -73,12 +73,18 @@ export function deckView(ctx, deckId) {
     else toast(r.full ? "メインデッキがいっぱいです" : "汎用誘発はすでに上限まで入っています");
   };
 
+  // タップしたときの動き。デッキを開くたびに「未所持」から始める
+  let tapMode = "missing";
+
   const parseTile = (tile) => ({ cid: Number(tile.dataset.cid), area: tile.dataset.area, missing: tile.dataset.missing === "true" });
 
   bindTiles(body, {
     onTap(tile) {
       const t = parseTile(tile);
-      ctx.commit(tapCopy(ctx.state, deckId, t.cid, t.area, t.missing).state);
+      if (tapMode === "remove") {
+        ctx.commit(removeOne(ctx.state, deckId, t.cid, t.area).state);
+        toast(`${cardOr(ctx.cards, t.cid).name}を1枚抜きました`);
+      } else ctx.commit(tapCopy(ctx.state, deckId, t.cid, t.area, t.missing).state);
     },
     onLong(tile) {
       const t = parseTile(tile);
@@ -98,6 +104,7 @@ export function deckView(ctx, deckId) {
       h("div", { class: "sheet-body" },
         h("h2", { class: "sheet-title" }, card.name),
         h("p", { class: "muted" }, LIMIT_TEXT[card.limit] ?? ""),
+        h("button", { class: "btn", type: "button", onclick: act(() => apply(addCard(ctx.state, deckId, card, area === "cand" ? "cand" : "deck"))) }, "1枚増やす"),
         h("button", { class: "btn", type: "button", onclick: act(() => ctx.commit(removeOne(ctx.state, deckId, cid, area).state)) }, "1枚抜く"),
         h("button", { class: "btn", type: "button", onclick: act(() => apply(moveOne(ctx.state, deckId, cid, area, to, card))) }, area === "cand" ? "デッキへ移す" : "候補へ移す"),
         h("button", { class: "btn", type: "button", onclick: act(() => {
@@ -138,6 +145,13 @@ export function deckView(ctx, deckId) {
         if (confirm(`「${deck.name}」を削除します。よろしいですか？`)) ctx.commit(deleteDeck(ctx.state, deckId).state);
       } }, "削除"),
     );
+    const modeBtns = [["missing", "未所持"], ["remove", "抜く"]].map(([v, label]) =>
+      h("button", { class: "seg", type: "button", "data-tap": v, "aria-pressed": String(v === tapMode), onclick: () => {
+        tapMode = v;
+        for (const b of modeBtns) b.setAttribute("aria-pressed", String(b.dataset.tap === tapMode));
+      } }, label),
+    );
+    const modeRow = h("div", { class: "seg-group tap-mode", id: "tap-mode", role: "group", "aria-label": "タップしたとき" }, h("span", { class: "muted" }, "タップで"), modeBtns);
     const warns = warnings(deck, ctx.cards);
     const sections = AREAS.map(([area, label, max]) => {
       const entries = sortedEntries(deck, ctx.cards, area);
@@ -157,6 +171,7 @@ export function deckView(ctx, deckId) {
     // replaceChildren は null を「null」という文字で出すので、警告が無いときは渡さない
     body.replaceChildren(
       head,
+      modeRow,
       ...(warns.length ? [h("div", { class: "warnings" }, warns.map((w) => h("p", {}, "⚠ " + warningText(w))))] : []),
       ...sections,
     );

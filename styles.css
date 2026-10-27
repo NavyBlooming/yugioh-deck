@@ -121,6 +121,7 @@ input[type="text"], input[type="number"], select {
 /* ---- デッキ編集 ---- */
 .deck-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .deck-title { flex: 1; min-width: 0; background: none; border: 0; color: var(--text); font: inherit; font-size: 17px; font-weight: 700; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.tap-mode { margin-bottom: 8px; }
 .warnings { background: #3a2a10; border: 1px solid #8a6a1f; color: #ffe2a0; border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; font-size: 13px; }
 .area { margin-top: 14px; }
 .area-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
