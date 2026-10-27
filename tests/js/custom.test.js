@@ -5,7 +5,7 @@ import { emptyState, isValidState, exportJson, parseImport } from "../../src/cor
 import { createDeck, addCard, tapCopy, toggleFavorite, sortedEntries, tilesOf } from "../../src/core/deck.js";
 import { setNote } from "../../src/core/shopping.js";
 import { isEmptyState } from "../../src/core/sync.js";
-import { addCustomCard, removeCustomCard, customCardMap, replaceReleased } from "../../src/core/custom.js";
+import { addCustomCard, removeCustomCard, customCardMap, replaceReleased, prereleaseMap, adoptPrerelease } from "../../src/core/custom.js";
 
 const RYU = { name: "新しい竜", ruby: "あたらしいりゅう", kind: "effect", level: 4, sub: "" };
 
@@ -101,4 +101,30 @@ test("形の確かめ・書き出し・空かどうか", () => {
   for (const bad of [{ ...state.customCards[0], cid: 5 }, { ...state.customCards[0], name: "" }, { ...state.customCards[0], kind: "token" }]) {
     assert.equal(isValidState({ ...state, customCards: [bad] }), false);
   }
+});
+
+const PRE = { cards: [{ cid: -2000000, name: "太陽神の詩詠者", ruby: "たいようしんのしえいしゃ", kind: "effect", level: 5, sub: "", set: "IMMORTAL PHOENIX" }] };
+
+test("prereleaseMap: 取得したカードをカードの一覧の形にする", () => {
+  const m = prereleaseMap(PRE);
+  assert.deepEqual(m.get(-2000000), { cid: -2000000, name: "太陽神の詩詠者", ruby: "たいようしんのしえいしゃ", group: "effect", frame: "effect", limit: 3, level: 5, sub: "", custom: true, set: "IMMORTAL PHOENIX" });
+});
+
+test("adoptPrerelease: デッキかお気に入りに入った取得カードだけ、登録したカードとして保存する", () => {
+  const pre = prereleaseMap(PRE);
+  const d = createDeck(emptyState(), "D");
+  let state = d.state;
+  assert.equal(adoptPrerelease(state, pre), state);
+  state = addCard(state, d.deckId, pre.get(-2000000), "deck").state;
+  state = adoptPrerelease(state, pre);
+  assert.deepEqual(state.customCards, [{ cid: -2000000, name: "太陽神の詩詠者", ruby: "たいようしんのしえいしゃ", kind: "effect", level: 5, sub: "" }]);
+  assert.equal(adoptPrerelease(state, pre), state);
+  let fav = toggleFavorite(emptyState(), -2000000);
+  fav = adoptPrerelease(fav, pre);
+  assert.equal(fav.customCards.length, 1);
+});
+
+test("addCustomCard: 取得カードの番号があっても、自分で登録する番号は -1 から続ける", () => {
+  const s = { ...emptyState(), customCards: [{ cid: -2000000, name: "x", ruby: "x", kind: "effect", level: 1, sub: "" }] };
+  assert.equal(addCustomCard(s, RYU).cid, -1);
 });

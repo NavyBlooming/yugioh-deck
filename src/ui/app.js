@@ -2,7 +2,7 @@ import { parseCards } from "../core/cards.js";
 import { buildIndex } from "../core/search.js";
 import { loadState, saveState } from "../core/storage.js";
 import { toast } from "./dialogs.js";
-import { customCardMap, replaceReleased } from "../core/custom.js";
+import { adoptPrerelease, customCardMap, prereleaseMap, replaceReleased } from "../core/custom.js";
 import { initArt } from "./art.js";
 import { cloudChanged, initCloud } from "./cloud.js";
 import { deckView } from "./deck.js";
@@ -11,13 +11,14 @@ import { settingsView } from "./settings.js";
 import { shopView } from "./shop.js";
 
 let current = null;
-let baseCards = null; // カードデータのカード。登録した発売前のカードは ctx.cards で足す
+let baseCards = null; // カードデータのカード。発売前のカード（取得・登録）は ctx.cards で足す
+let preCards = new Map(); // 遊戯王カードWiki から取得した発売前のカード
 let customRef = {}; // 最初は必ず作るよう、どの値とも一致しないものにしておく
 // 登録したカードが変わったときだけ、カードの一覧と検索の索引を作り直す
 function syncCards() {
   if (ctx.state.customCards === customRef) return;
   customRef = ctx.state.customCards;
-  ctx.cards = new Map([...baseCards, ...customCardMap(ctx.state)]);
+  ctx.cards = new Map([...baseCards, ...preCards, ...customCardMap(ctx.state)]);
   ctx.index = buildIndex([...ctx.cards.values()]);
 }
 const ctx = {
@@ -27,9 +28,9 @@ const ctx = {
   state: null,
   // 状態を変える操作はすべてここを通す。保存して今の画面を描き直す。
   commit(next) {
-    ctx.state = next;
+    ctx.state = adoptPrerelease(next, preCards);
     syncCards();
-    saveState(localStorage, next);
+    saveState(localStorage, ctx.state);
     cloudChanged();
     current?.refresh();
   },
@@ -76,8 +77,9 @@ async function boot() {
         if (!r.ok) throw new Error(url + " " + r.status);
         return r.json();
       });
-    const [cardsJson, meta] = await Promise.all([get("data/cards.json"), get("data/meta.json")]);
+    const [cardsJson, meta, pre] = await Promise.all([get("data/cards.json"), get("data/meta.json"), get("data/prerelease.json").catch(() => null)]);
     baseCards = parseCards(cardsJson);
+    preCards = prereleaseMap(pre);
     ctx.meta = meta;
     ctx.state = loadState(localStorage);
     // 発売されてカードデータに入った登録カードを置き換える

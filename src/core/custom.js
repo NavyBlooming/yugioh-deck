@@ -19,7 +19,8 @@ const clone = (state) => structuredClone(state);
 export function addCustomCard(state, { name, ruby, kind, level, sub }) {
   const s = clone(state);
   const list = s.customCards ?? [];
-  const cid = Math.min(0, ...list.map((c) => c.cid)) - 1;
+  // 取得した発売前のカード（-1000000 以下）とは重ならない範囲で振る
+  const cid = Math.min(0, ...list.filter((c) => c.cid > -1000000).map((c) => c.cid)) - 1;
   s.customCards = [...list, { cid, name, ruby, kind, level, sub }];
   return { state: s, cid };
 }
@@ -29,6 +30,28 @@ export function customCardMap(state) {
   return new Map(
     (state.customCards ?? []).map((c) => [c.cid, { cid: c.cid, name: c.name, ruby: c.ruby, group: KINDS[c.kind].group, frame: KINDS[c.kind].frame, limit: 3, level: c.level, sub: c.sub, custom: true }]),
   );
+}
+
+// 遊戯王カードWiki から取得した発売前のカード（data/prerelease.json）。cid は取得のときに名前から決めてある
+export function prereleaseMap(json) {
+  return new Map(
+    (json?.cards ?? []).map((c) => [c.cid, { cid: c.cid, name: c.name, ruby: c.ruby, group: KINDS[c.kind].group, frame: KINDS[c.kind].frame, limit: 3, level: c.level, sub: c.sub, custom: true, set: c.set }]),
+  );
+}
+
+// デッキかお気に入りに入った取得カードを、登録したカードとして保存する。発売後の置き換えは登録したカードと同じ仕組みで行う
+export function adoptPrerelease(state, pre) {
+  const have = new Set((state.customCards ?? []).map((c) => c.cid));
+  const used = new Set([...state.decks.flatMap((d) => d.entries.map((e) => e.cid)), ...(state.favorites ?? [])]);
+  const add = [...used].filter((cid) => pre.has(cid) && !have.has(cid));
+  if (!add.length) return state;
+  const s = clone(state);
+  const kindOf = (c) => Object.keys(KINDS).find((k) => KINDS[k].group === c.group && KINDS[k].frame === c.frame);
+  s.customCards = [...(s.customCards ?? []), ...add.map((cid) => {
+    const c = pre.get(cid);
+    return { cid, name: c.name, ruby: c.ruby, kind: kindOf(c), level: c.level, sub: c.sub };
+  })];
+  return s;
 }
 
 export function removeCustomCard(state, cid) {
