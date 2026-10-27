@@ -21,8 +21,11 @@ function validEntry(e) {
   );
 }
 
+const validHistory = (h) => h === undefined || (Array.isArray(h) && h.every((x) => isObj(x) && isNum(x.cid) && (x.op === "in" || x.op === "out")));
+
 function validDeck(d) {
   return (
+    validHistory(d?.history) &&
     isObj(d) &&
     typeof d.id === "string" &&
     typeof d.name === "string" &&
@@ -42,13 +45,14 @@ export function isValidState(obj) {
     obj.version === 1 &&
     Array.isArray(obj.decks) && obj.decks.every(validDeck) &&
     isObj(obj.notes) && Object.values(obj.notes).every(validNote) &&
-    isNum(obj.nextSeq)
+    isNum(obj.nextSeq) &&
+    (obj.favorites === undefined || (Array.isArray(obj.favorites) && obj.favorites.every(isNum)))
   );
 }
 
 export function exportJson(state) {
-  const { version, decks, notes, nextSeq } = state;
-  return JSON.stringify({ version, decks, notes, nextSeq });
+  const { version, decks, notes, nextSeq, favorites } = state;
+  return JSON.stringify({ version, decks, notes, nextSeq, favorites });
 }
 
 export function parseImport(text) {

@@ -65,6 +65,12 @@ function take(deck, cid, area, index) {
   return wasMissing;
 }
 
+// 最近入れた・抜いたカードを新しい順に残す。同じカードは先頭へまとめる
+const HISTORY_MAX = 30;
+function record(deck, cid, op) {
+  deck.history = [{ cid, op }, ...(deck.history ?? []).filter((h) => h.cid !== cid)].slice(0, HISTORY_MAX);
+}
+
 export function addCard(state, deckId, card, dest) {
   const deck = findDeck(state, deckId);
   const area = destArea(card, dest);
@@ -72,13 +78,17 @@ export function addCard(state, deckId, card, dest) {
   if (same >= 3) return ng("same-name-limit");
   if (areaTotal(deck, area) >= LIMITS[area]) return ng(FULL[area]);
   const s = clone(state);
-  put(s, findDeck(s, deckId), card.cid, area, false);
+  const d = findDeck(s, deckId);
+  put(s, d, card.cid, area, false);
+  record(d, card.cid, "in");
   return ok(s);
 }
 
 export function removeOne(state, deckId, cid, area, index) {
   const s = clone(state);
-  take(findDeck(s, deckId), cid, area, index);
+  const d = findDeck(s, deckId);
+  take(d, cid, area, index);
+  record(d, cid, "out");
   return ok(s);
 }
 
@@ -171,4 +181,12 @@ export function addHandTraps(state, deckId, cards) {
     }
   }
   return { ok: true, state: s, added, full: false };
+}
+
+// お気に入りは全デッキ共通。cid の昇順で持つ
+export function toggleFavorite(state, cid) {
+  const s = clone(state);
+  const fav = s.favorites ?? [];
+  s.favorites = fav.includes(cid) ? fav.filter((x) => x !== cid) : [...fav, cid].sort((a, b) => a - b);
+  return s;
 }

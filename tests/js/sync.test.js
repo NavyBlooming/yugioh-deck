@@ -15,6 +15,7 @@ test("isEmptyState: デッキも購入メモも無いときだけ空", () => {
   assert.equal(isEmptyState(emptyState()), true);
   assert.equal(isEmptyState(withDeck()), false);
   assert.equal(isEmptyState(withNote()), false);
+  assert.equal(isEmptyState({ ...emptyState(), favorites: [12950] }), false);
 });
 
 test("decideOnSignIn: クラウドに無ければ送る", () => {

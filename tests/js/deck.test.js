@@ -4,7 +4,7 @@ import { parseCards } from "../../src/core/cards.js";
 import { emptyState } from "../../src/core/storage.js";
 import {
   createDeck, renameDeck, deleteDeck, addCard, removeOne, moveOne, tapCopy,
-  sortedEntries, tilesOf, warnings, deckSummary, addHandTraps,
+  sortedEntries, tilesOf, warnings, deckSummary, addHandTraps, toggleFavorite,
 } from "../../src/core/deck.js";
 
 const cards = parseCards({
@@ -354,4 +354,48 @@ test("addHandTraps: メインが60枚になったら止まる", () => {
   assert.equal(r.full, true);
   assert.equal(Object.values(mainOf(r.state, id)).reduce((a, b) => a + b, 0), 60);
   assert.deepEqual([mainOf(r.state, id)[9455], mainOf(r.state, id)[12950]], [1, 2]);
+});
+
+const hist = (s, id) => (deckOf(s, id).history ?? []).map((h) => [h.cid, h.op]);
+
+test("履歴: 入れる・抜くを新しい順に残し、同じカードは先頭へまとめる", () => {
+  let { state, id } = setup();
+  state = add(state, id, 2);
+  state = add(state, id, 3);
+  assert.deepEqual(hist(state, id), [[3, "in"], [2, "in"]]);
+  state = removeOne(state, id, 2, "main").state;
+  assert.deepEqual(hist(state, id), [[2, "out"], [3, "in"]]);
+});
+
+test("履歴: 候補への追加も入れたとして残し、移動では残さない", () => {
+  let { state, id } = setup();
+  state = add(state, id, 2, 1, "cand");
+  state = moveOne(state, id, 2, "cand", "deck", c(2)).state;
+  assert.deepEqual(hist(state, id), [[2, "in"]]);
+});
+
+test("履歴: 30件まで", () => {
+  let { state, id } = setup();
+  const pool = parseCards({ version: 1, cards: Array.from({ length: 34 }, (_, i) => [500 + i, "n", "n", "effect", "effect", 3]) });
+  for (const card of pool.values()) state = addCard(state, id, card, "deck").state;
+  assert.equal(hist(state, id).length, 30);
+  assert.equal(hist(state, id)[0][0], 533);
+  assert.equal(hist(state, id)[29][0], 504);
+});
+
+test("履歴: 汎用誘発も入れたとして残り、ほかのデッキには出ない", () => {
+  let { state, id } = setup();
+  const b = createDeck(state, "B");
+  state = addHandTraps(b.state, id, ht).state;
+  assert.deepEqual(hist(state, id).map((h) => h[0]).sort((a, b) => a - b), [9455, 12950, 13631, 20500]);
+  assert.deepEqual(hist(state, b.deckId), []);
+});
+
+test("toggleFavorite: 全デッキ共通で、もう一度で外れる", () => {
+  let state = emptyState();
+  state = toggleFavorite(state, 5);
+  state = toggleFavorite(state, 2);
+  assert.deepEqual(state.favorites, [2, 5]);
+  state = toggleFavorite(state, 5);
+  assert.deepEqual(state.favorites, [2]);
 });

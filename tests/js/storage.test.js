@@ -31,6 +31,25 @@ test("正しい形は通る", () => {
   assert.ok(isValidState(s));
 });
 
+test("お気に入りと履歴は無くてもよく、あれば形を確かめる", () => {
+  const s = good();
+  s.favorites = [12950];
+  s.decks[0].history = [{ cid: 12950, op: "in" }, { cid: 9455, op: "out" }];
+  assert.ok(isValidState(s));
+  let b = good(); b.favorites = ["12950"]; assert.equal(isValidState(b), false);
+  b = good(); b.decks[0].history = [{ cid: 1, op: "move" }]; assert.equal(isValidState(b), false);
+  b = good(); b.decks[0].history = {}; assert.equal(isValidState(b), false);
+});
+
+test("exportJson はお気に入りと履歴を含める", () => {
+  const s = { ...good(), favorites: [12950] };
+  s.decks[0].history = [{ cid: 12950, op: "in" }];
+  const back = parseImport(exportJson(s));
+  assert.ok(back.ok);
+  assert.deepEqual(back.state.favorites, [12950]);
+  assert.deepEqual(back.state.decks[0].history, [{ cid: 12950, op: "in" }]);
+});
+
 test("不正な形は拒否", () => {
   let s = good(); s.version = 2; assert.equal(isValidState(s), false);
   s = good(); s.decks[0].entries[0].missing = 4; assert.equal(isValidState(s), false);
