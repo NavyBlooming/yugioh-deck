@@ -13,7 +13,7 @@
 
 ## 3. 公開
 
-- [ ] 3.1 毎週の Actions に取得を足し、README の出典の表を更新して push し、公開ページで確かめる
+- [x] 3.1 毎週の Actions に取得を足し、README の出典の表を更新して push し、公開ページで確かめる
 
 ## Workflow follow-up
 
