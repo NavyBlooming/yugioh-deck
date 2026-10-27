@@ -102,10 +102,10 @@ input[type="text"], input[type="number"], select {
   background: #d62839; color: #fff; font-size: 9px; font-weight: 700; line-height: 14px; text-align: center;
   box-shadow: 0 0 0 1px #fff;
 }
-/* 絵があるときは絵だけを出す。枠の色と名前は、絵が無いときの代わり */
-.tile.has-art { background: #000; }
-.tile.has-art .art { flex: 1 1 auto; background: none; }
-.tile.has-art .name { display: none; }
+/* デッキ一覧の表紙は、絵があれば絵だけを出す */
+.deck-card .tile.has-art { background: #000; }
+.deck-card .tile.has-art .art { flex: 1 1 auto; background: none; }
+.deck-card .tile.has-art .name { display: none; }
 .tile[data-missing="true"] { filter: brightness(.55) saturate(.6); }
 .tile-empty { width: 100%; aspect-ratio: 59 / 86; border: 2px dashed var(--line); border-radius: 3px; }
 
