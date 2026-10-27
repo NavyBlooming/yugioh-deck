@@ -102,6 +102,10 @@ input[type="text"], input[type="number"], select {
   background: #d62839; color: #fff; font-size: 9px; font-weight: 700; line-height: 14px; text-align: center;
   box-shadow: 0 0 0 1px #fff;
 }
+/* 絵があるときは絵だけを出す。枠の色と名前は、絵が無いときの代わり */
+.tile.has-art { background: #000; }
+.tile.has-art .art { flex: 1 1 auto; background: none; }
+.tile.has-art .name { display: none; }
 .tile[data-missing="true"] { filter: brightness(.55) saturate(.6); }
 .tile-empty { width: 100%; aspect-ratio: 59 / 86; border: 2px dashed var(--line); border-radius: 3px; }
 
@@ -113,6 +117,7 @@ input[type="text"], input[type="number"], select {
 /* ---- デッキ一覧 ---- */
 .deck-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 @media (min-width: 600px) { .deck-grid { grid-template-columns: repeat(4, 1fr); } }
+.deck-grid > .deck-card { margin-top: 0; } /* .panel + .panel の余白で2つ目から下にずれるのを防ぐ */
 .deck-card { display: grid; gap: 6px; justify-items: center; text-align: center; text-decoration: none; }
 .deck-card .tile, .deck-card .tile-empty { width: 72px; }
 .deck-name { font-weight: 700; word-break: break-all; }

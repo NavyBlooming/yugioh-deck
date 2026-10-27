@@ -32,7 +32,9 @@ export function tileEl(card, { missing = false, area = "", index = null } = {}) 
   );
   Promise.resolve(provider(card.cid))
     .then((url) => {
-      if (url) art.append(h("img", { src: url, alt: "", draggable: "false" }));
+      if (!url) return;
+      art.append(h("img", { src: url, alt: "", draggable: "false" }));
+      el.classList.add("has-art");
     })
     .catch(() => {});
   return el;
