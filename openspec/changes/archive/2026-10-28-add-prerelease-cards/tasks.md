@@ -13,7 +13,7 @@
 
 ## 3. 公開
 
-- [ ] 3.1 push して、公開ページで確かめる。README に使い方を足す
+- [x] 3.1 push して、公開ページで確かめる。README に使い方を足す
 
 ## Workflow follow-up
 
