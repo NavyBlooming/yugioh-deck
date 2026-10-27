@@ -119,7 +119,7 @@ export function deckView(ctx, deckId) {
           toast(ctx.state.favorites.includes(cid) ? "お気に入りに追加しました" : "お気に入りから外しました");
         }) }, (ctx.state.favorites ?? []).includes(cid) ? "お気に入りから外す" : "お気に入りに追加"),
         h("button", { class: "btn", type: "button", onclick: act(() => noteDialog(ctx, cid)) }, "購入メモ"),
-        h("a", { class: "btn", href: officialDbUrl(cid), target: "_blank", rel: "noopener" }, "公式DBで見る"),
+        card.custom ? null : h("a", { class: "btn", href: officialDbUrl(cid), target: "_blank", rel: "noopener" }, "公式DBで見る"),
         h("a", { class: "btn", href: cardRushUrl(card.name), target: "_blank", rel: "noopener" }, "カードラッシュで探す"),
         h("button", { class: "btn", type: "button", onclick: () => close() }, "閉じる"),
       ),

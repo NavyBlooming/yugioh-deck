@@ -1,4 +1,4 @@
-import { exportJson, parseImport, saveState } from "../core/storage.js";
+import { exportJson, parseImport } from "../core/storage.js";
 import { createScheduler, decideOnResume, decideOnSignIn } from "../core/sync.js";
 import { firebaseConfig } from "./firebase-config.js";
 import { h } from "./dom.js";
@@ -62,9 +62,7 @@ async function writeRemote() {
 function applyRemote(remote) {
   store.set(PULLED_KEY, String(remote.at));
   if (exportJson(remote.state) === exportJson(ctx.state)) return;
-  ctx.state = remote.state;
-  saveState(localStorage, remote.state);
-  ctx.refresh();
+  ctx.replace(remote.state);
 }
 
 function push() {

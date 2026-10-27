@@ -189,6 +189,11 @@ input[type="text"], input[type="number"], select {
 .art-row { display: flex; gap: 8px; margin-bottom: 8px; }
 .art-row input { flex: 1; min-width: 0; }
 .import-label input { color: var(--sub); }
+.custom-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid #22385f; }
+.custom-main { flex: 1; min-width: 0; }
+.custom-name { font-weight: 700; word-break: break-all; }
+.custom-form { margin-top: 8px; }
+.custom-form label[hidden] { display: none; }
 
 /* ---- ダイアログ・シート ---- */
 .overlay { position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, .6); display: flex; align-items: center; justify-content: center; padding: 12px; }

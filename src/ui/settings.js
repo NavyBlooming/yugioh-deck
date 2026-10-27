@@ -1,3 +1,4 @@
+import { KINDS, addCustomCard, removeCustomCard } from "../core/custom.js";
 import { exportFileName, exportJson, parseImport } from "../core/storage.js";
 import { h } from "./dom.js";
 import { artState, clearPassphrase, setPassphrase } from "./art.js";
@@ -42,6 +43,7 @@ export function settingsView(ctx) {
       h("button", { class: "btn primary", type: "button", id: "export-btn", onclick: download }, "書き出し"),
       h("label", { class: "import-label" }, "読み込み", fileInput),
     ),
+    customSection(ctx),
     artSection(ctx),
   );
   return { el, refresh() {} };
@@ -77,6 +79,58 @@ function cloudSection() {
     ],
   }[cloud.status];
   return h("section", { class: "panel", id: "cloud-settings" }, h("h2", {}, "ログインと同期"), body);
+}
+
+const SUBS = {
+  spell: [["normal", "通常"], ["field", "フィールド"], ["equip", "装備"], ["continuous", "永続"], ["quickplay", "速攻"], ["ritual", "儀式"]],
+  trap: [["normal", "通常"], ["continuous", "永続"], ["counter", "カウンター"]],
+};
+const isSpellTrap = (kind) => kind === "spell" || kind === "trap";
+const customLabel = (c) => `${KINDS[c.kind].label}・${isSpellTrap(c.kind) ? SUBS[c.kind].find(([v]) => v === c.sub)?.[1] ?? "" : `レベル${c.level}`}`;
+
+// 発売前のカードの登録。カードデータに同じ名前のカードが入ったら、開いたときに置き換わる
+function customSection(ctx) {
+  const name = h("input", { type: "text", id: "custom-name", placeholder: "カード名", autocomplete: "off" });
+  const ruby = h("input", { type: "text", id: "custom-ruby", placeholder: "読み（ひらがな）", autocomplete: "off" });
+  const kind = h("select", { id: "custom-kind" }, Object.entries(KINDS).map(([v, k]) => h("option", { value: v, selected: v === "effect" }, k.label)));
+  const level = h("input", { type: "number", id: "custom-level", min: "0", max: "13", step: "1", value: "4", inputmode: "numeric" });
+  const sub = h("select", { id: "custom-sub" });
+  const levelLabel = h("label", {}, "レベル・ランク・リンク", level);
+  const subLabel = h("label", {}, "種類", sub);
+  const syncKind = () => {
+    const st = isSpellTrap(kind.value);
+    levelLabel.hidden = st;
+    subLabel.hidden = !st;
+    if (st) sub.replaceChildren(...SUBS[kind.value].map(([v, l]) => h("option", { value: v }, l)));
+  };
+  kind.addEventListener("change", syncKind);
+  syncKind();
+  const add = () => {
+    const n = name.value.trim();
+    if (!n) return name.focus();
+    const st = isSpellTrap(kind.value);
+    const lv = Math.max(0, Math.min(13, Math.round(Number(level.value) || 0)));
+    ctx.commit(addCustomCard(ctx.state, { name: n, ruby: ruby.value.trim() || n, kind: kind.value, level: st ? 0 : lv, sub: st ? sub.value : "" }).state);
+    toast(`「${n}」を登録しました`);
+    ctx.rerender();
+  };
+  const list = (ctx.state.customCards ?? []).map((c) =>
+    h("div", { class: "custom-row" },
+      h("div", { class: "custom-main" }, h("div", { class: "custom-name" }, c.name), h("div", { class: "muted" }, customLabel(c))),
+      h("button", { class: "btn small danger", type: "button", "data-cid": c.cid, onclick: () => {
+        if (!confirm(`「${c.name}」を削除します。デッキからも抜けます。よろしいですか？`)) return;
+        ctx.commit(removeCustomCard(ctx.state, c.cid));
+        ctx.rerender();
+      } }, "削除"),
+    ),
+  );
+  return h("section", { class: "panel", id: "custom-settings" },
+    h("h2", {}, "発売前のカード"),
+    h("p", { class: "muted" }, "まだカードデータに無いカードを登録すると、検索してデッキに入れられます。発売されてカードデータに同じ名前のカードが入ったら、そのカードに置き換わります。"),
+    list,
+    h("div", { class: "form custom-form" }, name, ruby, h("label", {}, "種類", kind), levelLabel, subLabel,
+      h("button", { class: "btn primary", type: "button", id: "custom-add", onclick: add }, "登録")),
+  );
 }
 
 const ART_STATUS = {

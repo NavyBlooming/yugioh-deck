@@ -1,6 +1,8 @@
 import { parseCards } from "../core/cards.js";
 import { buildIndex } from "../core/search.js";
 import { loadState, saveState } from "../core/storage.js";
+import { toast } from "./dialogs.js";
+import { customCardMap, replaceReleased } from "../core/custom.js";
 import { initArt } from "./art.js";
 import { cloudChanged, initCloud } from "./cloud.js";
 import { deckView } from "./deck.js";
@@ -9,6 +11,15 @@ import { settingsView } from "./settings.js";
 import { shopView } from "./shop.js";
 
 let current = null;
+let baseCards = null; // カードデータのカード。登録した発売前のカードは ctx.cards で足す
+let customRef = {}; // 最初は必ず作るよう、どの値とも一致しないものにしておく
+// 登録したカードが変わったときだけ、カードの一覧と検索の索引を作り直す
+function syncCards() {
+  if (ctx.state.customCards === customRef) return;
+  customRef = ctx.state.customCards;
+  ctx.cards = new Map([...baseCards, ...customCardMap(ctx.state)]);
+  ctx.index = buildIndex([...ctx.cards.values()]);
+}
 const ctx = {
   cards: null,
   index: null,
@@ -17,8 +28,16 @@ const ctx = {
   // 状態を変える操作はすべてここを通す。保存して今の画面を描き直す。
   commit(next) {
     ctx.state = next;
+    syncCards();
     saveState(localStorage, next);
     cloudChanged();
+    current?.refresh();
+  },
+  // クラウドから取り込むとき。クラウドへは送り返さない
+  replace(next) {
+    ctx.state = next;
+    syncCards();
+    saveState(localStorage, next);
     current?.refresh();
   },
   refresh: () => current?.refresh(),
@@ -58,10 +77,17 @@ async function boot() {
         return r.json();
       });
     const [cardsJson, meta] = await Promise.all([get("data/cards.json"), get("data/meta.json")]);
-    ctx.cards = parseCards(cardsJson);
-    ctx.index = buildIndex([...ctx.cards.values()]);
+    baseCards = parseCards(cardsJson);
     ctx.meta = meta;
     ctx.state = loadState(localStorage);
+    // 発売されてカードデータに入った登録カードを置き換える
+    const r = replaceReleased(ctx.state, baseCards);
+    if (r.replaced.length) {
+      ctx.state = r.state;
+      saveState(localStorage, r.state);
+      setTimeout(() => toast(`発売されたカードに置き換えました: ${r.replaced.join("、")}`), 500);
+    }
+    syncCards();
   } catch (e) {
     app.textContent = "カードデータを読み込めませんでした。通信を確かめて、開き直してください。";
     console.error(e);
