@@ -139,3 +139,24 @@ def test_取得に失敗したら書かずに例外(repo):
     with pytest.raises(OSError):
         bp.build_prerelease(repo, fail, sleep=lambda s: None)
     assert not (repo / "data" / "prerelease.json").exists()
+
+
+def test_接続が切れたら間を空けて2回まで読み直す():
+    calls, waits = [], []
+
+    def flaky(url):
+        calls.append(url)
+        if len(calls) < 3:
+            raise ConnectionError("closed")
+        return "ok"
+
+    assert bp.with_retry(flaky, sleep=waits.append)("u") == "ok"
+    assert len(calls) == 3 and waits == [10, 30]
+
+
+def test_3回とも切れたら例外():
+    def down(url):
+        raise ConnectionError("closed")
+
+    with pytest.raises(ConnectionError):
+        bp.with_retry(down, sleep=lambda s: None)("u")

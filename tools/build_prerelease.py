@@ -86,6 +86,25 @@ def parse_card(page: str) -> dict | None:
     return {"ruby": ruby, "kind": kind, "level": int(lv.group(1)), "sub": ""}
 
 
+RETRY_WAITS = [10, 30]
+
+
+def with_retry(fetch_text, sleep=time.sleep):
+    """接続が切れたら、間を空けて2回まで読み直す。"""
+
+    def get(url):
+        for wait in [*RETRY_WAITS, None]:
+            try:
+                return fetch_text(url)
+            except (ConnectionError, OSError) as e:
+                if wait is None:
+                    raise
+                print(f"retry in {wait}s: {url} ({e})", file=sys.stderr)
+                sleep(wait)
+
+    return get
+
+
 def build_prerelease(repo: Path, fetch_text, sleep=time.sleep, today: str | None = None) -> dict:
     known = {normalize(c[1]) for c in json.loads((repo / "data" / "cards.json").read_text(encoding="utf-8"))["cards"]}
     first = True
@@ -133,5 +152,5 @@ if __name__ == "__main__":
         return r.content.decode("utf-8")
 
     root = Path(__file__).resolve().parent.parent
-    r = build_prerelease(root, _get)
+    r = build_prerelease(root, with_retry(_get))
     print(f"{r['status']} ({r['count']} cards)")
