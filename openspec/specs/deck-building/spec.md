@@ -101,7 +101,7 @@ The main deck SHALL be displayed grouped in the order normal monsters, effect mo
 
 ### Requirement: 群の中の並び順
 
-Within a monster group, cards SHALL be ordered by level, rank, or link rating from lowest to highest. Within the spell group the order SHALL be normal, quick-play, continuous, equip, field, ritual, and within the trap group normal, continuous, counter. Ties SHALL keep the order first added, with copies of the same card adjacent.
+Within a monster group, cards SHALL be ordered by level, rank, or link rating from lowest to highest. Within the spell group the order SHALL be normal, field, equip, continuous, quick-play, ritual, and within the trap group normal, continuous, counter. Ties SHALL keep the order first added, with copies of the same card adjacent.
 
 #### Scenario: モンスターはレベルの低い順
 
@@ -110,8 +110,8 @@ Within a monster group, cards SHALL be ordered by level, rank, or link rating fr
 
 #### Scenario: 魔法は種類の順
 
-- **WHEN** 永続魔法、速攻魔法、通常魔法の順に追加する
-- **THEN** 魔法の中は通常魔法、速攻魔法、永続魔法の順に並ぶ
+- **WHEN** 速攻魔法、永続魔法、装備魔法、フィールド魔法、通常魔法の順に追加する
+- **THEN** 魔法の中は通常魔法、フィールド魔法、装備魔法、永続魔法、速攻魔法の順に並ぶ
 
 #### Scenario: 同名カードは隣に並ぶ
 
