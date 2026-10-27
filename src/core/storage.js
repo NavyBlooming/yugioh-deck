@@ -1,4 +1,5 @@
 import { bitCount } from "./deck.js";
+import { validCustomCard } from "./custom.js";
 
 export const STORAGE_KEY = "ygo.data.v1";
 
@@ -46,13 +47,14 @@ export function isValidState(obj) {
     Array.isArray(obj.decks) && obj.decks.every(validDeck) &&
     isObj(obj.notes) && Object.values(obj.notes).every(validNote) &&
     isNum(obj.nextSeq) &&
-    (obj.favorites === undefined || (Array.isArray(obj.favorites) && obj.favorites.every(isNum)))
+    (obj.favorites === undefined || (Array.isArray(obj.favorites) && obj.favorites.every(isNum))) &&
+    (obj.customCards === undefined || (Array.isArray(obj.customCards) && obj.customCards.every(validCustomCard)))
   );
 }
 
 export function exportJson(state) {
-  const { version, decks, notes, nextSeq, favorites } = state;
-  return JSON.stringify({ version, decks, notes, nextSeq, favorites });
+  const { version, decks, notes, nextSeq, favorites, customCards } = state;
+  return JSON.stringify({ version, decks, notes, nextSeq, favorites, customCards });
 }
 
 export function parseImport(text) {

@@ -1,7 +1,7 @@
 import { exportJson } from "./storage.js";
 
 export function isEmptyState(s) {
-  return s.decks.length === 0 && Object.keys(s.notes).length === 0 && !s.favorites?.length;
+  return s.decks.length === 0 && Object.keys(s.notes).length === 0 && !s.favorites?.length && !s.customCards?.length;
 }
 
 // ログインした直後に、端末とクラウドのどちらのデータを使うか
