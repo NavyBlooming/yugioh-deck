@@ -190,26 +190,21 @@ export function deckView(ctx, deckId) {
     } }, label),
   );
   const clearBtn = h("button", { class: "search-clear", type: "button", id: "search-clear", "aria-label": "入力を消す", hidden: true }, "×");
-  // 効果テキストでも探す切り替え。合言葉があるときだけ出す
+  // 合言葉があれば効果テキストでも探す。初めて検索したときに取り、取れるまでは名前と読みだけで探す
   let textIndex = null;
-  const textBtn = h("button", { class: "search-text", type: "button", id: "search-text", "aria-pressed": "false", hidden: artState() !== "on" }, "効果");
+  let textLoading = false;
   const runSearch = () => {
+    if (!textIndex && !textLoading && input.value.trim() && artState() === "on") {
+      textLoading = true;
+      loadTexts().then((t) => {
+        textIndex = t;
+        textLoading = false;
+        if (t) runSearch();
+      });
+    }
     const found = textIndex ? searchWithText(ctx.index, textIndex, input.value, 60) : search(ctx.index, input.value, 60);
     results.replaceChildren(...found.map((c) => tileEl(c, { area: "search" })));
   };
-  textBtn.addEventListener("click", async () => {
-    if (textIndex) {
-      textIndex = null;
-    } else {
-      textBtn.disabled = true;
-      toast("効果テキストを読み込んでいます…");
-      textIndex = await loadTexts();
-      textBtn.disabled = false;
-      if (!textIndex) toast("効果テキストを読み込めませんでした");
-    }
-    textBtn.setAttribute("aria-pressed", String(Boolean(textIndex)));
-    runSearch();
-  });
   let timer = null;
   input.addEventListener("input", () => {
     clearBtn.hidden = !input.value;
@@ -232,7 +227,7 @@ export function deckView(ctx, deckId) {
     else toast(REASON[r.reason] ?? "追加できません");
   });
   const panel = h("aside", { class: "search-panel", id: "search-panel" },
-    h("div", { class: "search-top" }, h("div", { class: "search-box" }, input, textBtn, clearBtn), h("div", { class: "dest-row" }, h("div", { class: "seg-group", role: "group", "aria-label": "追加先" }, h("span", { class: "muted" }, "追加先"), destBtns), h("button", { class: "btn small", type: "button", id: "add-hand-traps", onclick: addHandTrapsClick }, "汎用誘発を追加"))),
+    h("div", { class: "search-top" }, h("div", { class: "search-box" }, input, clearBtn), h("div", { class: "dest-row" }, h("div", { class: "seg-group", role: "group", "aria-label": "追加先" }, h("span", { class: "muted" }, "追加先"), destBtns), h("button", { class: "btn small", type: "button", id: "add-hand-traps", onclick: addHandTrapsClick }, "汎用誘発を追加"))),
     results,
   );
 
