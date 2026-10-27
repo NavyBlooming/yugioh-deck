@@ -30,7 +30,12 @@ The system SHALL let the user enter the passphrase in the settings, SHALL tell t
 
 ### Requirement: 絵の表示
 
-When a valid passphrase is set, the system SHALL show each card's artwork inside a tile colored by the card's frame type, with the card name. When no valid passphrase is set, or the card has no artwork, the system SHALL show the frame-colored tile with the card name only. All features other than artwork SHALL work without a passphrase.
+When a valid passphrase is set and the card has artwork, the system SHALL show only the artwork filling the tile, without the card name and the frame color. When no valid passphrase is set, or the card has no artwork, the system SHALL show the frame-colored tile with the card name only. The limit mark and the darkening of missing copies SHALL be shown in both cases. All features other than artwork SHALL work without a passphrase.
+
+#### Scenario: 絵があるカード
+
+- **WHEN** 合言葉が正しく、絵が用意されたカードを表示する
+- **THEN** タイル全体に絵だけが表示され、カード名と枠の色は表示されない
 
 #### Scenario: 合言葉なし
 
