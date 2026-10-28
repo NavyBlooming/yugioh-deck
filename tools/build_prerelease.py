@@ -51,13 +51,13 @@ def product_urls(list_html: str) -> list[str]:
 
 
 def parse_product(page: str) -> tuple[bool, str, list[tuple[str, str]]]:
-    """(発売予定か, 商品名, [(カード名, カードのページの URL)])。"""
+    """(発売予定か, 商品名, [(カード名, カードのページの URL, 型番)])。"""
     upcoming = "発売予定" in _text(page)
     title = re.search(r"<title>遊戯王カードWiki - (.*?)</title>", page)
     set_name = _text(title.group(1)).strip() if title else ""
     cards = [
-        (htmllib.unescape(name), BASE + htmllib.unescape(href))
-        for href, name in re.findall(r'<li>[A-Z0-9]+-JP\d{3}\s*<a href="([^"]+)"[^>]*>《([^》]+)》</a>', page)
+        (htmllib.unescape(name), BASE + htmllib.unescape(href), number)
+        for number, href, name in re.findall(r'<li>([A-Z0-9]+-JP\d{3})\s*<a href="([^"]+)"[^>]*>《([^》]+)》</a>', page)
     ]
     return upcoming, set_name, cards
 
@@ -121,7 +121,7 @@ def build_prerelease(repo: Path, fetch_text, sleep=time.sleep, today: str | None
         upcoming, set_name, items = parse_product(get(url))
         if not upcoming:
             continue
-        for name, card_url in items:
+        for name, card_url, number in items:
             key = normalize(name)
             if key in known or key in seen:
                 continue
@@ -130,7 +130,7 @@ def build_prerelease(repo: Path, fetch_text, sleep=time.sleep, today: str | None
             if info is None:
                 print(f"skip (unreadable): {name}", file=sys.stderr)
                 continue
-            cards.append({"cid": cid_of(name), "name": name, **info, "set": set_name})
+            cards.append({"cid": cid_of(name), "name": name, **info, "set": set_name, "number": number})
 
     out = repo / "data" / "prerelease.json"
     if out.exists() and json.loads(out.read_text(encoding="utf-8")).get("cards") == cards:

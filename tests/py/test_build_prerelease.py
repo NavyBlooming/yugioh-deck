@@ -108,8 +108,9 @@ def test_発売予定の商品の_カードデータに無いカードだけ載�
     # カード名は商品のページの表記、読みはカードのページのふりがな（無ければ見出しの名前）
     assert set(by) == {"新しい竜", "新しい罠", "新しい融合"}
     assert by["新しい融合"]["ruby"] == "ニュー・フュージョン"
-    assert by["新しい竜"] == {"cid": by["新しい竜"]["cid"], "name": "新しい竜", "ruby": "あたらしいりゅう", "kind": "effect", "level": 5, "sub": "", "set": "NEW PACK"}
+    assert by["新しい竜"] == {"cid": by["新しい竜"]["cid"], "name": "新しい竜", "ruby": "あたらしいりゅう", "kind": "effect", "level": 5, "sub": "", "set": "NEW PACK", "number": "NEWP-JP001"}
     assert all(c["cid"] <= -1000000 for c in data["cards"])
+    assert by["新しい融合"]["number"] == "NEWP-JP004"
     # カードデータにあるカードのページと、発売済みの商品のカードのページは読まない
     assert "https://yugioh-wiki.net/?%A1%D4B%A1%D5" not in net.calls
     assert "https://yugioh-wiki.net/?%A1%D4E%A1%D5" not in net.calls

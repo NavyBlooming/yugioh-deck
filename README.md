@@ -47,7 +47,8 @@
 | 禁止・制限・準制限 | [公式カードデータベースのリミットレギュレーション](https://www.db.yugioh-card.com/yugiohdb/forbidden_limited.action) | 一覧に無いカードは無制限 |
 | 種類の補完 | [YGOPRODeck](https://ygoprodeck.com/api-guide/) の `cardinfo.php?misc=yes` | ygocdb に種類が無いカードだけ。`misc_info[0].konami_id` を公式のカードIDとして結び付ける |
 | 効果テキスト | [mycard/ygopro-database](https://github.com/mycard/ygopro-database) の `locales/ja-JP/cards.cdb` | パスワードから ygocdb の対応で公式のカードIDに結び付け、合言葉で暗号化して `art/texts.bin` に置く |
-| 発売前のカード | [遊戯王カードWiki](https://yugioh-wiki.net/) のカードリストにある発売予定の商品のページ | カードデータに無い収録カードのページから、カード名・読み・種類・レベル・魔法罠の種類だけを取り、`data/prerelease.json` に置く。効果テキストは取らない。ページの間は2秒空ける |
+| 発売前のカード | [遊戯王カードWiki](https://yugioh-wiki.net/) のカードリストにある発売予定の商品のページ | カードデータに無い収録カードのページから、カード名・読み・種類・レベル・魔法罠の種類・型番だけを取り、`data/prerelease.json` に置く。効果テキストは取らない。ページの間は2秒空ける |
+| 発売前のカードの絵 | [YGOPRODeck](https://ygoprodeck.com/api-guide/) の、公式のカードIDが無いカードの `images/cards/<番号>.jpg`（カード全体） | 番号は「商品ごとの頭＋型番の下3桁」。商品ごとに種類とレベルが一致する枚数の最も多い頭を選び、一致したカードだけ絵の枠を切り出して暗号化する。ペンデュラムは対象外。発売前のカードでなくなったら消す |
 | 日本版の収録パック（型番） | [YGOResources](https://db.ygoresources.com/about/api) の `/data/card/<cid>` | 購入メモを開いたときに、そのカードの分だけ画面から取得 |
 
 日本語名の無いカードと、どの取得元にも種類の情報が無いカードは除き、`data/meta.json` の `excluded` に載せています。
@@ -60,7 +61,7 @@ uv run tools/build_cards.py
 
 カードの元データも禁止制限の一覧も前回から変わっていなければ `unchanged` と出て、何も書き換えません。
 
-GitHub Actions が毎週月曜3時（日本時間）に、カードデータの更新と、新しいカードの絵の追加、効果テキストと発売前のカードの更新を行います。「Actions」タブから手動でも動かせます。
+GitHub Actions が毎週月曜3時（日本時間）に、カードデータの更新と、新しいカードの絵の追加、効果テキストと発売前のカード（と、その絵）の更新を行います。「Actions」タブから手動でも動かせます。
 
 ## テスト
 
