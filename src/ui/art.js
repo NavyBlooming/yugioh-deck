@@ -9,6 +9,7 @@ let index = new Set();
 let key = null;
 const urls = new Map(); // cid → Promise<objectURL|null>
 let texts = null; // Promise<Map cid → 正規化した効果テキスト | null>
+let rawTexts = null; // cid → 表示用の効果テキスト
 
 const store = {
   get: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
@@ -103,11 +104,15 @@ async function fetchTexts() {
   if (!tm) return null;
   const k = `${meta.salt}:texts`;
   const saved = await idb("readonly", (s) => s.get(k));
-  if (saved?.hash === tm.hash) return buildTextIndex(saved.texts);
+  if (saved?.hash === tm.hash) {
+    rawTexts = saved.texts;
+    return buildTextIndex(saved.texts);
+  }
   const r = await fetch(`art/texts.bin?h=${tm.hash}`);
   if (!r.ok) return null;
   const t = await decryptTexts(key, await r.arrayBuffer());
   await idb("readwrite", (s) => s.put({ hash: tm.hash, texts: t }, k));
+  rawTexts = t;
   return buildTextIndex(t);
 }
 
@@ -115,6 +120,12 @@ export function loadTexts() {
   if (!key) return Promise.resolve(null);
   if (!texts) texts = fetchTexts().catch(() => null).then((t) => (t ? t : ((texts = null), null)));
   return texts;
+}
+
+// カード詳細に出す効果テキスト。合言葉が無いか、文が無ければ null
+export async function cardText(cid) {
+  if (!(await loadTexts())) return null;
+  return rawTexts?.[cid] ?? null;
 }
 
 export function clearPassphrase() {

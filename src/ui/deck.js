@@ -1,7 +1,8 @@
 import { addCard, addHandTraps, deleteDeck, moveOne, removeOne, renameDeck, sortedEntries, tapCopy, tilesOf, toggleFavorite, warnings } from "../core/deck.js";
 import { cardRushUrl, officialDbUrl } from "../core/shopping.js";
 import { search, searchWithText } from "../core/search.js";
-import { artState, loadTexts } from "./art.js";
+import { artState, cardText, loadTexts } from "./art.js";
+import { areaOf } from "../core/cards.js";
 import { h } from "./dom.js";
 import { nameDialog, noteDialog, openModal, toast } from "./dialogs.js";
 import { cardOr, tileEl } from "./tile.js";
@@ -18,6 +19,20 @@ const AREAS = [
   ["cand", "候補", 15],
 ];
 const LIMIT_TEXT = ["禁止カード", "制限カード", "準制限カード", "制限なし"];
+const FRAME_TEXT = { normal: "通常モンスター", effect: "効果モンスター", ritual: "儀式モンスター", fusion: "融合モンスター", synchro: "シンクロモンスター", xyz: "エクシーズモンスター", link: "リンクモンスター" };
+const SUB_TEXT = { normal: "通常", quickplay: "速攻", continuous: "永続", equip: "装備", field: "フィールド", ritual: "儀式", counter: "カウンター" };
+const frameBase = (card) => card.frame.replace(/_pendulum$/, "");
+function kindText(card) {
+  if (card.group === "spell") return `${SUB_TEXT[card.sub] ?? ""}魔法`;
+  if (card.group === "trap") return `${SUB_TEXT[card.sub] ?? ""}罠`;
+  return (FRAME_TEXT[frameBase(card)] ?? "モンスター") + (card.frame.endsWith("_pendulum") ? "・ペンデュラム" : "");
+}
+function statText(card) {
+  if (card.group === "spell" || card.group === "trap") return "";
+  if (card.group === "xyz") return `ランク ${card.level}`;
+  if (card.group === "link") return `LINK-${card.level}`;
+  return `★ ${card.level}`;
+}
 
 // タイルを長押し（500ms）とタップに振り分ける。長押しが成立したら、その後の click は捨てる。
 function bindTiles(container, { onTap, onLong }) {
@@ -94,33 +109,63 @@ export function deckView(ctx, deckId) {
     },
   });
 
+  // 長押しで開くカード詳細。area が null のときは検索結果など、デッキの外のカード
   function openSheet(cid, area, index) {
     const card = cardOr(ctx.cards, cid);
+    const deck = deckOf();
+    const countIn = (a) => deck.entries.filter((e) => e.cid === cid && e.area === a).reduce((n, e) => n + e.count, 0);
+    const home = areaOf(card);
     const act = (fn) => () => {
       close();
       fn();
     };
     const apply = (r) => (r.ok ? ctx.commit(r.state) : toast(REASON[r.reason] ?? "操作できません"));
-    const to = area === "cand" ? "deck" : "cand";
+    const addTo = area === "cand" ? "cand" : area ? "deck" : dest;
+    // 抜く欄: デッキの中なら押したカードの欄、外からならメインかEX、無ければ候補
+    const fromArea = area ?? (countIn(home) ? home : countIn("cand") ? "cand" : null);
+    const fav = (ctx.state.favorites ?? []).includes(cid);
+    const text = h("div", { class: "cd-text", id: "cd-text" }, "効果テキストを読み込んでいます…");
+    if (card.custom) text.textContent = card.set ? `発売前のカードです（${card.set}）。効果テキストはありません。` : "発売前のカードです。効果テキストはありません。";
+    else if (artState() !== "on") text.textContent = "合言葉を入れると、効果テキストが表示されます。";
+    else cardText(cid).then((t) => (text.textContent = t ?? "効果テキストがありません。"));
+    const big = tileEl(card, {});
+    big.classList.add("cd-tile");
     const close = openModal(
-      h("div", { class: "sheet-body" },
-        h("h2", { class: "sheet-title" }, card.name),
-        h("p", { class: "muted" }, LIMIT_TEXT[card.limit] ?? ""),
-        h("button", { class: "btn", type: "button", onclick: act(() => apply(addCard(ctx.state, deckId, card, area === "cand" ? "cand" : "deck"))) }, "1枚増やす"),
-        h("button", { class: "btn", type: "button", onclick: act(() => ctx.commit(removeOne(ctx.state, deckId, cid, area, index).state)) }, "1枚抜く"),
-        h("button", { class: "btn", type: "button", onclick: act(() => apply(moveOne(ctx.state, deckId, cid, area, to, card, index))) }, area === "cand" ? "デッキへ移す" : "候補へ移す"),
-        h("button", { class: "btn", type: "button", onclick: act(() => {
-          const s = structuredClone(ctx.state);
-          s.decks.find((d) => d.id === deckId).cover = cid;
-          ctx.commit(s);
-        }) }, "表紙にする"),
-        h("button", { class: "btn", type: "button", onclick: act(() => {
-          ctx.commit(toggleFavorite(ctx.state, cid));
-          toast(ctx.state.favorites.includes(cid) ? "お気に入りに追加しました" : "お気に入りから外しました");
-        }) }, (ctx.state.favorites ?? []).includes(cid) ? "お気に入りから外す" : "お気に入りに追加"),
-        h("button", { class: "btn", type: "button", onclick: act(() => noteDialog(ctx, cid)) }, "購入メモ"),
-        card.custom ? null : h("a", { class: "btn", href: officialDbUrl(cid), target: "_blank", rel: "noopener" }, "公式DBで見る"),
-        h("a", { class: "btn", href: cardRushUrl(card.name), target: "_blank", rel: "noopener" }, "カードラッシュで探す"),
+      h("div", { class: "cd", id: "card-detail" },
+        h("div", { class: `cd-head f-${frameBase(card)}` },
+          h("div", { class: "cd-ruby" }, card.ruby !== card.name ? card.ruby : ""),
+          h("div", { class: "cd-name" }, card.name),
+        ),
+        h("div", { class: "cd-top" },
+          big,
+          h("div", { class: "cd-info" },
+            h("div", { class: "cd-stat" }, statText(card)),
+            h("div", { class: "cd-kind" }, `【${kindText(card)}】`),
+            h("div", { class: `cd-limit lim-${card.limit}` }, LIMIT_TEXT[card.limit] ?? ""),
+            h("div", { class: "cd-count" },
+              h("span", {}, `メイン ${countIn("main")}`), h("span", {}, `EX ${countIn("extra")}`), h("span", {}, `候補 ${countIn("cand")}`)),
+          ),
+        ),
+        text,
+        h("div", { class: "cd-pm" },
+          h("button", { class: "btn", type: "button", id: "cd-plus", onclick: act(() => apply(addCard(ctx.state, deckId, card, addTo))) }, addTo === "cand" ? "＋1 候補へ" : "＋1 デッキへ"),
+          h("button", { class: "btn", type: "button", id: "cd-minus", disabled: !fromArea, onclick: act(() => ctx.commit(removeOne(ctx.state, deckId, cid, fromArea, area ? index : undefined).state)) }, "−1 抜く"),
+        ),
+        h("div", { class: "cd-acts" },
+          h("button", { class: `btn${fav ? " on" : ""}`, type: "button", "aria-pressed": String(fav), onclick: act(() => {
+            ctx.commit(toggleFavorite(ctx.state, cid));
+            toast(ctx.state.favorites.includes(cid) ? "お気に入りに追加しました" : "お気に入りから外しました");
+          }) }, fav ? "★ お気に入りから外す" : "☆ お気に入りに追加"),
+          area ? h("button", { class: "btn", type: "button", onclick: act(() => apply(moveOne(ctx.state, deckId, cid, area, area === "cand" ? "deck" : "cand", card, index))) }, area === "cand" ? "デッキへ移す" : "候補へ移す") : null,
+          area ? h("button", { class: "btn", type: "button", onclick: act(() => {
+            const s = structuredClone(ctx.state);
+            s.decks.find((d) => d.id === deckId).cover = cid;
+            ctx.commit(s);
+          }) }, "表紙にする") : null,
+          h("button", { class: "btn", type: "button", onclick: act(() => noteDialog(ctx, cid)) }, "購入メモ"),
+          card.custom ? null : h("a", { class: "btn", href: officialDbUrl(cid), target: "_blank", rel: "noopener" }, "公式DB"),
+          h("a", { class: "btn", href: cardRushUrl(card.name), target: "_blank", rel: "noopener" }, "カードラッシュ"),
+        ),
         h("button", { class: "btn", type: "button", onclick: () => close() }, "閉じる"),
       ),
       { sheet: true },
@@ -267,13 +312,17 @@ export function deckView(ctx, deckId) {
     results.replaceChildren();
     input.focus();
   });
-  results.addEventListener("click", (e) => {
-    const tile = e.target.closest(".tile");
-    if (!tile) return;
-    const card = ctx.cards.get(Number(tile.dataset.cid));
-    const r = addCard(ctx.state, deckId, card, dest);
-    if (r.ok) ctx.commit(r.state);
-    else toast(REASON[r.reason] ?? "追加できません");
+  // 検索結果・履歴・お気に入りは、タップで追加先に入れ、長押しでカード詳細を開く
+  bindTiles(results, {
+    onTap(tile) {
+      const card = ctx.cards.get(Number(tile.dataset.cid));
+      const r = addCard(ctx.state, deckId, card, dest);
+      if (r.ok) ctx.commit(r.state);
+      else toast(REASON[r.reason] ?? "追加できません");
+    },
+    onLong(tile) {
+      openSheet(Number(tile.dataset.cid), null, null);
+    },
   });
   const panel = h("aside", { class: "search-panel", id: "search-panel" },
     h("div", { class: "search-top" }, h("div", { class: "panel-tabs", role: "tablist" }, tabBtns), searchBox, h("div", { class: "dest-row" }, h("div", { class: "seg-group", role: "group", "aria-label": "追加先" }, h("span", { class: "muted" }, "追加先"), destBtns), h("button", { class: "btn small", type: "button", id: "add-hand-traps", onclick: addHandTrapsClick }, "汎用誘発を追加"))),
