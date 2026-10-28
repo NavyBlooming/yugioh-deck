@@ -67,8 +67,11 @@ async function keyFor(pass) {
   return (await checkKey(k, meta)) ? k : null;
 }
 
-// 起動時に一度だけ呼ぶ。絵のデータが無くても、合言葉が無くても、他の機能はそのまま動く。
-export async function initArt() {
+// 起動時に呼ぶ。2回目からは同じ準備を待つだけ。絵のデータが無くても、合言葉が無くても、他の機能はそのまま動く。
+let started = null;
+export const initArt = () => (started ??= init());
+
+async function init() {
   try {
     const [m, i] = await Promise.all([
       fetch("art/meta.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)),
@@ -86,6 +89,9 @@ export async function initArt() {
 }
 
 export const artState = () => (!meta ? "none" : key ? "on" : "off");
+
+// 確かめ済みの合言葉。入っていなければ null
+export const currentPassphrase = () => (key ? store.get(PASS_KEY) : null);
 
 // 正しい合言葉のときだけ保存する
 export async function setPassphrase(pass) {

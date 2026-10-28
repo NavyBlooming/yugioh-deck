@@ -19,6 +19,14 @@ export function decideOnResume(dirty, remoteUpdatedAt, lastPulledAt) {
   return "none";
 }
 
+// 合言葉をクラウドとどうやり取りするか。sent はこのアカウントへ一度送ったことがあるか。
+// 一度送った後にクラウドから消えていたら、別の端末で消されたので送り直さない
+export function decidePass({ remote, localOn, sent }) {
+  if (remote && !localOn) return "adopt";
+  if (!remote && localOn && !sent) return "upload";
+  return "none";
+}
+
 // クラウドへの書き込みを、前回の書き込みから interval ミリ秒に1回までにまとめる。
 // write はその時点の最新の state を書く。失敗したら dirty を残し、次の schedule か flush で書き直す
 export function createScheduler({ write, now, setTimer, clearTimer, interval = 30000 }) {

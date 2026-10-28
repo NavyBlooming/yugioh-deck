@@ -7,7 +7,7 @@
 - 画面はビルド工程の無い静的サイト（GitHub Pages、`navyblooming.github.io/yugioh-deck/`）。保存は `src/core/storage.js` の `loadState` / `saveState` で `localStorage` に state 全体を書く。state の変更はすべて `src/ui/app.js` の `ctx.commit` を通る
 - state は数十KB程度で、Firestore の1ドキュメントの上限 1 MiB に収まる
 - Firebase の無料枠（Spark）: Firestore は1日に読み取り5万回・書き込み2万回・保存 1 GiB。Authentication は1日3,000人まで
-- Firebase の公式資料では、Safari などサードパーティのストレージを遮断するブラウザで、Firebase Hosting 以外から配信するページは `signInWithRedirect` が動かない。`signInWithPopup` を使うよう勧めている
+- Firebase の公式資料では、Safari などサードパーティのストレージを遮断するブラウザで、Firebase Hosting 以外から配信するページは、認証用の中継ページ（`/__/auth/handler`）が別のドメイン（`<project>.firebaseapp.com`）にあるとログインが失敗することがある。直し方の1つとして、中継ページを自分のドメインに置き、`authDomain` をそのドメインにする方法が示されている
 - Firebase の JS SDK 13.1.0 は `https://www.gstatic.com/firebasejs/13.1.0/firebase-{app,auth,firestore-lite}.js` から ES modules として読み込める（取得できることを確認済み。圧縮後の転送量は app 24KB・auth 42KB・firestore-lite 44KB。通常版の firestore は 187KB）
 - Firestore の課金（[公式の料金ページ](https://firebase.google.com/docs/firestore/pricing)）: 見張り（リアルタイムリスナー）は、見張っているドキュメントが更新されるたびに読み取り1回。オフライン保存を有効にして30分以上切れると、つなぎ直しが新しい取得として課金される。送信量（サーバーから端末へ）の無料枠は月10GiB
 
@@ -38,7 +38,6 @@
 
 - デッキ単位・カード単位での変更のマージ（両端末で同時に編集したら、後から保存した方が勝つ）
 - Google 以外のログイン方法
-- 合言葉の同期
 
 ## Decisions
 
@@ -64,11 +63,15 @@ service cloud.firestore {
 
 `firestore.rules` としてリポジトリに置き、Firebase のコンソールに貼る（手動）。
 
-### 3. ログイン: `signInWithPopup`
+### 3. ログイン: 中継ページを自分のドメインに置き、`signInWithRedirect`
 
-「Google でログイン」ボタンを押したその処理の中で呼ぶ（ボタン操作の外で開くと、ポップアップがブロックされるため）。ログインの状態は Firebase が端末に覚えるので、開き直しても続く。
+公開リポジトリ `NavyBlooming/navyblooming.github.io` の `__/auth/` に、`firebaseapp.com` から取得した中継ページ（`handler`・`handler.js`・`experiments.js`・`iframe`・`iframe.js`・`links`・`links.js`）を置き、`__/firebase/init.json` を設定値から作る。GitHub Pages が `_` で始まるフォルダーを公開するよう `.nojekyll` も置く。`authDomain` を `navyblooming.github.io` にし、ページと中継ページを同じドメインにする。
 
-- 代替案: `signInWithRedirect` → 上記のとおり Safari で動かない。認証用の部品を自分のドメインに置く方法は、`navyblooming.github.io` の直下（別のリポジトリ）に置く必要があり、手間に見合わない
+ログインは同じ画面の中で Google のログインへ移動し、戻ってきたら `onAuthStateChanged` で受け取る。失敗は `getRedirectResult` で知らせる。Google Cloud の OAuth クライアントの承認済みのリダイレクト URI に `https://navyblooming.github.io/__/auth/handler` を足す（手動）。ログインの状態は Firebase が端末に覚えるので、開き直しても続く。
+
+- 代替案: `signInWithPopup`（中継ページは `firebaseapp.com` のまま）→ Chrome では通るが、iPhone の Safari ではタブでもホーム画面のアプリでも「missing initial state」で失敗した
+- 中継ページは取得した日のまま変わらない。Firebase 側の更新で合わなくなったら、取り直して置き直す。読み込む SDK は 13.1.0 に固定しているので、すぐに合わなくなる見込みは小さい
+- エミュレーターの試験では、エミュレーターのログイン画面を使うためポップアップのまま
 
 ### 4. 同期の流れ（`src/core/sync.js` の純粋な関数＋`src/ui/cloud.js`）
 
@@ -83,6 +86,16 @@ service cloud.firestore {
 ### 4.1 Firestore Lite を使う
 
 見張りとオフライン保存を使わないので、`firebase-firestore-lite.js`（44KB）で足りる。通常版（187KB）より、スマホで開いたときの読み込みが軽い
+
+### 4.2 合言葉: 同じ文書の別の項目
+
+`users/{uid}` に `pass`（文字列）として持つ。state の文字列には入れないので、書き出しのファイルにも入らない。state の書き込みは `merge` にして、`pass` を消さない。
+
+- `decidePass({ remote, localOn, sent })`: 手元に確かめ済みの合言葉が無く、クラウドにある → `"adopt"`。クラウドに無く、手元にあり、このアカウントへまだ送っていない → `"upload"`。それ以外 → `"none"`
+- 受け取った合言葉は、今までの入力と同じく `meta.json` の確認用の値で確かめ、正しいときだけ使う。違えば使わず、手元の状態も変えない
+- 「設定」で保存したら送り、「合言葉を消す」で `deleteField` で消す。送った・消したことは端末ごとに `ygo.sync.passsent.v1` に覚え、ほかの端末で消された合言葉を、手元に残っている端末が送り直さないようにする。ログアウトでこの印も消す
+- 判断は、ログイン時の選択の後と、開いたとき・戻ったときの取得の後に行う。起動時は絵の準備（合言葉の確かめ）を待ってから判断する
+- 代替案: 別の文書（`users/{uid}/private/pass`）に置く → 読み書きの回数が増える。アクセス規則は同じ本人限定なので、分けても守りは変わらない
 
 ### 5. 設定値
 
@@ -99,7 +112,8 @@ Firebase のプロジェクトの設定値（`apiKey` など）は `src/ui/fireb
 - [両方の端末で同時に編集すると、後から保存した方が残り、片方の変更が消える] → ほかのアプリに切り替えた時点で保存し、戻った時点で取り込むので、持ち替える使い方ではまず起きない。起きても書き出しファイルで戻せる
 - [開いたまま見ている画面には、他端末の変更が出ない] → ほかのタブやアプリから戻ったとき、開き直したときに出る。「設定」の「最新の版に更新」でも取り直せる
 - [保存の前にブラウザが落ちる] → 端末の中には毎回保存し、「未送信あり」の印で次に開いたときに送る
-- [iPhone の Safari でポップアップがブロックされる] → ボタン操作の中で呼ぶ。それでも開かない場合の案内を画面に出す
+- [中継ページが Firebase 側の更新に合わなくなり、ログインが失敗する] → 失敗したら `firebaseapp.com` から取り直して置き直す
+- [合言葉がクラウドに置かれる] → 本人しか読めないアクセス規則で守る。合言葉を知っている人が使う前提のもので、手元の `localStorage` にも平文で置いているのと同じ扱い
 - [ログイン情報の保存先もサードパーティのストレージ扱いになり、Safari で消える] → 未確認。公開後に実機で、開き直してもログインが続くかを確かめる
 - [Firebase の設定値がリポジトリに載る] → 公開前提の値。悪用はアクセス規則と、承認済みドメインの限定で防ぐ
 - [無料枠の超過] → 上の試算のとおり、10人が1日2時間使っても書き込みは最大12%、送信量は約7%。超えた場合は Spark プランでは止まるだけで課金はされない（支払い情報を登録しないため）

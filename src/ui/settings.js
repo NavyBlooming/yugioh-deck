@@ -3,7 +3,7 @@ import { exportFileName, exportJson, parseImport } from "../core/storage.js";
 import { h } from "./dom.js";
 import { artState, clearPassphrase, setPassphrase } from "./art.js";
 import { toast } from "./dialogs.js";
-import { cloud, signIn, signOutCloud } from "./cloud.js";
+import { cloud, sendPass, signIn, signOutCloud } from "./cloud.js";
 
 export function settingsView(ctx) {
   const download = () => {
@@ -68,7 +68,7 @@ function cloudSection() {
   const body = {
     loading: [h("p", { class: "muted" }, "準備しています…")],
     out: [
-      h("p", { class: "muted" }, "ログインすると、同じ Google アカウントのスマホと PC で、デッキと購入メモが同じになります。合言葉は送りません。"),
+      h("p", { class: "muted" }, "ログインすると、同じ Google アカウントのスマホと PC で、デッキと購入メモ、カードの絵の合言葉が同じになります。"),
       h("button", { class: "btn primary", type: "button", id: "login", onclick: signIn }, "Google でログイン"),
     ],
     deciding: [h("p", { class: "muted" }, `${cloud.email} でログインしています。クラウドのデータを確かめています…`)],
@@ -154,10 +154,12 @@ function artSection(ctx) {
     save.textContent = "合言葉を保存";
     if (!ok) return toast("合言葉が違うようです");
     toast("合言葉が正しいです。絵を表示します");
+    sendPass(pass);
     ctx.rerender();
   });
   clear.addEventListener("click", () => {
     clearPassphrase();
+    sendPass(null);
     ctx.rerender();
   });
   const off = artState() === "none";
@@ -167,5 +169,6 @@ function artSection(ctx) {
     status,
     h("div", { class: "art-row" }, input, save),
     artState() === "on" ? clear : null,
+    cloud.status === "in" ? h("p", { class: "muted" }, "ログイン中は、合言葉もクラウドに保存し、同じアカウントの端末で使えます。消すとクラウドからも消えます。") : null,
   );
 }

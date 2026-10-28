@@ -15,6 +15,11 @@ The system SHALL let the user sign in with a Google account from the settings, s
 - **WHEN** 「設定」で「Google でログイン」を押し、表示された画面でアカウントを選ぶ
 - **THEN** 設定にログイン中のアカウントのメールアドレスが表示される
 
+#### Scenario: iPhone の Safari でログインする
+
+- **WHEN** iPhone の Safari（タブ、またはホーム画面に追加したアプリ）で「Google でログイン」を押し、Google の画面でアカウントを選ぶ
+- **THEN** このページに戻り、設定にログイン中のアカウントのメールアドレスが表示される
+
 #### Scenario: ログアウトしても手元のデータは残る
 
 - **WHEN** ログイン中に「ログアウト」を押す
@@ -99,11 +104,26 @@ The cloud data of a user SHALL be readable and writable only by that signed-in u
 - **WHEN** ログインせずに、ある人のクラウドのデータを取得しようとする
 - **THEN** 拒否される
 
-### Requirement: 合言葉は同期しない
+### Requirement: 合言葉の同期
 
-The artwork passphrase SHALL NOT be sent to the cloud.
+While signed in, the system SHALL store the artwork passphrase in the cloud separately from the deck data, so that it is never included in the exported file. A device without a passphrase SHALL use the one from the cloud only after checking it the same way as a typed passphrase. Saving a passphrase in the settings SHALL send it, and clearing it SHALL remove it from the cloud. A device that still has the passphrase SHALL NOT send it again after another device removed it.
 
-#### Scenario: 合言葉は端末ごと
+#### Scenario: 新しい端末で絵が出る
 
-- **WHEN** 合言葉を入れた端末でログインする
-- **THEN** クラウドのデータに合言葉は含まれない
+- **WHEN** 合言葉を入れた端末でログインした後、合言葉を入れていない別の端末で同じアカウントにログインする
+- **THEN** 別の端末にも合言葉が入り、カードに絵が表示される
+
+#### Scenario: 書き出しのファイルには入らない
+
+- **WHEN** ログイン中に「書き出し」を押す
+- **THEN** 書き出したファイルに合言葉は含まれない
+
+#### Scenario: 合言葉を消す
+
+- **WHEN** ログイン中に「合言葉を消す」を押し、その後に合言葉の残っている別の端末を開き直す
+- **THEN** クラウドの合言葉は消えたままで、別の端末の手元の合言葉は残る
+
+#### Scenario: クラウドの合言葉が違う
+
+- **WHEN** クラウドに正しくない合言葉が入っているアカウントに、合言葉の無い端末でログインする
+- **THEN** その合言葉は使われず、カードは枠の色と名前で表示される

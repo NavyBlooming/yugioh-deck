@@ -25,6 +25,19 @@
 - [x] 4.2 push して、公開ページでログインのボタンが出ること、ログインせずに使えることを確かめる。README にログインと同期の説明を足す
 - [ ] 4.3 利用者がスマホと PC で同じアカウントにログインし、片方で足したカードがもう片方に出ることを確かめる
 
+## 5. Safari でのログイン
+
+- [x] 5.1 公開リポジトリ `NavyBlooming/navyblooming.github.io` に中継ページ（`__/auth/` と `__/firebase/init.json`、`.nojekyll`）を置き、`https://navyblooming.github.io/__/auth/handler` が開けることを確かめる
+- [x] 5.2 `authDomain` を `navyblooming.github.io` にし、ログインを `signInWithRedirect` に変える（エミュレーターではポップアップのまま）。`getRedirectResult` で失敗を知らせる
+- [x] 5.3 利用者が Google Cloud の OAuth クライアントに戻り先の URI を足し、iPhone の Safari でログインできることを確かめる
+
+## 6. 合言葉の同期
+
+- [x] 6.1 `decidePass` のテスト（受け取る・送る・消された後は送り直さない・何もしない）を書き、失敗を確かめてから `src/core/sync.js` に実装し、通ることを確かめる
+- [x] 6.2 `src/ui/cloud.js` で `pass` の項目を読み書きし（state の書き込みは `merge`）、「設定」の保存・消すから送る。起動時は絵の準備を待ってから判断する
+- [x] 6.3 エミュレーターと Playwright で、仕様の各場面（新しい端末で絵が出る・書き出しに入らない・消すとクラウドからも消え、ほかの端末が送り直さない・保存し直すとほかの端末が戻ったときに受け取る・違う合言葉は使わない）を確かめる
+- [ ] 6.4 利用者が、合言葉を入れていない端末でログインし、絵が出ることを確かめる
+
 ## Workflow follow-up
 
 - 実装と確認が済んだら、この変更を archive して `openspec/specs/` に仕様を反映する

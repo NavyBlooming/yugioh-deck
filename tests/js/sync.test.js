@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { isEmptyState, decideOnSignIn, createScheduler, decideOnResume } from "../../src/core/sync.js";
+import { isEmptyState, decideOnSignIn, createScheduler, decideOnResume, decidePass } from "../../src/core/sync.js";
 import { emptyState } from "../../src/core/storage.js";
 
 const withDeck = () => ({
@@ -171,4 +171,22 @@ test("decideOnResume: クラウドが新しければ取り込む", () => {
 test("decideOnResume: それ以外は何もしない", () => {
   assert.equal(decideOnResume(false, 1000, 1000), "none");
   assert.equal(decideOnResume(false, null, 1000), "none");
+});
+
+test("decidePass: 手元に合言葉が無く、クラウドにあれば受け取る", () => {
+  assert.equal(decidePass({ remote: "abc", localOn: false, sent: false }), "adopt");
+  assert.equal(decidePass({ remote: "abc", localOn: false, sent: true }), "adopt");
+});
+
+test("decidePass: クラウドに無く、手元にあり、まだ送っていなければ送る", () => {
+  assert.equal(decidePass({ remote: null, localOn: true, sent: false }), "upload");
+});
+
+test("decidePass: 一度送った後にクラウドから消えたら、送り直さない", () => {
+  assert.equal(decidePass({ remote: null, localOn: true, sent: true }), "none");
+});
+
+test("decidePass: 両方にある・両方に無いときは何もしない", () => {
+  assert.equal(decidePass({ remote: "abc", localOn: true, sent: false }), "none");
+  assert.equal(decidePass({ remote: null, localOn: false, sent: false }), "none");
 });

@@ -1,5 +1,6 @@
 import { exportJson, parseImport } from "../core/storage.js";
-import { createScheduler, decideOnResume, decideOnSignIn } from "../core/sync.js";
+import { createScheduler, decidePass, decideOnResume, decideOnSignIn } from "../core/sync.js";
+import { artState, currentPassphrase, initArt, setPassphrase } from "./art.js";
 import { firebaseConfig } from "./firebase-config.js";
 import { h } from "./dom.js";
 import { openModal, toast } from "./dialogs.js";
@@ -8,6 +9,7 @@ const SDK = "https://www.gstatic.com/firebasejs/13.1.0";
 const DIRTY_KEY = "ygo.sync.dirty.v1"; // クラウドに送っていない変更がある
 const PULLED_KEY = "ygo.sync.pulled.v1"; // 最後に取り込んだクラウドの updatedAt（ミリ秒）
 const UID_KEY = "ygo.sync.uid.v1"; // ログイン時の選択まで済んだアカウント
+const PASS_SENT_KEY = "ygo.sync.passsent.v1"; // このアカウントへ合言葉を送った（消した）ことがある
 
 const EMULATOR = new URLSearchParams(location.search).has("emulator");
 const config = EMULATOR ? { apiKey: "fake", authDomain: "127.0.0.1", projectId: "demo-yugioh-deck" } : firebaseConfig;
@@ -49,11 +51,12 @@ async function fetchRemote() {
   if (!snap.exists()) return null;
   const d = snap.data();
   const r = parseImport(d.state);
-  return r.ok ? { state: r.state, at: d.updatedAt?.toMillis() ?? 0 } : null;
+  return r.ok ? { state: r.state, at: d.updatedAt?.toMillis() ?? 0, pass: typeof d.pass === "string" ? d.pass : null } : null;
 }
 
 async function writeRemote() {
-  await fb.setDoc(docRef(), { state: exportJson(ctx.state), updatedAt: fb.serverTimestamp() });
+  // 合言葉は別の項目なので、merge で残す
+  await fb.setDoc(docRef(), { state: exportJson(ctx.state), updatedAt: fb.serverTimestamp() }, { merge: true });
   // 書いている間に来た変更は、次の書き込みまで印を残す
   if (!sched.dirty) store.set(DIRTY_KEY, null);
 }
@@ -63,6 +66,27 @@ function applyRemote(remote) {
   store.set(PULLED_KEY, String(remote.at));
   if (exportJson(remote.state) === exportJson(ctx.state)) return;
   ctx.replace(remote.state);
+}
+
+// 合言葉は state とは別の項目に持つ。受け取ったものは meta.json の確認用の値で確かめてから使う
+async function syncPass(remote) {
+  await initArt();
+  const d = decidePass({ remote: remote?.pass ?? null, localOn: artState() === "on", sent: store.get(PASS_SENT_KEY) === "1" });
+  if (d === "adopt" && (await setPassphrase(remote.pass))) {
+    toast("合言葉をクラウドから受け取りました。絵を表示します");
+    ctx.rerender();
+  } else if (d === "upload") await sendPass(currentPassphrase());
+}
+
+// 「設定」で合言葉を保存したとき・消したとき（pass は null）に呼ぶ
+export async function sendPass(pass) {
+  if (cloud.status !== "in") return;
+  try {
+    await fb.setDoc(docRef(), { pass: pass ?? fb.deleteField() }, { merge: true });
+    store.set(PASS_SENT_KEY, "1");
+  } catch (e) {
+    console.warn("cloud pass", e);
+  }
 }
 
 function push() {
@@ -79,6 +103,7 @@ async function pull() {
     const d = decideOnResume(store.get(DIRTY_KEY) === "1", remote?.at ?? null, Number(store.get(PULLED_KEY) ?? 0));
     if (d === "push") await push();
     else if (d === "pull") applyRemote(remote);
+    await syncPass(remote);
   } catch (e) {
     console.warn("cloud pull", e);
   }
@@ -104,6 +129,7 @@ async function onSignedIn() {
     if (choice === "download") applyRemote(remote);
     else if (choice === "same") store.set(PULLED_KEY, String(remote.at));
     else await push();
+    await syncPass(remote).catch((e) => console.warn("cloud pass", e));
   };
   const d = decideOnSignIn(ctx.state, remote?.state ?? null);
   if (d !== "ask") return finish(d);
@@ -177,6 +203,6 @@ export function signIn() {
 
 export async function signOutCloud() {
   if (sched?.dirty) await sched.flush();
-  for (const k of [UID_KEY, DIRTY_KEY, PULLED_KEY]) store.set(k, null);
+  for (const k of [UID_KEY, DIRTY_KEY, PULLED_KEY, PASS_SENT_KEY]) store.set(k, null);
   await fb.signOut(fb.auth);
 }
