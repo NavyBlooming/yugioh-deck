@@ -2,7 +2,9 @@
 // null のあいだはログインの欄を出さない
 export const firebaseConfig = {
   apiKey: "AIzaSyBgIGWlmHVchPYKyQMwwz_x8MIalJes3Fw",
-  authDomain: "yugioh-deck-a361b.firebaseapp.com",
+  // ログインの中継ページは自分のドメイン（NavyBlooming/navyblooming.github.io の __/auth/）に置く。
+  // firebaseapp.com のままだと、Safari が別のサイトの保存領域を分けるため、ログインの途中経過が失われる
+  authDomain: "navyblooming.github.io",
   projectId: "yugioh-deck-a361b",
   storageBucket: "yugioh-deck-a361b.firebasestorage.app",
   messagingSenderId: "506699229897",

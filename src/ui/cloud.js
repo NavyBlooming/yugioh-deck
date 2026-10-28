@@ -136,6 +136,8 @@ export async function initCloud(appCtx) {
       fs.connectFirestoreEmulator(db, "127.0.0.1", 8080);
     }
     fb = { auth: a, db, ...auth, ...fs };
+    // ログインの画面から戻ったときの失敗を知らせる
+    if (!EMULATOR) auth.getRedirectResult(a).catch((e) => (console.warn("redirect", e), toast("ログインできませんでした")));
   } catch (e) {
     console.warn("cloud init", e);
     cloud.status = "off";
@@ -164,11 +166,12 @@ export function cloudChanged() {
   sched.schedule();
 }
 
-// ボタンの処理の中でそのまま呼ぶ（間に await を挟むとポップアップが止められる）
+// 本番は同じ画面の中で Google のログインへ移動し、戻ってきたら onAuthStateChanged で受け取る。
+// エミュレーターの試験はポップアップで行う
 export function signIn() {
-  return fb.signInWithPopup(fb.auth, new fb.GoogleAuthProvider()).catch((e) => {
-    if (e.code === "auth/popup-blocked") toast("ログインの画面を開けませんでした。ブラウザでポップアップを許可してください");
-    else if (e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") toast("ログインできませんでした");
+  const p = new fb.GoogleAuthProvider();
+  return (EMULATOR ? fb.signInWithPopup(fb.auth, p) : fb.signInWithRedirect(fb.auth, p)).catch((e) => {
+    if (e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") toast("ログインできませんでした");
   });
 }
 
