@@ -111,7 +111,7 @@ When the card data contains a card whose name matches a registered card, ignorin
 
 ### Requirement: 発売前のカードの自動取得
 
-The system SHALL weekly find the product pages marked as upcoming on the card list of 遊戯王カードWiki, read the pages of their cards that are not in the card data, and publish each card's name, reading, kind, level, rank or link rating, spell or trap type, and product name. It SHALL NOT publish effect text. It SHALL wait 2 seconds between pages and identify itself with the repository URL. When fetching or reading fails, the previously published data SHALL be kept and the failure SHALL be reported.
+The system SHALL weekly find the product pages marked as upcoming on the card list of 遊戯王カードWiki, read the pages of their cards that are not in the card data, and publish each card's name, reading, kind, level, rank or link rating, spell or trap type, and product name. It SHALL also read each card's effect text from the same page, but SHALL NOT publish it unencrypted; the effect text SHALL be handed only to the effect text preparation, which encrypts it. It SHALL wait 2 seconds between pages and identify itself with the repository URL. When fetching or reading fails, the previously published data SHALL be kept and the failure SHALL be reported.
 
 #### Scenario: 発売予定の商品のカードが出る
 

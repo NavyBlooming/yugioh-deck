@@ -58,7 +58,7 @@ The system SHALL refuse to add a card to the candidate area when it already hold
 
 ### Requirement: カードを抜く・移す
 
-The system SHALL open a card detail sheet when the user long-presses a card in the deck, the candidate area, the search results, the history or the favorites. The sheet SHALL show the card image (or frame color), name, reading, level, rank or link rating, card type, limit status, the number of copies in the main deck, extra deck and candidate area of the open deck, and the effect text for a user who has entered the artwork passphrase. Long-pressing SHALL NOT add the card. From the sheet, the user SHALL be able to add one copy, remove one copy, move one copy between the deck and the candidate area, add or remove the card from favorites, set the card as the deck cover, open the purchase note, and open the card's pages on the official database and Card Rush. Adding one copy from a card in the deck SHALL go to the same kind of area as the pressed card; adding from the search results, history or favorites SHALL go to the current destination. The official database button SHALL NOT be shown for prerelease cards. The deck editor SHALL also offer a tap mode switch with "未所持" and "抜く"; while "抜く" is selected, tapping a card SHALL remove one copy of it and show which card was removed. The switch SHALL start at "未所持" each time the deck is opened. Adding one copy and moving SHALL follow the same limits as adding from the search results.
+The system SHALL open a card detail sheet when the user long-presses a card in the deck, the candidate area, the search results, the history or the favorites. The sheet SHALL show the card image (or frame color), name, reading, level, rank or link rating, card type, limit status, the number of copies in the main deck, extra deck and candidate area of the open deck, and the effect text for a user who has entered the artwork passphrase, including the Yugioh Card Wiki text for prerelease cards obtained from the Wiki. Long-pressing SHALL NOT add the card. From the sheet, the user SHALL be able to add one copy, remove one copy, move one copy between the deck and the candidate area, add or remove the card from favorites, set the card as the deck cover, open the purchase note, and open the card's pages on the official database and Card Rush. Adding one copy from a card in the deck SHALL go to the same kind of area as the pressed card; adding from the search results, history or favorites SHALL go to the current destination. The official database button SHALL NOT be shown for prerelease cards. The deck editor SHALL also offer a tap mode switch with "未所持" and "抜く"; while "抜く" is selected, tapping a card SHALL remove one copy of it and show which card was removed. The switch SHALL start at "未所持" each time the deck is opened. Adding one copy and moving SHALL follow the same limits as adding from the search results.
 
 #### Scenario: カード詳細を見る
 
@@ -92,8 +92,13 @@ The system SHALL open a card detail sheet when the user long-presses a card in t
 
 #### Scenario: 発売前のカード
 
-- **WHEN** 発売前のカードを長押しする
-- **THEN** 効果テキストの代わりに発売前のカードである旨が出て、「公式DB」のボタンは出ない
+- **WHEN** 合言葉を入れた端末で、遊戯王カードWiki から取得した発売前のカードを長押しする
+- **THEN** 遊戯王カードWiki の効果テキストが出て、「公式DB」のボタンは出ない
+
+#### Scenario: 自分で登録したカード
+
+- **WHEN** 自分で登録した発売前のカードを長押しする
+- **THEN** 効果テキストの代わりに発売前のカードである旨が出る
 
 #### Scenario: タップで抜く
 
