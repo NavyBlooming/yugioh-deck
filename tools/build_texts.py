@@ -33,6 +33,23 @@ def read_cdb(data: bytes) -> dict[int, str]:
         os.unlink(path)
 
 
+def prerelease_texts(repo: Path, key: bytes) -> dict[str, str]:
+    """今の発売前のカードの文。build_prerelease.py が .cache に置いたもの。取得に失敗して無い週は、前回の art/texts.bin から残す。"""
+    pre = repo / "data" / "prerelease.json"
+    if not pre.exists():
+        return {}
+    cids = {str(c["cid"]) for c in json.loads(pre.read_text(encoding="utf-8"))["cards"]}
+    fresh = repo / ".cache" / "prerelease-texts.json"
+    old = repo / "art" / "texts.bin"
+    if fresh.exists():
+        src = json.loads(fresh.read_text(encoding="utf-8"))
+    elif old.exists():
+        src = json.loads(gzip.decompress(art_crypto.decrypt(key, old.read_bytes())).decode("utf-8"))
+    else:
+        return {}
+    return {cid: t for cid, t in src.items() if cid in cids}
+
+
 def build_texts(repo: Path, passphrase: str, fetch_bytes) -> dict:
     art = repo / "art"
     meta = json.loads((art / "meta.json").read_text(encoding="utf-8"))
@@ -49,6 +66,7 @@ def build_texts(repo: Path, passphrase: str, fetch_bytes) -> dict:
     for e in ygocdb.values():
         if e["cid"] in cids and e["id"] in by_pw:
             texts[str(e["cid"])] = by_pw[e["id"]].replace("\r\n", "\n")
+    texts.update(prerelease_texts(repo, key))
 
     plain = json.dumps(texts, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     digest = hashlib.sha256(plain).hexdigest()

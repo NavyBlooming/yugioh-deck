@@ -1,4 +1,6 @@
-"""遊戯王カードWiki の発売予定の商品から、カードデータに無いカードを data/prerelease.json にする。効果テキストは取らない。"""
+"""遊戯王カードWiki の発売予定の商品から、カードデータに無いカードを data/prerelease.json にする。
+
+効果テキストは公開しないので .cache/prerelease-texts.json に置き、build_texts.py が暗号化して取り込む。"""
 
 import datetime
 import html as htmllib
@@ -63,7 +65,7 @@ def parse_product(page: str) -> tuple[bool, str, list[tuple[str, str]]]:
 
 
 def parse_card(page: str) -> dict | None:
-    """カードのページの見出しと種類の行から、読み・種類・レベル・魔法罠の種類を読む。読めなければ None。"""
+    """カードのページの見出しと種類の行から、読み・種類・レベル・魔法罠の種類・効果テキストを読む。読めなければ None。"""
     h2 = re.search(r"<h2[^>]*>《(.*?)》", page, re.S)
     pre = re.search(r"<pre>(.*?)</pre>", page, re.S)
     if not h2 or not pre:
@@ -73,9 +75,9 @@ def parse_card(page: str) -> dict | None:
     lines = [x.strip() for x in _text(pre.group(1)).splitlines() if x.strip()]
     first = lines[0]
     if first.endswith("魔法") and first[:-2] in SPELL_SUBS:
-        return {"ruby": ruby, "kind": "spell", "level": 0, "sub": SPELL_SUBS[first[:-2]]}
+        return {"ruby": ruby, "kind": "spell", "level": 0, "sub": SPELL_SUBS[first[:-2]], "text": "\n".join(lines[1:])}
     if first.endswith("罠") and first[:-1] in TRAP_SUBS:
-        return {"ruby": ruby, "kind": "trap", "level": 0, "sub": TRAP_SUBS[first[:-1]]}
+        return {"ruby": ruby, "kind": "trap", "level": 0, "sub": TRAP_SUBS[first[:-1]], "text": "\n".join(lines[1:])}
     if not first.endswith("モンスター") or len(lines) < 2:
         return None
     kind = next((k for word, k in MONSTER_KINDS if word in first), None)
@@ -83,7 +85,7 @@ def parse_card(page: str) -> dict | None:
     lv = re.match(r"(?:星|ランク|リンク|LINK-?)(\d+)", unicodedata.normalize("NFKC", lines[1]).replace("－", "-"))
     if not kind or not lv:
         return None
-    return {"ruby": ruby, "kind": kind, "level": int(lv.group(1)), "sub": ""}
+    return {"ruby": ruby, "kind": kind, "level": int(lv.group(1)), "sub": "", "text": "\n".join(lines[2:])}
 
 
 RETRY_WAITS = [10, 30]
@@ -116,7 +118,7 @@ def build_prerelease(repo: Path, fetch_text, sleep=time.sleep, today: str | None
         first = False
         return fetch_text(url)
 
-    cards, seen = [], set()
+    cards, texts, seen = [], {}, set()
     for url in product_urls(get(LIST_URL)):
         upcoming, set_name, items = parse_product(get(url))
         if not upcoming:
@@ -130,7 +132,13 @@ def build_prerelease(repo: Path, fetch_text, sleep=time.sleep, today: str | None
             if info is None:
                 print(f"skip (unreadable): {name}", file=sys.stderr)
                 continue
-            cards.append({"cid": cid_of(name), "name": name, **info, "set": set_name, "number": number})
+            cid = cid_of(name)
+            texts[str(cid)] = info.pop("text")
+            cards.append({"cid": cid, "name": name, **info, "set": set_name, "number": number})
+
+    cache = repo / ".cache"
+    cache.mkdir(exist_ok=True)
+    (cache / "prerelease-texts.json").write_bytes(json.dumps(texts, ensure_ascii=False).encode("utf-8"))
 
     out = repo / "data" / "prerelease.json"
     if out.exists() and json.loads(out.read_text(encoding="utf-8")).get("cards") == cards:

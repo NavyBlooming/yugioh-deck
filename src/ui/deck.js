@@ -125,9 +125,11 @@ export function deckView(ctx, deckId) {
     const fromArea = area ?? (countIn(home) ? home : countIn("cand") ? "cand" : null);
     const fav = (ctx.state.favorites ?? []).includes(cid);
     const text = h("div", { class: "cd-text", id: "cd-text" }, "効果テキストを読み込んでいます…");
-    if (card.custom) text.textContent = card.set ? `発売前のカードです（${card.set}）。効果テキストはありません。` : "発売前のカードです。効果テキストはありません。";
+    const noText = card.custom ? (card.set ? `発売前のカードです（${card.set}）。効果テキストはありません。` : "発売前のカードです。効果テキストはありません。") : "効果テキストがありません。";
+    // 自分で登録したカード（-1, -2, …）には効果テキストが無い。Wiki から取得したカードは遊戯王カードWiki の文がある
+    if (card.custom && cid > -1000000) text.textContent = noText;
     else if (artState() !== "on") text.textContent = "合言葉を入れると、効果テキストが表示されます。";
-    else cardText(cid).then((t) => (text.textContent = t ?? "効果テキストがありません。"));
+    else cardText(cid).then((t) => (text.textContent = t ?? noText));
     const big = tileEl(card, {});
     big.classList.add("cd-tile");
     const close = openModal(

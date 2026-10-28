@@ -69,9 +69,19 @@ class Net:
 
 
 def test_カードのページから読み_種類_レベルを読む():
-    assert bp.parse_card(CARD_A) == {"ruby": "あたらしいりゅう", "kind": "effect", "level": 5, "sub": ""}
-    assert bp.parse_card(CARD_C) == {"ruby": "あたらしいわな", "kind": "trap", "level": 0, "sub": "counter"}
-    assert bp.parse_card(CARD_D) == {"ruby": "ニュー・フュージョン", "kind": "fusion", "level": 8, "sub": ""}
+    assert bp.parse_card(CARD_A) == {"ruby": "あたらしいりゅう", "kind": "effect", "level": 5, "sub": "", "text": "効果の文。"}
+    assert bp.parse_card(CARD_C) == {"ruby": "あたらしいわな", "kind": "trap", "level": 0, "sub": "counter", "text": "効果の文。"}
+    assert bp.parse_card(CARD_D) == {"ruby": "ニュー・フュージョン", "kind": "fusion", "level": 8, "sub": "", "text": "効果の文。"}
+
+
+def test_効果テキストは種類と能力値の行より後_タグは外す():
+    html = """<div id="body"><h2>《テスト/Test》</h2><pre>リンク・効果モンスター
+リンク２/光属性/天使族/攻1500
+【リンクマーカー：上/下】
+<a href="/?x">「テスト」</a>モンスター２体
+①：自分の&amp;墓地の
+カード１枚を対象として発動できる。</pre></div>"""
+    assert bp.parse_card(html)["text"] == "【リンクマーカー：上/下】\n「テスト」モンスター２体\n①：自分の&墓地の\nカード１枚を対象として発動できる。"
 
 
 @pytest.mark.parametrize(
@@ -109,6 +119,9 @@ def test_発売予定の商品の_カードデータに無いカードだけ載�
     assert set(by) == {"新しい竜", "新しい罠", "新しい融合"}
     assert by["新しい融合"]["ruby"] == "ニュー・フュージョン"
     assert by["新しい竜"] == {"cid": by["新しい竜"]["cid"], "name": "新しい竜", "ruby": "あたらしいりゅう", "kind": "effect", "level": 5, "sub": "", "set": "NEW PACK", "number": "NEWP-JP001"}
+    # 効果テキストは公開するファイルには入れず、.cache に置く（build_texts.py が暗号化して取り込む）
+    texts = json.loads((repo / ".cache" / "prerelease-texts.json").read_text(encoding="utf-8"))
+    assert texts == {str(c["cid"]): "効果の文。" for c in data["cards"]}
     assert all(c["cid"] <= -1000000 for c in data["cards"])
     assert by["新しい融合"]["number"] == "NEWP-JP004"
     # カードデータにあるカードのページと、発売済みの商品のカードのページは読まない

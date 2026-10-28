@@ -20,12 +20,12 @@ jobs:
       - run: uv run tools/build_art.py
         env:
           YGO_ART_PASSPHRASE: ${{ secrets.YGO_ART_PASSPHRASE }}
+      # Wiki の書き方が変わって失敗しても、ほかの更新は止めない（前の data/prerelease.json と効果テキストが残る）
+      - run: uv run tools/build_prerelease.py
+        continue-on-error: true
       - run: uv run tools/build_texts.py
         env:
           YGO_ART_PASSPHRASE: ${{ secrets.YGO_ART_PASSPHRASE }}
-      # Wiki の書き方が変わって失敗しても、ほかの更新は止めない（前の data/prerelease.json が残る）
-      - run: uv run tools/build_prerelease.py
-        continue-on-error: true
       - run: uv run tools/build_art.py --prerelease
         continue-on-error: true
         env:

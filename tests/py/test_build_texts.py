@@ -97,3 +97,29 @@ def test_合言葉が違えば止まる(repo, tmp_path):
     with pytest.raises(SystemExit):
         bt.build_texts(repo, "違う", fetcher(tmp_path))
     assert not (repo / "art" / "texts.bin").exists()
+
+
+def put_prerelease(repo, cids, texts=None):
+    (repo / "data" / "prerelease.json").write_text(json.dumps({"cards": [{"cid": c} for c in cids]}), encoding="utf-8")
+    if texts is not None:
+        (repo / ".cache").mkdir(exist_ok=True)
+        (repo / ".cache" / "prerelease-texts.json").write_text(json.dumps(texts, ensure_ascii=False), encoding="utf-8")
+
+
+def test_発売前のカードの文も入れる_今の発売前のカードだけ(repo, tmp_path):
+    put_prerelease(repo, [-1000001, -1000002], {"-1000001": "Wikiの文。", "-1000003": "もう無いカード"})
+    r = bt.build_texts(repo, PASS, fetcher(tmp_path))
+    assert r == {"status": "updated", "count": 3}
+    assert read_texts(repo)["-1000001"] == "Wikiの文。"
+    assert "-1000003" not in read_texts(repo)
+
+
+def test_発売前のカードの文が取れなかった週は前の文を残す(repo, tmp_path):
+    put_prerelease(repo, [-1000001, -1000002], {"-1000001": "前の文。", "-1000002": "消える文。"})
+    bt.build_texts(repo, PASS, fetcher(tmp_path))
+    (repo / ".cache" / "prerelease-texts.json").unlink()
+    put_prerelease(repo, [-1000001])
+    (tmp_path / "src.cdb").unlink()
+    assert bt.build_texts(repo, PASS, fetcher(tmp_path))["count"] == 3
+    t = read_texts(repo)
+    assert t["-1000001"] == "前の文。" and "-1000002" not in t
