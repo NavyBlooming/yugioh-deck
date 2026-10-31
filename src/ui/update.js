@@ -54,7 +54,8 @@ export async function reloadButton(btn) {
   }
 }
 
-// 開いて10秒後と、アプリに戻ってきたときに、新しい版が出ていないか確かめる
+// 開いて10秒後と、アプリやウィンドウに戻ってきたときと、見えている間は1分ごとに、新しい版が出ていないか確かめる。
+// 問い合わせは10分に1回まで（createVersionWatch）。PC は開いたまま隠れないことが多いので、1分ごとの確かめが要る
 export function initUpdate() {
   const watch = createVersionWatch({
     urls: siteFiles,
@@ -75,7 +76,10 @@ export function initUpdate() {
     document.body.prepend(bar);
   };
   setTimeout(check, 10000);
-  document.addEventListener("visibilitychange", () => {
+  const ifVisible = () => {
     if (document.visibilityState === "visible") check();
-  });
+  };
+  document.addEventListener("visibilitychange", ifVisible);
+  window.addEventListener("focus", ifVisible);
+  setInterval(ifVisible, 60000);
 }
