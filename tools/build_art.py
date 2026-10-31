@@ -192,7 +192,10 @@ def match_prerelease(pre_cards, ypd_cards):
 
 
 def build_prerelease_art(repo, passphrase, fetch_ypd, fetch_image, iterations=300000, sleep=time.sleep):
-    """発売前のカードの絵を、カード全体の画像から絵の枠を切り出して作る。発売前でなくなったカードの絵は消す。"""
+    """発売前のカードの絵を、カード全体の画像から絵の枠を切り出して作る。
+    発売されてカードデータに入ったカードは、まだ絵が無ければ発売前の絵を引き継ぐ。それ以外の発売前でなくなったカードの絵は消す。"""
+    from build_prerelease import cid_of
+
     art = repo / "art"
     meta, key, index = _open_art(repo, passphrase, iterations)
     pre_path = repo / "data" / "prerelease.json"
@@ -202,12 +205,20 @@ def build_prerelease_art(repo, passphrase, fetch_ypd, fetch_image, iterations=30
     art.mkdir(exist_ok=True)
     if meta is not None:
         _write_json(art / "meta.json", meta)
-    stats = {"matched": len(matched), "new": 0, "removed": 0, "no_image": 0, "failed": 0}
+    stats = {"matched": len(matched), "new": 0, "carried": 0, "removed": 0, "no_image": 0, "failed": 0}
     alive = {c["cid"] for c in pre}
+    # 発売前の番号は名前から決まるので、カードデータの名前から元の番号が分かる
+    released = {cid_of(c[1]): c[0] for c in json.loads((repo / "data" / "cards.json").read_text(encoding="utf-8"))["cards"]}
     for cid in sorted(c for c in index if c < 0 and c not in alive):
-        (art / f"{cid}.bin").unlink(missing_ok=True)
+        to = released.get(cid)
+        if to is not None and to not in index:
+            os.replace(art / f"{cid}.bin", art / f"{to}.bin")
+            index.add(to)
+            stats["carried"] += 1
+        else:
+            (art / f"{cid}.bin").unlink(missing_ok=True)
+            stats["removed"] += 1
         index.discard(cid)
-        stats["removed"] += 1
 
     cache = repo / ".cache" / "art"
     cache.mkdir(parents=True, exist_ok=True)
@@ -265,7 +276,7 @@ if __name__ == "__main__":
             lambda: json.loads(_get(YPD_URL).content.decode("utf-8")),
             lambda pid: _get(FULL_URL.format(pid)).content,
         )
-        print(f"matched {s['matched']} / new {s['new']} / removed {s['removed']} / no image {s['no_image']} / failed {s['failed']}")
+        print(f"matched {s['matched']} / new {s['new']} / carried {s['carried']} / removed {s['removed']} / no image {s['no_image']} / failed {s['failed']}")
         sys.exit(0)
     limit = int(sys.argv[sys.argv.index("--limit") + 1]) if "--limit" in sys.argv else None
     stats = build_art(

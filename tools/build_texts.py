@@ -13,6 +13,7 @@ from pathlib import Path
 
 import art_crypto
 from build_art import UA, _write_bytes, _write_json, load_passphrase
+from build_prerelease import cid_of
 
 CDB_URL = "https://raw.githubusercontent.com/mycard/ygopro-database/master/locales/ja-JP/cards.cdb"
 ZIP_URL = "https://ygocdb.com/api/v0/cards.zip"
@@ -57,7 +58,8 @@ def build_texts(repo: Path, passphrase: str, fetch_bytes) -> dict:
         key = art_crypto.key_from_meta(meta, passphrase)
     except ValueError:
         sys.exit("wrong passphrase for art/meta.json")
-    cids = {c[0] for c in json.loads((repo / "data" / "cards.json").read_text(encoding="utf-8"))["cards"]}
+    cards = json.loads((repo / "data" / "cards.json").read_text(encoding="utf-8"))["cards"]
+    cids = {c[0] for c in cards}
 
     by_pw = read_cdb(fetch_bytes(CDB_URL))
     with zipfile.ZipFile(io.BytesIO(fetch_bytes(ZIP_URL))) as z:
@@ -67,6 +69,14 @@ def build_texts(repo: Path, passphrase: str, fetch_bytes) -> dict:
         if e["cid"] in cids and e["id"] in by_pw:
             texts[str(e["cid"])] = by_pw[e["id"]].replace("\r\n", "\n")
     texts.update(prerelease_texts(repo, key))
+    # 発売されたカードは、ygocdb に文が入るまで、前回の文（発売前の番号の文）を使う
+    old = art / "texts.bin"
+    if old.exists():
+        prev = json.loads(gzip.decompress(art_crypto.decrypt(key, old.read_bytes())).decode("utf-8"))
+        for cid, name, *_ in cards:
+            t = prev.get(str(cid)) or prev.get(str(cid_of(name)))
+            if cid > 0 and str(cid) not in texts and t:
+                texts[str(cid)] = t
 
     plain = json.dumps(texts, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     digest = hashlib.sha256(plain).hexdigest()

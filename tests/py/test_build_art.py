@@ -327,3 +327,35 @@ def test_カード全体の画像も無ければ数えて飛ばす(repo):
 
     stats = ba.build_art(repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None, fetch_full=none)
     assert index(repo) == [10] and stats["no_image"] == 2
+
+
+def test_発売されたカードは発売前の絵を引き継ぐ(repo):
+    from build_prerelease import cid_of
+
+    old = cid_of("白鴉の騎士マルト")
+    write_pre(repo, [{**pre(old, "NEWP-JP001"), "name": "白鴉の騎士マルト"}])
+    run_pre(repo, PreNet())
+    blob = (repo / "art" / f"{old}.bin").read_bytes()
+    cards = json.loads((repo / "data" / "cards.json").read_text(encoding="utf-8"))
+    cards["cards"].append([23821, "白鴉の騎士マルト", "はくあのきしマルト", "effect", "effect", 3])
+    (repo / "data" / "cards.json").write_text(json.dumps(cards, ensure_ascii=False), encoding="utf-8")
+    write_pre(repo, [])
+    stats = run_pre(repo, PreNet())
+    assert stats["carried"] == 1 and stats["removed"] == 0
+    assert 23821 in index(repo) and old not in index(repo)
+    assert (repo / "art" / "23821.bin").read_bytes() == blob
+    assert not (repo / "art" / f"{old}.bin").exists()
+
+
+def test_発売されたカードに絵があれば発売前の絵は消す(repo):
+    from build_prerelease import cid_of
+
+    run(repo, Net())
+    old = cid_of("n10")
+    write_pre(repo, [{**pre(old, "NEWP-JP001"), "name": "n10"}])
+    run_pre(repo, PreNet())
+    before = (repo / "art" / "10.bin").read_bytes()
+    write_pre(repo, [])
+    stats = run_pre(repo, PreNet())
+    assert stats["carried"] == 0 and stats["removed"] == 1
+    assert (repo / "art" / "10.bin").read_bytes() == before

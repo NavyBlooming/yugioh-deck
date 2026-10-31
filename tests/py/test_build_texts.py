@@ -123,3 +123,22 @@ def test_発売前のカードの文が取れなかった週は前の文を残�
     assert bt.build_texts(repo, PASS, fetcher(tmp_path))["count"] == 3
     t = read_texts(repo)
     assert t["-1000001"] == "前の文。" and "-1000002" not in t
+
+
+def test_発売されたカードは発売前の文を引き継ぐ(repo, tmp_path):
+    from build_prerelease import cid_of
+
+    old = cid_of("白鴉の騎士マルト")
+    f = fetcher(tmp_path)
+    put_prerelease(repo, [old], {str(old): "Wikiの文。"})
+    bt.build_texts(repo, PASS, f)
+    cards = json.loads((repo / "data" / "cards.json").read_text(encoding="utf-8"))
+    cards["cards"].append([40, "白鴉の騎士マルト", "", "effect", "effect", 3, 4, ""])
+    (repo / "data" / "cards.json").write_text(json.dumps(cards, ensure_ascii=False), encoding="utf-8")
+    put_prerelease(repo, [], {})
+    bt.build_texts(repo, PASS, f)
+    t = read_texts(repo)
+    assert t["40"] == "Wikiの文。" and str(old) not in t
+    # 次の週も、ygocdb に文が無いあいだは残す
+    bt.build_texts(repo, PASS, f)
+    assert read_texts(repo)["40"] == "Wikiの文。"
