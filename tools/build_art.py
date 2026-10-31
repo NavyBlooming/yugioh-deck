@@ -82,7 +82,7 @@ def _open_art(repo, passphrase, iterations):
     return meta, key, index
 
 
-def build_art(repo, passphrase, fetch_ypd, fetch_image, limit=None, iterations=300000, sleep=time.sleep, workers=1):
+def build_art(repo, passphrase, fetch_ypd, fetch_image, limit=None, iterations=300000, sleep=time.sleep, workers=1, fetch_full=None):
     art = repo / "art"
     meta_path = art / "meta.json"
     index_path = art / "index.json"
@@ -90,11 +90,13 @@ def build_art(repo, passphrase, fetch_ypd, fetch_image, limit=None, iterations=3
     cards = json.loads((repo / "data" / "cards.json").read_text(encoding="utf-8"))["cards"]
     cids = {c[0] for c in cards}
 
-    pw_of = {}
+    pw_of, pendulum = {}, set()
     for c in fetch_ypd()["data"]:
         info = c.get("misc_info")
         if info and info[0].get("konami_id") in cids:
             pw_of[info[0]["konami_id"]] = c["id"]
+            if "pendulum" in c.get("frameType", ""):
+                pendulum.add(c["id"])
     targets = sorted(cid for cid in cids if cid not in index and cid in pw_of)
     if limit is not None:
         targets = targets[:limit]
@@ -104,19 +106,26 @@ def build_art(repo, passphrase, fetch_ypd, fetch_image, limit=None, iterations=3
         _write_json(meta_path, meta)
     cache = repo / ".cache" / "art"
     cache.mkdir(parents=True, exist_ok=True)
+    def get(cached, fetch, pw):
+        if cached.exists():
+            return cached.read_bytes()
+        try:
+            jpeg = fetch(pw)
+        finally:
+            sleep(0.2)
+        _write_bytes(cached, jpeg)
+        return jpeg
+
     def one(cid):
         pw = pw_of[cid]
         try:
-            cached = cache / f"{pw}.jpg"
-            if cached.exists():
-                jpeg = cached.read_bytes()
-            else:
-                try:
-                    jpeg = fetch_image(pw)
-                finally:
-                    sleep(0.2)
-                _write_bytes(cached, jpeg)
-            blob = art_crypto.encrypt(key, to_webp(jpeg))
+            try:
+                blob = art_crypto.encrypt(key, to_webp(get(cache / f"{pw}.jpg", fetch_image, pw)))
+            except ImageNotFound:
+                # 絵だけの画像が無いカードは、カード全体の画像から絵の枠を切り出す。ペンデュラムは枠の形が違うので除く
+                if fetch_full is None or pw in pendulum:
+                    raise
+                blob = art_crypto.encrypt(key, to_webp(get(cache / f"full-{pw}.jpg", fetch_full, pw), ART_BOX))
         except ImageNotFound:
             return "no_image", 0
         except Exception:
@@ -266,5 +275,6 @@ if __name__ == "__main__":
         lambda pw: _get(IMG_URL.format(pw)).content,
         limit=limit,
         workers=2,
+        fetch_full=lambda pw: _get(FULL_URL.format(pw)).content,
     )
     print(_summary(stats))

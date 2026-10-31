@@ -287,3 +287,43 @@ def test_prerelease_art_wrong_passphrase_writes_nothing(repo):
     with pytest.raises(SystemExit):
         run_pre(repo, PreNet(), passphrase="wrong")
     assert -1000001 not in index(repo)
+
+
+class FallbackNet(Net):
+    """1020 と 1030 は絵だけの画像が無い。1030 はペンデュラム。"""
+
+    def __init__(self):
+        super().__init__(missing={1020, 1030})
+        self.full_calls = []
+
+    def ypd(self):
+        data = [dict(c) for c in YPD["data"]]
+        data[2]["frameType"] = "effect_pendulum"
+        return {"data": data}
+
+    def full(self, pw):
+        self.full_calls.append(pw)
+        return full_card()
+
+
+def test_絵だけの画像が無ければカード全体から切り出す_ペンデュラムは除く(repo):
+    net = FallbackNet()
+    stats = ba.build_art(repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None, fetch_full=net.full)
+    assert net.full_calls == [1020]
+    assert index(repo) == [10, 20]
+    assert stats["new"] == 2 and stats["no_image"] == 1
+    assert (repo / ".cache" / "art" / "full-1020.jpg").exists()
+    key = ac.key_from_meta(json.loads((repo / "art" / "meta.json").read_text(encoding="utf-8")), PASS)
+    im = Image.open(io.BytesIO(ac.decrypt(key, (repo / "art" / "20.bin").read_bytes()))).convert("RGB")
+    r, g, b = im.getpixel((3, 3))
+    assert r > 180 and g < 70
+
+
+def test_カード全体の画像も無ければ数えて飛ばす(repo):
+    net = FallbackNet()
+
+    def none(pw):
+        raise ba.ImageNotFound(pw)
+
+    stats = ba.build_art(repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None, fetch_full=none)
+    assert index(repo) == [10] and stats["no_image"] == 2
