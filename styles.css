@@ -233,7 +233,12 @@ input[type="text"], input[type="number"], select {
 .cd-stat { font-size: 20px; font-weight: 700; color: #ffd479; min-height: 1em; }
 .cd-stat:empty { display: none; }
 .cd-kind { font-weight: 700; }
+.cd-attr { font-size: 13px; }
+.cd-atk { font-size: 13px; font-weight: 700; }
+.cd-markers { display: grid; grid-template-columns: repeat(3, 14px); gap: 1px; font-size: 12px; line-height: 14px; text-align: center; color: #fff3; }
+.cd-markers .on { color: #ff6a5c; }
 .cd-limit { font-size: 12px; color: var(--sub); }
+.cd-date { font-size: 12px; color: var(--sub); }
 .cd-limit.lim-0, .cd-limit.lim-1, .cd-limit.lim-2 { color: #ff8a98; font-weight: 700; }
 .cd-count { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 12px; color: var(--sub); }
 .cd-text {

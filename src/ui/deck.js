@@ -2,7 +2,7 @@ import { addCard, addHandTraps, deleteDeck, moveOne, removeOne, renameDeck, sort
 import { cardRushUrl, officialDbUrl } from "../core/shopping.js";
 import { search, searchWithText } from "../core/search.js";
 import { artState, cardText, loadTexts } from "./art.js";
-import { areaOf } from "../core/cards.js";
+import { areaOf, monsterInfo } from "../core/cards.js";
 import { h } from "./dom.js";
 import { nameDialog, noteDialog, openModal, toast } from "./dialogs.js";
 import { cardOr, tileEl } from "./tile.js";
@@ -33,6 +33,24 @@ function statText(card) {
   if (card.group === "xyz") return `ランク ${card.level}`;
   if (card.group === "link") return `LINK-${card.level}`;
   return `★ ${card.level}`;
+}
+
+// 属性・種族・攻守・リンクマーカー・スケールの行。番号が無いカードは何も出さない
+const ARROWS = { 左上: "◤", 上: "▲", 右上: "◥", 左: "◀", 右: "▶", 左下: "◣", 下: "▼", 右下: "◢" };
+function monsterRows(card) {
+  const m = monsterInfo(card);
+  if (!m) return [];
+  const rows = [
+    h("div", { class: "cd-attr" }, [m.attr, m.race, ...m.traits].filter(Boolean).join("／")),
+    h("div", { class: "cd-atk" }, m.def === null ? `ATK ${m.atk}` : `ATK ${m.atk} / DEF ${m.def}`, m.scale !== null ? `　スケール ${m.scale}` : ""),
+  ];
+  if (m.markers) {
+    const cells = ["左上", "上", "右上", "左", "", "右", "左下", "下", "右下"];
+    rows.push(h("div", { class: "cd-markers", title: `リンクマーカー: ${m.markers.join("・")}` },
+      ...cells.map((c) => h("span", { class: m.markers.includes(c) ? "on" : "" }, ARROWS[c] ?? "")),
+    ));
+  }
+  return rows;
 }
 
 // タイルを長押し（500ms）とタップに振り分ける。長押しが成立したら、その後の click は捨てる。
@@ -160,7 +178,9 @@ export function deckView(ctx, deckId) {
           h("div", { class: "cd-info" },
             h("div", { class: "cd-stat" }, statText(card)),
             h("div", { class: "cd-kind" }, `【${kindText(card)}】`),
+            ...monsterRows(card),
             h("div", { class: `cd-limit lim-${card.limit}` }, LIMIT_TEXT[card.limit] ?? ""),
+            card.date ? h("div", { class: "cd-date" }, `OCG 発売日 ${card.date}`) : null,
             countEl,
           ),
         ),

@@ -14,7 +14,7 @@ YPD_URL = "https://db.ygoprodeck.com/api/v7/cardinfo.php?misc=yes"
 LIMITS_URL = "https://www.db.yugioh-card.com/yugiohdb/forbidden_limited.action?request_locale=ja"
 UA = "yugioh-deck (https://github.com/NavyBlooming/yugioh-deck)"
 # cards.json の行の形を変えたら上げる。元データが同じでも作り直させるため
-FORMAT = 2
+FORMAT = 3
 
 SPELL, TRAP, NORMAL, EFFECT = 0x2, 0x4, 0x10, 0x20
 TOKEN, PENDULUM = 0x4000, 0x1000000
@@ -117,7 +117,13 @@ def build(cdb: dict, ypd: dict, limits: dict) -> tuple[list, list]:
             continue
         if frame is None:
             continue
-        rows.append([cid, name, c.get("jp_ruby") or name, group_of(frame), frame, limit_of(cid, limits), level, sub])
+        date = ((y or {}).get("misc_info") or [{}])[0].get("ocg_date") or ""
+        row = [cid, name, c.get("jp_ruby") or name, group_of(frame), frame, limit_of(cid, limits), level, sub, date]
+        if t is not None and t & 0x1:
+            # 属性・種族・種類は ygocdb の番号のまま。リンクの守備力の欄はリンクマーカー、レベルの欄の上の桁はスケール
+            d = c["data"]
+            row += [d.get("attribute", 0), d.get("race", 0), t, d.get("atk", 0), d.get("def", 0), d.get("level", 0) >> 24 & 0xFF]
+        rows.append(row)
     rows.sort(key=lambda r: r[0])
     excluded.sort(key=lambda e: e["cid"])
     return rows, excluded

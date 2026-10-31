@@ -58,7 +58,7 @@ The system SHALL refuse to add a card to the candidate area when it already hold
 
 ### Requirement: カードを抜く・移す
 
-The system SHALL open a card detail sheet when the user long-presses a card in the deck, the candidate area, the search results, the history or the favorites. The sheet SHALL show the card image (or frame color), name, reading, level, rank or link rating, card type, limit status, the number of copies in the main deck, extra deck and candidate area of the open deck, and the effect text for a user who has entered the artwork passphrase, including the Yugioh Card Wiki text for prerelease cards obtained from the Wiki. Long-pressing SHALL NOT add the card. From the sheet, the user SHALL be able to add one copy, remove one copy, move one copy between the deck and the candidate area, add or remove the card from favorites, set the card as the deck cover, open the purchase note, and open the card's pages on the official database and Card Rush. Adding one copy from a card in the deck SHALL go to the same kind of area as the pressed card; adding from the search results, history or favorites SHALL go to the current destination. The official database button SHALL NOT be shown for prerelease cards. The deck editor SHALL also offer a tap mode switch with "未所持" and "抜く"; while "抜く" is selected, tapping a card SHALL remove one copy of it and show which card was removed. The switch SHALL start at "未所持" each time the deck is opened. Adding one copy and moving SHALL follow the same limits as adding from the search results. Adding or removing one copy from the sheet SHALL keep the sheet open and update the counts shown in it. When no more copies can be added, removed or moved, the system SHALL keep the sheet open and show the reason.
+The system SHALL open a card detail sheet when the user long-presses a card in the deck, the candidate area, the search results, the history or the favorites. The sheet SHALL show the card image (or frame color), name, reading, level, rank or link rating, card type, limit status, the attribute, type, monster traits (such as Tuner), ATK and DEF, link arrows and pendulum scale for monsters whose data is available, the OCG release date when it is available, the number of copies in the main deck, extra deck and candidate area of the open deck, and the effect text for a user who has entered the artwork passphrase, including the Yugioh Card Wiki text for prerelease cards obtained from the Wiki. Long-pressing SHALL NOT add the card. From the sheet, the user SHALL be able to add one copy, remove one copy, move one copy between the deck and the candidate area, add or remove the card from favorites, set the card as the deck cover, open the purchase note, and open the card's pages on the official database and Card Rush. Adding one copy from a card in the deck SHALL go to the same kind of area as the pressed card; adding from the search results, history or favorites SHALL go to the current destination. The official database button SHALL NOT be shown for prerelease cards. The deck editor SHALL also offer a tap mode switch with "未所持" and "抜く"; while "抜く" is selected, tapping a card SHALL remove one copy of it and show which card was removed. The switch SHALL start at "未所持" each time the deck is opened. Adding one copy and moving SHALL follow the same limits as adding from the search results. Adding or removing one copy from the sheet SHALL keep the sheet open and update the counts shown in it. When no more copies can be added, removed or moved, the system SHALL keep the sheet open and show the reason.
 
 #### Scenario: カード詳細を見る
 
@@ -129,6 +129,16 @@ The system SHALL open a card detail sheet when the user long-presses a card in t
 
 - **WHEN** 候補カード欄のカードを長押しして「デッキへ移す」を選ぶ
 - **THEN** そのカードは候補から1枚減り、カードの区分に応じてメインかエクストラに1枚増える
+
+#### Scenario: モンスターの属性・種族・攻守を見る
+
+- **WHEN** 「灰流うらら」を長押しする
+- **THEN** 「炎属性／アンデット族／チューナー」「ATK 0 / DEF 1800」「OCG 発売日 2017-01-14」が表示される
+
+#### Scenario: リンクマーカーとスケールを見る
+
+- **WHEN** 「デコード・トーカー」と「アストログラフ・マジシャン」を長押しする
+- **THEN** デコード・トーカーは「ATK 2300」と、上・左下・右下が点いたリンクマーカーが表示され、アストログラフ・マジシャンは「スケール 1」が表示される
 
 ### Requirement: 並び順
 

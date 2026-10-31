@@ -1,14 +1,14 @@
 {
- "format": 2,
- "source_md5": "\"eb35414c019fc735d276f840b219b8f1\"",
- "updated": "2026-10-25",
+ "format": 3,
+ "source_md5": "\"dcbce170883c2f9e914a4e69f16c452f\"",
+ "updated": "2026-11-01",
  "limits_hash": "22d8ccec6ccf3cd6e9a68de1801444f2503186d2f3d628e28b0f517f0ba6e549",
  "limits_count": {
   "forbidden": 94,
   "limited": 95,
   "semi_limited": 13
  },
- "count": 14273,
+ "count": 14353,
  "excluded": [
   {
    "cid": 5297,

@@ -10,7 +10,8 @@
    },
    "misc_info": [
     {
-     "konami_id": 12950
+     "konami_id": 12950,
+     "ocg_date": "2017-01-14"
     }
    ]
   },
@@ -21,7 +22,8 @@
    "frameType": "normal",
    "misc_info": [
     {
-     "konami_id": 4007
+     "konami_id": 4007,
+     "ocg_date": "1999-03-06"
     }
    ]
   },

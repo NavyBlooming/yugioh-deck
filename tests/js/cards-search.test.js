@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseCards, areaOf, MAIN_GROUPS, EXTRA_GROUPS } from "../../src/core/cards.js";
+import { parseCards, areaOf, MAIN_GROUPS, EXTRA_GROUPS, monsterInfo } from "../../src/core/cards.js";
 import { normalize, buildIndex, search, buildTextIndex, searchWithText } from "../../src/core/search.js";
 
 const RAW = {
@@ -109,4 +109,44 @@ test("searchWithText: 名前で当たるカードを先に並べ、同じカー�
 test("searchWithText: 空の入力は何も返さない", () => {
   const idx = buildIndex([...parseCards(RAW).values()]);
   assert.deepEqual(searchWithText(idx, buildTextIndex(TEXTS), "   "), []);
+});
+
+test("parseCards: 発売日と、モンスターの属性・種族・種類・攻守・スケールを読む", () => {
+  const m = parseCards({
+    version: 3,
+    cards: [
+      [1, "灰流うらら", "はるうらら", "effect", "effect", 2, 3, "", "2017-01-14", 4, 16, 4129, 0, 1800, 0],
+      [2, "伝説の剣", "でんせつのけん", "spell", "spell", 3, 0, "equip", ""],
+    ],
+  });
+  assert.deepEqual(m.get(1), {
+    cid: 1, name: "灰流うらら", ruby: "はるうらら", group: "effect", frame: "effect", limit: 2, level: 3, sub: "",
+    date: "2017-01-14", attr: 4, race: 16, type: 4129, atk: 0, def: 1800, scale: 0,
+  });
+  assert.deepEqual(m.get(2), { cid: 2, name: "伝説の剣", ruby: "でんせつのけん", group: "spell", frame: "spell", limit: 3, level: 0, sub: "equip" });
+});
+
+test("monsterInfo: 属性・種族・種類の名前と攻守", () => {
+  assert.deepEqual(monsterInfo({ attr: 4, race: 16, type: 4129, atk: 0, def: 1800, scale: 0 }), {
+    attr: "炎属性", race: "アンデット族", traits: ["チューナー"], atk: "0", def: "1800", markers: null, scale: null,
+  });
+  // ? は -2
+  assert.deepEqual(monsterInfo({ attr: 32, race: 8192, type: 0x2000021, atk: -2, def: -2, scale: 0 }).atk, "?");
+  assert.deepEqual(monsterInfo({ attr: 32, race: 8192, type: 0x2000021, atk: -2, def: -2, scale: 0 }).traits, ["特殊召喚"]);
+  assert.deepEqual(monsterInfo({ attr: 1, race: 2, type: 0x200021 | 0x1000, atk: 0, def: 0, scale: 0 }).traits, ["リバース", "チューナー"]);
+});
+
+test("monsterInfo: リンクは守備力の代わりにリンクマーカー", () => {
+  const i = monsterInfo({ group: "link", attr: 32, race: 16777216, type: 67108897, atk: 2300, def: 133, scale: 0 });
+  assert.equal(i.def, null);
+  assert.deepEqual(i.markers, ["左下", "右下", "上"]);
+  assert.equal(i.race, "サイバース族");
+});
+
+test("monsterInfo: ペンデュラムはスケール", () => {
+  assert.equal(monsterInfo({ frame: "effect_pendulum", attr: 32, race: 2, type: 16777249, atk: 2500, def: 2000, scale: 1 }).scale, 1);
+});
+
+test("monsterInfo: 番号が無いカードは null", () => {
+  assert.equal(monsterInfo({ cid: 3, group: "effect" }), null);
 });
