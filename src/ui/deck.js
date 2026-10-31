@@ -3,6 +3,7 @@ import { cardRushUrl, officialDbUrl } from "../core/shopping.js";
 import { search, searchWithText } from "../core/search.js";
 import { artState, cardText, loadTexts } from "./art.js";
 import { areaOf, monsterInfo } from "../core/cards.js";
+import { drawHand, tagOdds } from "../core/hand.js";
 import { h } from "./dom.js";
 import { nameDialog, noteDialog, openModal, toast } from "./dialogs.js";
 import { cardOr, tileEl } from "./tile.js";
@@ -57,6 +58,64 @@ function monsterRows(card) {
     ));
   }
   return rows;
+}
+
+const pct = (p) => `${(p * 100).toFixed(1)}%`;
+
+// デッキ編集画面の上に出す、初手5枚に誘発・初動が1枚以上来る確率
+function oddsText(deck) {
+  const odds = Object.entries(TAG_TEXT).map(([tag, [, label]]) => [label, tagOdds(deck, tag, 5)]);
+  if (odds[0][1].total < 5) return "メインが5枚以上になると、初手を引けます";
+  if (odds.every(([, o]) => o.count === 0)) return "誘発・初動の印を付けると、初手に来る確率が出ます";
+  return "初手5枚: " + odds.map(([label, o]) => (o.count ? `${label} 1枚以上 ${pct(o.atLeastOne)}（${o.count}枚）` : `${label} 印なし`)).join("／");
+}
+
+// 初手のテスト。先攻5枚・後攻6枚を引き、枚数ごとの確率の表を出す
+function handDialog(ctx, deck) {
+  let draw = 5;
+  const body = h("div", { class: "hand-body" });
+  const seg = [[5, "先攻 5枚"], [6, "後攻 6枚"]].map(([n, label]) =>
+    h("button", { class: "seg", type: "button", "data-draw": n, "aria-pressed": String(n === draw), onclick: () => {
+      draw = n;
+      for (const b of seg) b.setAttribute("aria-pressed", String(Number(b.dataset.draw) === draw));
+      render();
+    } }, label),
+  );
+  const render = () => {
+    const hand = drawHand(deck, draw, Math.random);
+    if (!hand) {
+      body.replaceChildren(h("p", { class: "muted" }, `メインデッキが${draw}枚以上になると、初手を引けます`));
+      return;
+    }
+    const count = (tag) => hand.filter((cid) => hasTag(deck, cid, tag)).length;
+    const head = h("tr", {}, h("th", {}, ""), ["0枚", "1枚", "2枚", "3枚以上", "1枚以上"].map((x) => h("th", {}, x)));
+    const rows = Object.entries(TAG_TEXT).map(([tag, [, label]]) => {
+      const o = tagOdds(deck, tag, draw);
+      const d = o.dist;
+      const cells = [d[0], d[1] ?? 0, d[2] ?? 0, d.slice(3).reduce((a, b) => a + b, 0), o.atLeastOne];
+      return h("tr", { "data-tag": tag }, h("th", {}, `${label}（${o.count}枚）`), cells.map((p) => h("td", {}, pct(p))));
+    });
+    body.replaceChildren(
+      h("div", { class: "grid hand-grid", id: "hand-cards" }, hand.map((cid) => {
+        const el = tileEl(cardOr(ctx.cards, cid), {});
+        const marks = tagMarks(deck, cid);
+        if (marks) el.append(marks);
+        return el;
+      })),
+      h("p", { id: "hand-count" }, `この手札: 誘発 ${count("hand")}枚・初動 ${count("starter")}枚`),
+      h("button", { class: "btn primary", type: "button", id: "hand-redraw", onclick: render }, "引き直す"),
+      h("table", { class: "odds-table", id: "odds-table" }, h("caption", {}, `${draw}枚引いたときに来る枚数の確率（メイン${tagOdds(deck, "hand", draw).total}枚）`), head, rows),
+    );
+  };
+  render();
+  const close = openModal(
+    h("div", { class: "hand", id: "hand-test" },
+      h("h2", {}, "初手のテスト"),
+      h("div", { class: "seg-group" }, seg),
+      body,
+      h("button", { class: "btn", type: "button", onclick: () => close() }, "閉じる"),
+    ),
+  );
 }
 
 // タイルを長押し（500ms）とタップに振り分ける。長押しが成立したら、その後の click は捨てる。
@@ -280,6 +339,10 @@ export function deckView(ctx, deckId) {
     body.replaceChildren(
       head,
       modeRow,
+      h("div", { class: "odds", id: "odds" },
+        h("span", { id: "odds-line" }, oddsText(deck)),
+        h("button", { class: "btn small", type: "button", id: "draw-hand", onclick: () => handDialog(ctx, deck) }, "初手を引く"),
+      ),
       ...(warns.length ? [h("div", { class: "warnings" }, warns.map((w) => h("p", {}, "⚠ " + warningText(w))))] : []),
       ...sections,
     );

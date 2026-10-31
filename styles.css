@@ -127,6 +127,16 @@ input[type="text"], input[type="number"], select {
 .deck-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .deck-title { flex: 1; min-width: 0; background: none; border: 0; color: var(--text); font: inherit; font-size: 17px; font-weight: 700; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
 .tap-mode { margin-bottom: 8px; }
+.odds { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; font-size: 13px; }
+.odds .btn { flex: none; white-space: nowrap; }
+.hand { display: grid; gap: 10px; }
+.hand h2 { margin: 0; font-size: 17px; }
+.hand-body { display: grid; gap: 10px; }
+.hand-grid { grid-template-columns: repeat(6, 1fr) !important; }
+.odds-table { border-collapse: collapse; font-size: 12px; width: 100%; }
+.odds-table caption { text-align: left; color: var(--sub); padding-bottom: 4px; }
+.odds-table th, .odds-table td { border: 1px solid var(--line); padding: 4px; text-align: right; white-space: nowrap; }
+.odds-table th:first-child { text-align: left; }
 .warnings { background: #3a2a10; border: 1px solid #8a6a1f; color: #ffe2a0; border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; font-size: 13px; }
 .area { margin-top: 14px; }
 .area-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
