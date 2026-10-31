@@ -1,7 +1,7 @@
 # app-update Specification
 
 ## Purpose
-TBD - created by archiving change add-update-banner. Update Purpose after archive.
+公開ページが新しくなったことを開いている利用者に知らせ、まだクラウドへ送っていない変更を失わずに最新の版へ切り替えられるようにする。
 
 ## Requirements
 
