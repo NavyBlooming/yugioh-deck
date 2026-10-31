@@ -13,6 +13,7 @@ const REASON = {
   "extra-full": "EXデッキは15枚までです",
   "cand-full": "候補は15枚までです",
 };
+const AREA_SHORT = { main: "メイン", extra: "EX", cand: "候補" };
 const AREAS = [
   ["main", "メインデッキ", 60],
   ["extra", "EXデッキ", 15],
@@ -112,8 +113,7 @@ export function deckView(ctx, deckId) {
   // 長押しで開くカード詳細。area が null のときは検索結果など、デッキの外のカード
   function openSheet(cid, area, index) {
     const card = cardOr(ctx.cards, cid);
-    const deck = deckOf();
-    const countIn = (a) => deck.entries.filter((e) => e.cid === cid && e.area === a).reduce((n, e) => n + e.count, 0);
+    const countIn = (a) => deckOf().entries.filter((e) => e.cid === cid && e.area === a).reduce((n, e) => n + e.count, 0);
     const home = areaOf(card);
     const act = (fn) => () => {
       close();
@@ -121,8 +121,25 @@ export function deckView(ctx, deckId) {
     };
     const apply = (r) => (r.ok ? ctx.commit(r.state) : toast(REASON[r.reason] ?? "操作できません"));
     const addTo = area === "cand" ? "cand" : area ? "deck" : dest;
-    // 抜く欄: デッキの中なら押したカードの欄、外からならメインかEX、無ければ候補
-    const fromArea = area ?? (countIn(home) ? home : countIn("cand") ? "cand" : null);
+    // ＋1・−1 はシートを閉じずに続けて押せる。枚数の表示はその場で直す
+    const countEl = h("div", { class: "cd-count" });
+    const showCounts = () => countEl.replaceChildren(...["main", "extra", "cand"].map((a) => h("span", {}, `${AREA_SHORT[a]} ${countIn(a)}`)));
+    showCounts();
+    const plus = () => {
+      apply(addCard(ctx.state, deckId, card, addTo));
+      showCounts();
+    };
+    const gone = (a) => `${AREAS.find(([x]) => x === a)[1]}に${card.name}はもうありません`;
+    let pressed = index; // 長押ししたカードの位置。抜くと並びが変わるので最初の1枚だけに使う
+    const minus = () => {
+      // 抜く欄: デッキの中なら押したカードの欄、外からならメインかEX、無ければ候補
+      const from = area ?? (countIn(home) ? home : countIn("cand") ? "cand" : null);
+      if (!from) return toast(`このデッキに${card.name}は入っていません`);
+      if (!countIn(from)) return toast(gone(from));
+      ctx.commit(removeOne(ctx.state, deckId, cid, from, pressed).state);
+      pressed = undefined;
+      showCounts();
+    };
     const fav = (ctx.state.favorites ?? []).includes(cid);
     const text = h("div", { class: "cd-text", id: "cd-text" }, "効果テキストを読み込んでいます…");
     const noText = card.custom ? (card.set ? `発売前のカードです（${card.set}）。効果テキストはありません。` : "発売前のカードです。効果テキストはありません。") : "効果テキストがありません。";
@@ -144,21 +161,20 @@ export function deckView(ctx, deckId) {
             h("div", { class: "cd-stat" }, statText(card)),
             h("div", { class: "cd-kind" }, `【${kindText(card)}】`),
             h("div", { class: `cd-limit lim-${card.limit}` }, LIMIT_TEXT[card.limit] ?? ""),
-            h("div", { class: "cd-count" },
-              h("span", {}, `メイン ${countIn("main")}`), h("span", {}, `EX ${countIn("extra")}`), h("span", {}, `候補 ${countIn("cand")}`)),
+            countEl,
           ),
         ),
         text,
         h("div", { class: "cd-pm" },
-          h("button", { class: "btn", type: "button", id: "cd-plus", onclick: act(() => apply(addCard(ctx.state, deckId, card, addTo))) }, addTo === "cand" ? "＋1 候補へ" : "＋1 デッキへ"),
-          h("button", { class: "btn", type: "button", id: "cd-minus", disabled: !fromArea, onclick: act(() => ctx.commit(removeOne(ctx.state, deckId, cid, fromArea, area ? index : undefined).state)) }, "−1 抜く"),
+          h("button", { class: "btn", type: "button", id: "cd-plus", onclick: plus }, addTo === "cand" ? "＋1 候補へ" : "＋1 デッキへ"),
+          h("button", { class: "btn", type: "button", id: "cd-minus", onclick: minus }, "−1 抜く"),
         ),
         h("div", { class: "cd-acts" },
           h("button", { class: `btn${fav ? " on" : ""}`, type: "button", "aria-pressed": String(fav), onclick: act(() => {
             ctx.commit(toggleFavorite(ctx.state, cid));
             toast(ctx.state.favorites.includes(cid) ? "お気に入りに追加しました" : "お気に入りから外しました");
           }) }, fav ? "★ お気に入りから外す" : "☆ お気に入りに追加"),
-          area ? h("button", { class: "btn", type: "button", onclick: act(() => apply(moveOne(ctx.state, deckId, cid, area, area === "cand" ? "deck" : "cand", card, index))) }, area === "cand" ? "デッキへ移す" : "候補へ移す") : null,
+          area ? h("button", { class: "btn", type: "button", onclick: () => (countIn(area) ? act(() => apply(moveOne(ctx.state, deckId, cid, area, area === "cand" ? "deck" : "cand", card, pressed)))() : toast(gone(area))) }, area === "cand" ? "デッキへ移す" : "候補へ移す") : null,
           area ? h("button", { class: "btn", type: "button", onclick: act(() => {
             const s = structuredClone(ctx.state);
             s.decks.find((d) => d.id === deckId).cover = cid;
