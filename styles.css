@@ -148,6 +148,13 @@ input[type="text"], input[type="number"], select {
   color: #fff; font-size: 11px; font-weight: 700; line-height: 14px; text-align: center; box-shadow: 0 0 0 1px #fff;
 }
 .hist-mark.in { background: #2e8b57; }
+.tile .tags { position: absolute; top: 2px; right: 2px; display: flex; gap: 1px; }
+.tile .tag {
+  width: 14px; height: 14px; border-radius: 3px; color: #fff; font-size: 9px; font-weight: 700; line-height: 14px; text-align: center;
+  box-shadow: 0 0 0 1px #fff;
+}
+.tag.hand { background: #c2410c; }
+.tag.starter { background: #1d6fd8; }
 .hist-mark.out { background: #6b6b6b; }
 .results-more { grid-column: 1 / -1; height: 1px; }
 .list-empty { grid-column: 1 / -1; padding: 12px 0; text-align: center; }
@@ -247,6 +254,9 @@ input[type="text"], input[type="number"], select {
 }
 .cd-pm { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .cd-pm .btn { min-height: 44px; font-size: 15px; }
+.cd-tags { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tag-btn[aria-pressed="true"][data-tag="hand"] { background: #c2410c; border-color: #c2410c; color: #fff; }
+.tag-btn[aria-pressed="true"][data-tag="starter"] { background: #1d6fd8; border-color: #1d6fd8; color: #fff; }
 .cd-acts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 .cd-acts .btn.on { color: #ffd479; border-color: #8a6a1f; }
 .btn:disabled { opacity: .4; cursor: default; }

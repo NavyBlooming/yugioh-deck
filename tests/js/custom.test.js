@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { parseCards } from "../../src/core/cards.js";
 import { emptyState, isValidState, exportJson, parseImport } from "../../src/core/storage.js";
-import { createDeck, addCard, tapCopy, toggleFavorite, sortedEntries, tilesOf } from "../../src/core/deck.js";
+import { createDeck, addCard, tapCopy, toggleFavorite, sortedEntries, tilesOf, toggleTag } from "../../src/core/deck.js";
 import { setNote } from "../../src/core/shopping.js";
 import { isEmptyState } from "../../src/core/sync.js";
 import { addCustomCard, removeCustomCard, customCardMap, replaceReleased, prereleaseMap, adoptPrerelease } from "../../src/core/custom.js";
@@ -39,7 +39,9 @@ test("removeCustomCard: デッキ・履歴・お気に入り・購入メモか�
   state = addCard(d.state, d.deckId, customCardMap(d.state).get(cid), "deck").state;
   state = toggleFavorite(state, cid);
   state = setNote(state, cid, { price: 300 });
+  state = toggleTag(state, d.deckId, cid, "hand");
   state = removeCustomCard(state, cid);
+  assert.deepEqual(state.decks[0].tags, { hand: [] });
   assert.deepEqual(state.customCards, []);
   assert.deepEqual(state.decks[0].entries, []);
   assert.deepEqual(state.decks[0].history, []);
@@ -56,6 +58,7 @@ test("replaceReleased: 名前が同じカードが一覧に入ったら置き換
   state = tapCopy(state, d.deckId, cid, "main", 1).state;
   state = toggleFavorite(state, cid);
   state = setNote(state, cid, { price: 500 });
+  state = toggleTag(state, d.deckId, cid, "starter");
   const cards = parseCards({ version: 2, cards: [[9000, "新しい竜X", "あたらしいりゅうえっくす", "effect", "effect", 3, 4, ""]] });
   const r = replaceReleased(state, cards);
   assert.deepEqual(r.replaced, ["新しい竜・Ｘ"]);
@@ -65,6 +68,7 @@ test("replaceReleased: 名前が同じカードが一覧に入ったら置き換
   assert.deepEqual(tilesOf(e[0]).map((t) => t.missing), [false, true]);
   assert.deepEqual(r.state.decks[0].history, [{ cid: 9000, op: "in" }]);
   assert.deepEqual(r.state.favorites, [9000]);
+  assert.deepEqual(r.state.decks[0].tags, { starter: [9000] });
   assert.equal(r.state.notes[9000].price, 500);
   assert.equal(r.state.notes[cid], undefined);
   assert.deepEqual(r.state.customCards, []);

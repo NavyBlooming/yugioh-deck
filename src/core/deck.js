@@ -183,6 +183,18 @@ export function addHandTraps(state, deckId, cards) {
   return { ok: true, state: s, added, full: false };
 }
 
+// 誘発（hand）・初動（starter）の印。デッキごとに、印ごとの cid の昇順の並びで持つ
+export const TAGS = ["hand", "starter"];
+export const hasTag = (deck, cid, tag) => Boolean(deck.tags?.[tag]?.includes(cid));
+
+export function toggleTag(state, deckId, cid, tag) {
+  const s = clone(state);
+  const d = findDeck(s, deckId);
+  const list = d.tags?.[tag] ?? [];
+  d.tags = { ...d.tags, [tag]: list.includes(cid) ? list.filter((x) => x !== cid) : [...list, cid].sort((a, b) => a - b) };
+  return s;
+}
+
 // お気に入りは全デッキ共通。cid の昇順で持つ
 export function toggleFavorite(state, cid) {
   const s = clone(state);

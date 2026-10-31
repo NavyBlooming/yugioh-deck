@@ -60,6 +60,7 @@ export function removeCustomCard(state, cid) {
   for (const d of s.decks) {
     d.entries = d.entries.filter((e) => e.cid !== cid);
     d.history = (d.history ?? []).filter((h) => h.cid !== cid);
+    for (const t in d.tags) d.tags[t] = d.tags[t].filter((x) => x !== cid);
   }
   s.favorites = (s.favorites ?? []).filter((x) => x !== cid);
   delete s.notes[cid];
@@ -79,6 +80,9 @@ function moveCard(s, from, to) {
         same.missing = bitCount(mask);
         d.entries.splice(d.entries.indexOf(e), 1);
       } else e.cid = to;
+    }
+    for (const t in d.tags) {
+      if (d.tags[t].includes(from)) d.tags[t] = [...new Set(d.tags[t].map((x) => (x === from ? to : x)))].sort((a, b) => a - b);
     }
     if (d.history) {
       const seen = new Set();

@@ -41,6 +41,15 @@ test("お気に入りと履歴は無くてもよく、あれば形を確かめ�
   b = good(); b.decks[0].history = {}; assert.equal(isValidState(b), false);
 });
 
+test("誘発・初動の印は無くてもよく、あれば形を確かめる", () => {
+  const s = good(); s.decks[0].tags = { hand: [12950], starter: [] };
+  assert.ok(isValidState(s));
+  let b = good(); b.decks[0].tags = { hand: ["12950"] }; assert.equal(isValidState(b), false);
+  b = good(); b.decks[0].tags = { hand: 12950 }; assert.equal(isValidState(b), false);
+  b = good(); b.decks[0].tags = { other: [1] }; assert.equal(isValidState(b), false);
+  b = good(); b.decks[0].tags = []; assert.equal(isValidState(b), false);
+});
+
 test("exportJson はお気に入りと履歴を含める", () => {
   const s = { ...good(), favorites: [12950] };
   s.decks[0].history = [{ cid: 12950, op: "in" }];

@@ -1,4 +1,4 @@
-import { addCard, addHandTraps, deleteDeck, moveOne, removeOne, renameDeck, sortedEntries, tapCopy, tilesOf, toggleFavorite, warnings } from "../core/deck.js";
+import { addCard, addHandTraps, deleteDeck, hasTag, moveOne, removeOne, renameDeck, sortedEntries, tapCopy, tilesOf, toggleFavorite, toggleTag, warnings } from "../core/deck.js";
 import { cardRushUrl, officialDbUrl } from "../core/shopping.js";
 import { search, searchWithText } from "../core/search.js";
 import { artState, cardText, loadTexts } from "./art.js";
@@ -14,6 +14,12 @@ const REASON = {
   "cand-full": "候補は15枚までです",
 };
 const AREA_SHORT = { main: "メイン", extra: "EX", cand: "候補" };
+const TAG_TEXT = { hand: ["誘", "誘発"], starter: ["初", "初動"] };
+// デッキの中のカードの右上に出す誘発・初動の印
+const tagMarks = (deck, cid) => {
+  const on = Object.keys(TAG_TEXT).filter((t) => hasTag(deck, cid, t));
+  return on.length ? h("span", { class: "tags" }, on.map((t) => h("span", { class: `tag ${t}`, title: TAG_TEXT[t][1] }, TAG_TEXT[t][0]))) : null;
+};
 const AREAS = [
   ["main", "メインデッキ", 60],
   ["extra", "EXデッキ", 15],
@@ -189,6 +195,14 @@ export function deckView(ctx, deckId) {
           h("button", { class: "btn", type: "button", id: "cd-plus", onclick: plus }, addTo === "cand" ? "＋1 候補へ" : "＋1 デッキへ"),
           h("button", { class: "btn", type: "button", id: "cd-minus", onclick: minus }, "−1 抜く"),
         ),
+        h("div", { class: "cd-tags" }, Object.entries(TAG_TEXT).map(([tag, [, label]]) => {
+          const on = () => String(hasTag(deckOf(), cid, tag));
+          const b = h("button", { class: "btn tag-btn", type: "button", id: `cd-tag-${tag}`, "data-tag": tag, "aria-pressed": on(), onclick: () => {
+            ctx.commit(toggleTag(ctx.state, deckId, cid, tag));
+            b.setAttribute("aria-pressed", on());
+          } }, `${label}の印`);
+          return b;
+        })),
         h("div", { class: "cd-acts" },
           h("button", { class: `btn${fav ? " on" : ""}`, type: "button", "aria-pressed": String(fav), onclick: act(() => {
             ctx.commit(toggleFavorite(ctx.state, cid));
@@ -252,7 +266,12 @@ export function deckView(ctx, deckId) {
         h("div", { class: "grid" },
           entries.flatMap((e) => {
             const card = cardOr(ctx.cards, e.cid);
-            return tilesOf(e).map((t, i) => tileEl(card, { missing: t.missing, area, index: i }));
+            return tilesOf(e).map((t, i) => {
+              const el = tileEl(card, { missing: t.missing, area, index: i });
+              const marks = tagMarks(deck, e.cid);
+              if (marks) el.append(marks);
+              return el;
+            });
           }),
         ),
       );

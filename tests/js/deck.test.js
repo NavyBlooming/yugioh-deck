@@ -4,7 +4,7 @@ import { parseCards } from "../../src/core/cards.js";
 import { emptyState } from "../../src/core/storage.js";
 import {
   createDeck, renameDeck, deleteDeck, addCard, removeOne, moveOne, tapCopy,
-  sortedEntries, tilesOf, warnings, deckSummary, addHandTraps, toggleFavorite,
+  sortedEntries, tilesOf, warnings, deckSummary, addHandTraps, toggleFavorite, toggleTag, hasTag,
 } from "../../src/core/deck.js";
 
 const cards = parseCards({
@@ -402,4 +402,24 @@ test("toggleFavorite: 全デッキ共通で、もう一度で外れる", () => {
   assert.deepEqual(state.favorites, [2, 5]);
   state = toggleFavorite(state, 5);
   assert.deepEqual(state.favorites, [2]);
+});
+
+test("toggleTag: 誘発・初動の印はデッキごと・カードごとに付け外しする", () => {
+  const { state, id } = setup();
+  const other = createDeck(state, "別");
+  let s = toggleTag(other.state, id, 2, "hand");
+  assert.equal(hasTag(deckOf(s, id), 2, "hand"), true);
+  assert.equal(hasTag(deckOf(s, id), 2, "starter"), false);
+  assert.equal(hasTag(deckOf(s, other.deckId), 2, "hand"), false);
+  assert.equal(hasTag(deckOf(other.state, id), 2, "hand"), false); // 元の state は変えない
+  s = toggleTag(s, id, 3, "hand");
+  s = toggleTag(s, id, 2, "starter");
+  assert.deepEqual(deckOf(s, id).tags, { hand: [2, 3], starter: [2] });
+  s = toggleTag(s, id, 2, "hand");
+  assert.deepEqual(deckOf(s, id).tags, { hand: [3], starter: [2] });
+});
+
+test("hasTag: 印が無いデッキでも false", () => {
+  const { state, id } = setup();
+  assert.equal(hasTag(deckOf(state, id), 2, "hand"), false);
 });

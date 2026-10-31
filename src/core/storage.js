@@ -22,11 +22,13 @@ function validEntry(e) {
   );
 }
 
+const validTags = (t) => t === undefined || (isObj(t) && Object.entries(t).every(([k, v]) => ["hand", "starter"].includes(k) && Array.isArray(v) && v.every(isNum)));
 const validHistory = (h) => h === undefined || (Array.isArray(h) && h.every((x) => isObj(x) && isNum(x.cid) && (x.op === "in" || x.op === "out")));
 
 function validDeck(d) {
   return (
     validHistory(d?.history) &&
+    validTags(d?.tags) &&
     isObj(d) &&
     typeof d.id === "string" &&
     typeof d.name === "string" &&
