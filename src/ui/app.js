@@ -9,6 +9,7 @@ import { deckView } from "./deck.js";
 import { listView } from "./list.js";
 import { settingsView } from "./settings.js";
 import { shopView } from "./shop.js";
+import { initUpdate } from "./update.js";
 
 let current = null;
 let baseCards = null; // カードデータのカード。発売前のカード（取得・登録）は ctx.cards で足す
@@ -98,6 +99,7 @@ async function boot() {
   window.addEventListener("hashchange", route);
   route();
   initCloud(ctx);
+  initUpdate();
   // 鍵の計算に時間がかかるので、画面を先に出し、絵が使えるようになったら描き直す
   // 設定画面は絵の状態を表示しているので、合言葉が無くても描き直す
   if ((await initArt()) || location.hash === "#/settings") route();

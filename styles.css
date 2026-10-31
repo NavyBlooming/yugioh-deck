@@ -214,6 +214,13 @@ input[type="text"], input[type="number"], select {
 }
 #toast[hidden] { display: none; }
 
+/* ---- 新しい版の知らせ ---- */
+#update-bar {
+  position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: calc(8px + env(safe-area-inset-top)) 12px 8px; background: var(--bg2); border-bottom: 1px solid var(--accent);
+}
+#update-bar span { flex: 1; min-width: 10em; }
+
 /* ---- カード詳細（長押し） ---- */
 .cd { display: grid; gap: 10px; --t: #1a1405; }
 .cd-head { background: var(--c, #d9b25c); color: var(--t); border-radius: 6px; padding: 6px 10px; }

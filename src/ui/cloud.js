@@ -185,6 +185,13 @@ export async function initCloud(appCtx) {
   });
 }
 
+// 開き直す前に、まだ送っていない変更を送る。5秒で打ち切る。送れていない変更が残ったら false
+export async function flushCloud() {
+  if (cloud.status !== "in" || store.get(DIRTY_KEY) !== "1") return true;
+  await Promise.race([push(), new Promise((r) => setTimeout(r, 5000))]);
+  return store.get(DIRTY_KEY) !== "1";
+}
+
 // ctx.commit から呼ぶ
 export function cloudChanged() {
   if (cloud.status !== "in") return;
