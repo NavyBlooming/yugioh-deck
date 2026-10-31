@@ -170,3 +170,14 @@ def test_main_broken_ypd_writes_nothing(tmp_path):
         bc.main(ft, fb, tmp_path)
     assert not (tmp_path / "cards.json").exists()
     assert not (tmp_path / "meta.json").exists()
+
+
+def test_unknown_bits():
+    # 属性・種族・カードの種類の番号のうち、画面の名前の表に無いもの。種族は数年に一度増える
+    rows = [
+        [1, "a", "a", "effect", "effect", 3, 4, "", "", 32, 2**26, 0x21 | 0x8000000, 0, 0, 0],
+        [2, "b", "b", "effect", "effect", 3, 4, "", "", 2**7, 2, 0x21, 0, 0, 0],
+        [3, "c", "c", "spell", "spell", 3, 0, "normal", ""],
+    ]
+    assert bc.unknown_bits(rows) == {"attribute": [128], "race": [67108864], "type": [134217728]}
+    assert bc.unknown_bits(rows[2:]) == {}

@@ -12,10 +12,10 @@ export function parseCards(json) {
   return map;
 }
 
-// 属性・種族・種類は ygocdb の番号（YGOPro と同じ並び）
-const ATTRS = ["地", "水", "炎", "風", "光", "闇", "神"];
-const RACES = ["戦士", "魔法使い", "天使", "悪魔", "アンデット", "機械", "水", "炎", "岩石", "鳥獣", "植物", "昆虫", "雷", "ドラゴン", "獣", "獣戦士", "恐竜", "魚", "海竜", "爬虫類", "サイキック", "幻神獣", "創造神", "幻竜", "サイバース", "幻想魔"];
-const TRAITS = [[0x200000, "リバース"], [0x200, "スピリット"], [0x400, "ユニオン"], [0x800, "デュアル"], [0x400000, "トゥーン"], [0x2000000, "特殊召喚"], [0x1000, "チューナー"]];
+// 属性・種族・種類は ygocdb の番号（YGOPro と同じ並び）。増えたら tools/build_cards.py の KNOWN_BITS も直す
+export const ATTRS = ["地", "水", "炎", "風", "光", "闇", "神"];
+export const RACES = ["戦士", "魔法使い", "天使", "悪魔", "アンデット", "機械", "水", "炎", "岩石", "鳥獣", "植物", "昆虫", "雷", "ドラゴン", "獣", "獣戦士", "恐竜", "魚", "海竜", "爬虫類", "サイキック", "幻神獣", "創造神", "幻竜", "サイバース", "幻想魔"];
+export const TRAITS = [[0x200000, "リバース"], [0x200, "スピリット"], [0x400, "ユニオン"], [0x800, "デュアル"], [0x400000, "トゥーン"], [0x2000000, "特殊召喚"], [0x1000, "チューナー"]];
 // リンクマーカーのビット（YGOPro と同じ）
 const MARKERS = [[1, "左下"], [2, "下"], [4, "右下"], [8, "左"], [32, "右"], [64, "左上"], [128, "上"], [256, "右上"]];
 const nameOf = (bits, names, suffix) => {
@@ -30,7 +30,7 @@ export function monsterInfo(card) {
   const link = (card.type & 0x4000000) !== 0;
   return {
     attr: nameOf(card.attr, ATTRS, "属性"),
-    race: nameOf(card.race, RACES, "族"),
+    race: nameOf(card.race, RACES, "族") || "その他の種族", // 種族は数年に一度増えるので、表に無い番号でも出す
     traits: TRAITS.filter(([bit]) => card.type & bit).map(([, t]) => t),
     atk: num(card.atk),
     def: link ? null : num(card.def),

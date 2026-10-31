@@ -129,6 +129,29 @@ def build(cdb: dict, ypd: dict, limits: dict) -> tuple[list, list]:
     return rows, excluded
 
 
+# 画面（src/core/cards.js）の名前の表が知っている番号。属性7つ・種族26・カードの種類
+KNOWN_BITS = {
+    "attribute": 2**7 - 1,
+    "race": 2**26 - 1,
+    "type": sum([0x1, 0x2, 0x4, 0x10, 0x20, 0x40, 0x80, 0x200, 0x400, 0x800, 0x1000, 0x2000, 0x4000, 0x10000, 0x20000,
+                 0x40000, 0x80000, 0x100000, 0x200000, 0x400000, 0x800000, 0x1000000, 0x2000000, 0x4000000]),
+}  # fmt: skip
+
+
+def unknown_bits(rows: list) -> dict:
+    """名前の表に無い番号。種族やカードの種類が増えたら、src/core/cards.js の表に名前を足す。"""
+    out = {}
+    for row in rows:
+        if len(row) < 15:
+            continue
+        for key, value in zip(("attribute", "race", "type"), row[9:12]):
+            for b in range(32):
+                bit = 1 << b
+                if value & bit and not KNOWN_BITS[key] & bit:
+                    out.setdefault(key, set()).add(bit)
+    return {k: sorted(v) for k, v in sorted(out.items())}
+
+
 def _write(path: Path, obj, **kw) -> None:
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         json.dump(obj, f, ensure_ascii=False, **kw)
@@ -161,8 +184,12 @@ def main(fetch_text, fetch_bytes, out_dir: Path) -> int:
         },
         "count": len(rows),
         "excluded": excluded,
+        "unknown_bits": unknown_bits(rows),
     }
     _write(meta_path, meta, indent=1)
+    if meta["unknown_bits"]:
+        # GitHub Actions の実行結果に警告として出す
+        print(f"::warning::src/core/cards.js の名前の表に無い番号があります: {meta['unknown_bits']}")
     print(f"cards: {len(rows)}, excluded: {len(excluded)}")
     return 0
 

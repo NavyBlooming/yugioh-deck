@@ -2,7 +2,8 @@ import { addCard, addHandTraps, deleteDeck, hasTag, moveOne, removeOne, renameDe
 import { cardRushUrl, officialDbUrl } from "../core/shopping.js";
 import { search, searchWithText } from "../core/search.js";
 import { artState, cardText, loadTexts } from "./art.js";
-import { areaOf, monsterInfo } from "../core/cards.js";
+import { areaOf, compareCards, monsterInfo } from "../core/cards.js";
+import { ATTR_OPTIONS, KIND_OPTIONS, RACE_OPTIONS, SUB_OPTIONS, TRAIT_OPTIONS, emptyFilter, filterLabel, isFiltering, matchesFilter } from "../core/filter.js";
 import { drawHand, tagOdds } from "../core/hand.js";
 import { h } from "./dom.js";
 import { nameDialog, noteDialog, openModal, toast } from "./dialogs.js";
@@ -114,6 +115,41 @@ function handDialog(ctx, deck) {
       h("div", { class: "seg-group" }, seg),
       body,
       h("button", { class: "btn", type: "button", onclick: () => close() }, "閉じる"),
+    ),
+  );
+}
+
+// 検索の絞り込みの条件を選ぶ画面。決めたら onApply に新しい条件を渡す
+function filterDialog(current, onApply) {
+  const f = structuredClone(current);
+  const chips = (key, options) => h("div", { class: "chips" }, options.map(([v, label]) => {
+    const b = h("button", { class: "chip", type: "button", "data-key": key, "data-value": String(v), "aria-pressed": String(f[key].includes(v)), onclick: () => {
+      f[key] = f[key].includes(v) ? f[key].filter((x) => x !== v) : [...f[key], v];
+      b.setAttribute("aria-pressed", String(f[key].includes(v)));
+    } }, label);
+    return b;
+  }));
+  const num = (key) => {
+    const input = h("input", { type: "number", inputmode: "numeric", min: "0", id: `filter-${key}`, value: f[key] ?? "" });
+    input.addEventListener("input", () => (f[key] = input.value === "" ? null : Number(input.value)));
+    return input;
+  };
+  const range = (label, k) => h("div", { class: "range" }, h("span", {}, label), num(`${k}Min`), h("span", {}, "〜"), num(`${k}Max`));
+  const section = (title, ...kids) => h("section", { class: "filter-sec" }, h("h3", {}, title), ...kids);
+  const close = openModal(
+    h("div", { class: "form filter", id: "filter-dialog" },
+      h("h2", {}, "絞り込み"),
+      section("カードの種類", chips("kinds", KIND_OPTIONS)),
+      section("魔法・罠の種類", chips("subs", SUB_OPTIONS)),
+      section("属性", chips("attrs", ATTR_OPTIONS)),
+      section("種族", chips("races", RACE_OPTIONS)),
+      section("チューナーなど", chips("traits", TRAIT_OPTIONS)),
+      section("数値", range("レベル・ランク・リンク", "level"), range("攻撃力", "atk"), range("守備力", "def")),
+      h("p", { class: "muted" }, "同じ項目の中はどれか、項目どうしはすべてに当てはまるカードを出します。属性・種族・攻守の情報が無いカード（発売前のカードなど）は、それらの条件では出ません。"),
+      h("div", { class: "row-btns" },
+        h("button", { class: "btn", type: "button", id: "filter-reset", onclick: () => (close(), onApply(emptyFilter())) }, "条件を消す"),
+        h("button", { class: "btn primary", type: "button", id: "filter-apply", onclick: () => (close(), onApply(f)) }, "この条件で探す"),
+      ),
     ),
   );
 }
@@ -360,6 +396,20 @@ export function deckView(ctx, deckId) {
     } }, label),
   );
   const clearBtn = h("button", { class: "search-clear", type: "button", id: "search-clear", "aria-label": "入力を消す", hidden: true }, "×");
+  // 絞り込みはデッキを開いている間だけ覚える
+  let filter = emptyFilter();
+  const filterText = h("span", { id: "filter-text" });
+  const filterLine = h("div", { class: "filter-line", id: "filter-line", hidden: true }, h("span", {}, "絞り込み: "), filterText,
+    h("button", { class: "search-clear-filter", type: "button", id: "filter-clear", "aria-label": "絞り込みを解除" }, "×"));
+  const setFilter = (f) => {
+    filter = f;
+    filterText.textContent = filterLabel(f);
+    filterLine.hidden = !isFiltering(f) || panelTab !== "search";
+    filterBtn.setAttribute("aria-pressed", String(isFiltering(f)));
+    runSearch();
+  };
+  const filterBtn = h("button", { class: "btn small filter-btn", type: "button", id: "filter-open", "aria-pressed": "false", onclick: () => filterDialog(filter, setFilter) }, "絞り込み");
+  filterLine.lastChild.addEventListener("click", () => setFilter(emptyFilter()));
   // 合言葉があれば効果テキストでも探す。初めて検索したときに取り、取れるまでは名前と読みだけで探す
   let textIndex = null;
   let textLoading = false;
@@ -373,7 +423,11 @@ export function deckView(ctx, deckId) {
       });
     }
     if (panelTab !== "search") return;
-    found = textIndex ? searchWithText(ctx.index, textIndex, input.value) : search(ctx.index, input.value);
+    // 名前が空でも、絞り込みがあれば全カードから絞る
+    const list = !input.value.trim()
+      ? (isFiltering(filter) ? ctx.index.map((e) => e.card).sort(compareCards) : [])
+      : textIndex ? searchWithText(ctx.index, textIndex, input.value) : search(ctx.index, input.value);
+    found = isFiltering(filter) ? list.filter((c) => matchesFilter(c, filter)) : list;
     shown = 0;
     results.replaceChildren();
     showMore();
@@ -396,7 +450,8 @@ export function deckView(ctx, deckId) {
 
   // 検索・履歴・お気に入りのタブ。履歴とお気に入りでは入力欄を隠し、同じ場所にカードを並べる
   let panelTab = "search";
-  const searchBox = h("div", { class: "search-box" }, input, clearBtn);
+  const searchField = h("div", { class: "search-box" }, input, clearBtn);
+  const searchBox = h("div", { class: "search-row" }, searchField, filterBtn);
   const renderList = () => {
     const items = panelTab === "history"
       ? (deckOf()?.history ?? []).filter((x) => ctx.cards.has(x.cid)).map((x) => {
@@ -415,6 +470,7 @@ export function deckView(ctx, deckId) {
       panelTab = v;
       for (const b of tabBtns) b.setAttribute("aria-selected", String(b.dataset.ptab === panelTab));
       searchBox.hidden = panelTab !== "search";
+      filterLine.hidden = !isFiltering(filter) || panelTab !== "search";
       if (panelTab === "search") runSearch();
       else renderList();
     } }, label),
@@ -429,7 +485,7 @@ export function deckView(ctx, deckId) {
     clearTimeout(timer);
     input.value = "";
     clearBtn.hidden = true;
-    results.replaceChildren();
+    runSearch();
     input.focus();
   });
   // 検索結果・履歴・お気に入りは、タップで追加先に入れ、長押しでカード詳細を開く
@@ -445,7 +501,7 @@ export function deckView(ctx, deckId) {
     },
   });
   const panel = h("aside", { class: "search-panel", id: "search-panel" },
-    h("div", { class: "search-top" }, h("div", { class: "panel-tabs", role: "tablist" }, tabBtns), searchBox, h("div", { class: "dest-row" }, h("div", { class: "seg-group", role: "group", "aria-label": "追加先" }, h("span", { class: "muted" }, "追加先"), destBtns), h("button", { class: "btn small", type: "button", id: "add-hand-traps", onclick: addHandTrapsClick }, "汎用誘発を追加"))),
+    h("div", { class: "search-top" }, h("div", { class: "panel-tabs", role: "tablist" }, tabBtns), searchBox, filterLine, h("div", { class: "dest-row" }, h("div", { class: "seg-group", role: "group", "aria-label": "追加先" }, h("span", { class: "muted" }, "追加先"), destBtns), h("button", { class: "btn small", type: "button", id: "add-hand-traps", onclick: addHandTrapsClick }, "汎用誘発を追加"))),
     results,
   );
 
