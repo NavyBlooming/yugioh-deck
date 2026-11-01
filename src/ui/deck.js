@@ -299,6 +299,7 @@ export function deckView(ctx, deckId) {
             card.date ? h("div", { class: "cd-date" }, `OCG 発売日 ${card.date}`) : null,
           ),
         ),
+        text,
         h("div", { class: "cd-pm" },
           h("button", { class: "btn minus", type: "button", id: "cd-minus", onclick: minus }, "−1 抜く"),
           countEl,
@@ -312,7 +313,6 @@ export function deckView(ctx, deckId) {
           } }, `${label}の印`);
           return b;
         })),
-        text,
         h("div", { class: "cd-acts" },
           h("button", { class: `btn${fav ? " on" : ""}`, type: "button", "aria-pressed": String(fav), onclick: act(() => {
             ctx.commit(toggleFavorite(ctx.state, cid));
