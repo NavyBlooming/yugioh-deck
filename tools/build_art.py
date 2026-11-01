@@ -108,7 +108,7 @@ def _open_art(repo, passphrase, iterations):
     return meta, key, index
 
 
-def build_art(repo, passphrase, fetch_ypd, fetch_image, limit=None, iterations=300000, sleep=time.sleep, workers=1, fetch_full=None):
+def build_art(repo, passphrase, fetch_ypd, fetch_image, limit=None, iterations=300000, sleep=time.sleep, workers=1, fetch_full=None, fetch_ids=None):
     art = repo / "art"
     meta_path = art / "meta.json"
     index_path = art / "index.json"
@@ -123,6 +123,12 @@ def build_art(repo, passphrase, fetch_ypd, fetch_image, limit=None, iterations=3
             pw_of[info[0]["konami_id"]] = c["id"]
             if "pendulum" in c.get("frameType", ""):
                 pendulum.add(c["id"])
+    # 日本だけで出た新しいカードは YGOPRODeck の一覧にまだ無いことがあるので、ygocdb の番号（cid → パスコード）で補う
+    if fetch_ids is not None:
+        for cid, pw in fetch_ids().items():
+            if cid in cids:
+                pw_of.setdefault(cid, pw)
+    pendulum |= {pw_of[c[0]] for c in cards if c[0] in pw_of and c[4].endswith("_pendulum")}
     targets = sorted(cid for cid in cids if cid not in index and cid in pw_of)
     if limit is not None:
         targets = targets[:limit]
@@ -320,6 +326,15 @@ if __name__ == "__main__":
         r.raise_for_status()
         return r
 
+    def _ids():
+        import zipfile
+
+        from build_cards import ZIP_URL
+
+        with zipfile.ZipFile(io.BytesIO(_get(ZIP_URL).content)) as z:
+            cdb = json.loads(z.read("cards.json").decode("utf-8"))
+        return {c["cid"]: c["id"] for c in cdb.values() if c.get("cid") and c.get("id")}
+
     root = Path(__file__).resolve().parent.parent
     if "--prerelease" in sys.argv:
         s = build_prerelease_art(
@@ -339,5 +354,6 @@ if __name__ == "__main__":
         limit=limit,
         workers=2,
         fetch_full=lambda pw: _get(FULL_URL.format(pw)).content,
+        fetch_ids=_ids,
     )
     print(_summary(stats))

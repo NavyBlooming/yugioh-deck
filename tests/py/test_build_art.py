@@ -443,3 +443,34 @@ def test_発売前のカードも裏面の画像は絵が無いとみなす(repo
     write_pre(repo, PRE)
     stats = run_pre(repo, PreNet())
     assert stats["no_image"] == 3 and stats["new"] == 0
+
+
+def test_YGOPRODeckの一覧に無いカードはygocdbの番号で取りに行く(repo):
+    cards = json.loads((repo / "data" / "cards.json").read_text(encoding="utf-8"))
+    cards["cards"].append([40, "n40", "n40", "effect", "effect_pendulum", 3])
+    cards["cards"].append([50, "n50", "n50", "effect", "effect", 3])
+    (repo / "data" / "cards.json").write_text(json.dumps(cards), encoding="utf-8")
+    net = Net(missing={9040})
+    full = []
+    stats = ba.build_art(
+        repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None,
+        fetch_full=lambda pw: (full.append(pw), full_card())[1], fetch_ids=lambda: {40: 9040, 50: 9050, 10: 9999},
+    )
+    assert sorted(net.calls) == [1010, 1020, 1030, 9040, 9050]  # 一覧にあるカードは一覧の番号を使う
+    assert full == []  # ペンデュラムはカードデータの枠で見分け、切り出さない
+    assert index(repo) == [10, 20, 30, 50] and stats["no_image"] == 1
+
+
+def test_一覧に無い仮の絵もygocdbの番号で取り直す(repo):
+    (repo / "art").mkdir(exist_ok=True)
+    run(repo, Net())
+    cards = json.loads((repo / "data" / "cards.json").read_text(encoding="utf-8"))
+    cards["cards"].append([50, "n50", "n50", "effect", "effect", 3])
+    (repo / "data" / "cards.json").write_text(json.dumps(cards), encoding="utf-8")
+    ids = lambda: {50: 9050}
+    net = Net(missing={9050})
+    ba.build_art(repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None, fetch_ids=ids, fetch_full=lambda pw: full_card())
+    assert provisional(repo) == {"50": "full"}
+    net = Net()
+    stats = ba.build_art(repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None, fetch_ids=ids)
+    assert stats["upgraded"] == 1 and net.calls == [9050] and provisional(repo) == {}
