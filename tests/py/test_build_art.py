@@ -474,3 +474,12 @@ def test_一覧に無い仮の絵もygocdbの番号で取り直す(repo):
     net = Net()
     stats = ba.build_art(repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None, fetch_ids=ids)
     assert stats["upgraded"] == 1 and net.calls == [9050] and provisional(repo) == {}
+
+
+def test_一覧の番号に画像が無ければygocdbの番号でも取りに行く(repo):
+    net = FallbackNet()
+    ba.build_art(repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None, fetch_full=net.full)
+    assert provisional(repo) == {"20": "full"}
+    net.calls.clear()
+    stats = ba.build_art(repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None, fetch_full=net.full, fetch_ids=lambda: {20: 9020})
+    assert stats["upgraded"] == 1 and net.calls[-2:] == [1020, 9020] and provisional(repo) == {}

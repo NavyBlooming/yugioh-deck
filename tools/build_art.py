@@ -116,20 +116,19 @@ def build_art(repo, passphrase, fetch_ypd, fetch_image, limit=None, iterations=3
     cards = json.loads((repo / "data" / "cards.json").read_text(encoding="utf-8"))["cards"]
     cids = {c[0] for c in cards}
 
-    pw_of, pendulum = {}, set()
+    pw_of, pendulum = {}, {c[0] for c in cards if c[4].endswith("_pendulum")}
     for c in fetch_ypd()["data"]:
         info = c.get("misc_info")
         if info and info[0].get("konami_id") in cids:
             pw_of[info[0]["konami_id"]] = c["id"]
             if "pendulum" in c.get("frameType", ""):
-                pendulum.add(c["id"])
-    # 日本だけで出た新しいカードは YGOPRODeck の一覧にまだ無いことがあるので、ygocdb の番号（cid → パスコード）で補う
-    if fetch_ids is not None:
-        for cid, pw in fetch_ids().items():
-            if cid in cids:
-                pw_of.setdefault(cid, pw)
-    pendulum |= {pw_of[c[0]] for c in cards if c[0] in pw_of and c[4].endswith("_pendulum")}
-    targets = sorted(cid for cid in cids if cid not in index and cid in pw_of)
+                pendulum.add(info[0]["konami_id"])
+    # 画像の番号（パスコード）の候補。YGOPRODeck の一覧の番号を先に試し、無ければ ygocdb の番号を試す。
+    # 日本だけで出た新しいカードは、一覧に無かったり、一覧の番号の画像がまだ無く発売前の仮の番号の方に置かれていたりする
+    ids = fetch_ids() if fetch_ids is not None else {}
+    pws_of = {cid: list(dict.fromkeys(x for x in (pw_of.get(cid), ids.get(cid)) if x)) for cid in cids}
+    pws_of = {cid: pws for cid, pws in pws_of.items() if pws}
+    targets = sorted(cid for cid in cids if cid not in index and cid in pws_of)
     if limit is not None:
         targets = targets[:limit]
 
@@ -148,15 +147,23 @@ def build_art(repo, passphrase, fetch_ypd, fetch_image, limit=None, iterations=3
         _write_bytes(cached, jpeg)
         return jpeg
 
+    def cropped(cid, fetch):
+        for pw in pws_of[cid]:
+            try:
+                return fetch(pw)
+            except ImageNotFound:
+                continue
+        raise ImageNotFound(cid)
+
     def one(cid):
-        pw = pw_of[cid]
         try:
             try:
-                blob = art_crypto.encrypt(key, _webp(get(cache / f"{pw}.jpg", fetch_image, pw)))
+                blob = art_crypto.encrypt(key, cropped(cid, lambda pw: _webp(get(cache / f"{pw}.jpg", fetch_image, pw))))
             except ImageNotFound:
                 # 絵だけの画像が無いカードは、カード全体の画像から絵の枠を切り出す。ペンデュラムは枠の形が違うので除く
-                if fetch_full is None or pw in pendulum:
+                if fetch_full is None or cid in pendulum:
                     raise
+                pw = pws_of[cid][0]
                 blob = art_crypto.encrypt(key, _webp(get(cache / f"full-{pw}.jpg", fetch_full, pw), ART_BOX))
                 prov[cid] = "full"
         except ImageNotFound:
@@ -168,16 +175,19 @@ def build_art(repo, passphrase, fetch_ypd, fetch_image, limit=None, iterations=3
 
     def upgrade(cid):
         # 仮の絵は、取り込み時の保存分を使わず取得元から絵だけの画像を取り直す
-        pw = pw_of[cid]
-        try:
+        def fetch(pw):
             try:
                 jpeg = fetch_image(pw)
             finally:
                 sleep(0.2)
-            blob = art_crypto.encrypt(key, _webp(jpeg))
+            webp = _webp(jpeg)
+            _write_bytes(cache / f"{pw}.jpg", jpeg)
+            return webp
+
+        try:
+            blob = art_crypto.encrypt(key, cropped(cid, fetch))
         except Exception:
             return False
-        _write_bytes(cache / f"{pw}.jpg", jpeg)
         _write_bytes(art / f"{cid}.bin", blob)
         return True
 
@@ -196,7 +206,7 @@ def build_art(repo, passphrase, fetch_ypd, fetch_image, limit=None, iterations=3
                 _write_json(index_path, sorted(index))
     _write_json(index_path, sorted(index))
     # 今回切り出したばかりの絵は、すぐには取り直さない
-    for cid in sorted(c for c in prov if c in index and c in pw_of and c not in targets):
+    for cid in sorted(c for c in prov if c in index and c in pws_of and c not in targets):
         if upgrade(cid):
             del prov[cid]
             stats["upgraded"] += 1
