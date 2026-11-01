@@ -155,16 +155,20 @@ function filterDialog(current, onApply) {
 }
 
 // タイルを長押し（500ms）とタップに振り分ける。長押しが成立したら、その後の click は捨てる。
-function bindTiles(container, { onTap, onLong }) {
+// onRight はマウスの右クリック。スマホの長押しでも contextmenu が来るので、マウスのときだけ呼ぶ
+function bindTiles(container, { onTap, onLong, onRight }) {
   let timer = null;
   let start = null;
   let suppress = false;
+  let pointerType = "";
   const cancel = () => {
     clearTimeout(timer);
     timer = null;
   };
   container.addEventListener("pointerdown", (e) => {
+    pointerType = e.pointerType;
     suppress = false;
+    if (e.button !== 0) return;
     const tile = e.target.closest(".tile");
     if (!tile) return;
     start = { x: e.clientX, y: e.clientY };
@@ -180,7 +184,11 @@ function bindTiles(container, { onTap, onLong }) {
   });
   container.addEventListener("pointerup", cancel);
   container.addEventListener("pointercancel", cancel);
-  container.addEventListener("contextmenu", (e) => e.preventDefault());
+  container.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    const tile = e.target.closest(".tile");
+    if (tile && onRight && pointerType === "mouse") onRight(tile);
+  });
   container.addEventListener("click", (e) => {
     const tile = e.target.closest(".tile");
     if (!tile) return;
@@ -215,14 +223,17 @@ export function deckView(ctx, deckId) {
   // index は同じカードの中で左から何枚目か
   const parseTile = (tile) => ({ cid: Number(tile.dataset.cid), area: tile.dataset.area, index: Number(tile.dataset.index) });
 
+  const removeTile = (t) => {
+    ctx.commit(removeOne(ctx.state, deckId, t.cid, t.area, t.index).state);
+    toast(`${cardOr(ctx.cards, t.cid).name}を1枚抜きました`);
+  };
   bindTiles(body, {
     onTap(tile) {
       const t = parseTile(tile);
-      if (tapMode === "remove") {
-        ctx.commit(removeOne(ctx.state, deckId, t.cid, t.area, t.index).state);
-        toast(`${cardOr(ctx.cards, t.cid).name}を1枚抜きました`);
-      } else ctx.commit(tapCopy(ctx.state, deckId, t.cid, t.area, t.index).state);
+      if (tapMode === "remove") removeTile(t);
+      else ctx.commit(tapCopy(ctx.state, deckId, t.cid, t.area, t.index).state);
     },
+    onRight: (tile) => removeTile(parseTile(tile)),
     onLong(tile) {
       const t = parseTile(tile);
       openSheet(t.cid, t.area, t.index);
@@ -242,7 +253,8 @@ export function deckView(ctx, deckId) {
     const addTo = area === "cand" ? "cand" : area ? "deck" : dest;
     // ＋1・−1 はシートを閉じずに続けて押せる。枚数の表示はその場で直す
     const countEl = h("div", { class: "cd-count" });
-    const showCounts = () => countEl.replaceChildren(...["main", "extra", "cand"].map((a) => h("span", {}, `${AREA_SHORT[a]} ${countIn(a)}`)));
+    const cur = area ?? (addTo === "cand" ? "cand" : home); // ＋1・−1 の主な相手の欄を大きく出す
+    const showCounts = () => countEl.replaceChildren(...["main", "extra", "cand"].map((a) => h("span", { class: a === cur ? "cur" : "" }, `${AREA_SHORT[a]} `, h("b", {}, countIn(a)), "枚")));
     showCounts();
     const plus = () => {
       apply(addCard(ctx.state, deckId, card, addTo));
@@ -271,8 +283,11 @@ export function deckView(ctx, deckId) {
     const close = openModal(
       h("div", { class: "cd", id: "card-detail" },
         h("div", { class: `cd-head f-${frameBase(card)}` },
-          h("div", { class: "cd-ruby" }, card.ruby !== card.name ? card.ruby : ""),
-          h("div", { class: "cd-name" }, card.name),
+          h("div", { class: "cd-title" },
+            h("div", { class: "cd-ruby" }, card.ruby !== card.name ? card.ruby : ""),
+            h("div", { class: "cd-name" }, card.name),
+          ),
+          h("button", { class: "cd-close", type: "button", "aria-label": "閉じる", onclick: () => close() }, "×"),
         ),
         h("div", { class: "cd-top" },
           big,
@@ -282,13 +297,12 @@ export function deckView(ctx, deckId) {
             ...monsterRows(card),
             h("div", { class: `cd-limit lim-${card.limit}` }, LIMIT_TEXT[card.limit] ?? ""),
             card.date ? h("div", { class: "cd-date" }, `OCG 発売日 ${card.date}`) : null,
-            countEl,
           ),
         ),
-        text,
         h("div", { class: "cd-pm" },
-          h("button", { class: "btn", type: "button", id: "cd-plus", onclick: plus }, addTo === "cand" ? "＋1 候補へ" : "＋1 デッキへ"),
-          h("button", { class: "btn", type: "button", id: "cd-minus", onclick: minus }, "−1 抜く"),
+          h("button", { class: "btn minus", type: "button", id: "cd-minus", onclick: minus }, "−1 抜く"),
+          countEl,
+          h("button", { class: "btn primary", type: "button", id: "cd-plus", onclick: plus }, addTo === "cand" ? "＋1 候補へ" : "＋1 デッキへ"),
         ),
         h("div", { class: "cd-tags" }, Object.entries(TAG_TEXT).map(([tag, [, label]]) => {
           const on = () => String(hasTag(deckOf(), cid, tag));
@@ -298,6 +312,7 @@ export function deckView(ctx, deckId) {
           } }, `${label}の印`);
           return b;
         })),
+        text,
         h("div", { class: "cd-acts" },
           h("button", { class: `btn${fav ? " on" : ""}`, type: "button", "aria-pressed": String(fav), onclick: act(() => {
             ctx.commit(toggleFavorite(ctx.state, cid));
@@ -313,7 +328,6 @@ export function deckView(ctx, deckId) {
           card.custom ? null : h("a", { class: "btn", href: officialDbUrl(cid), target: "_blank", rel: "noopener" }, "公式DB"),
           h("a", { class: "btn", href: cardRushUrl(card.name), target: "_blank", rel: "noopener" }, "カードラッシュ"),
         ),
-        h("button", { class: "btn", type: "button", onclick: () => close() }, "閉じる"),
       ),
       { sheet: true },
     );
