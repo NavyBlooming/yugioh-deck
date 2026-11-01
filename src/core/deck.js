@@ -19,6 +19,14 @@ const setMask = (e, mask) => {
   e.mask = mask;
   e.missing = bitCount(mask);
 };
+// 何枚目が共用（ほかのデッキと同じ紙のカードを使う）かも、同じ数え方で持つ。無ければ共用なし
+const sharedOf = (e) => e.shared ?? 0;
+const setShared = (e, bits) => {
+  if (bits) e.shared = bits;
+  else delete e.shared;
+};
+// mask の i ビット目を抜いて、上のビットを1つ下へ詰める
+const dropBit = (mask, i) => (mask & ((1 << i) - 1)) | ((mask >> (i + 1)) << i);
 
 export function createDeck(state, name) {
   const s = clone(state);
@@ -39,30 +47,33 @@ export function deleteDeck(state, deckId) {
   return ok(s);
 }
 
-// 追加先の区分の右端に1枚足す。missing が true なら未所持として足す。
-function put(s, deck, cid, area, missing) {
-  const e = findEntry(deck, cid, area);
+// 追加先の区分の右端に1枚足す。missing・shared が true なら未所持・共用として足す。
+function put(s, deck, cid, area, missing, shared = false) {
+  let e = findEntry(deck, cid, area);
   if (e) {
     const mask = maskOf(e) | (missing ? 1 << e.count : 0);
+    setShared(e, sharedOf(e) | (shared ? 1 << e.count : 0));
     e.count += 1;
     setMask(e, mask);
   } else {
-    deck.entries.push({ cid, area, count: 1, missing: missing ? 1 : 0, mask: missing ? 1 : 0, seq: s.nextSeq++ });
+    e = { cid, area, count: 1, missing: missing ? 1 : 0, mask: missing ? 1 : 0, seq: s.nextSeq++ };
+    setShared(e, shared ? 1 : 0);
+    deck.entries.push(e);
   }
 }
 
 // index 枚目（左から0）を1枚減らす。index が無ければ右端の未所持、未所持が無ければ右端。
-// 減らした1枚が未所持だったかを返す。
+// 減らした1枚が未所持・共用だったかを返す。
 function take(deck, cid, area, index) {
   const e = findEntry(deck, cid, area);
   const mask = maskOf(e);
   const i = index ?? (mask ? 31 - Math.clz32(mask) : e.count - 1);
-  const wasMissing = Boolean(mask & (1 << i));
-  const low = mask & ((1 << i) - 1);
+  const was = { missing: Boolean(mask & (1 << i)), shared: Boolean(sharedOf(e) & (1 << i)) };
   e.count -= 1;
-  setMask(e, low | ((mask >> (i + 1)) << i));
+  setMask(e, dropBit(mask, i));
+  setShared(e, dropBit(sharedOf(e), i));
   if (e.count === 0) deck.entries.splice(deck.entries.indexOf(e), 1);
-  return wasMissing;
+  return was;
 }
 
 // 最近入れた・抜いたカードを新しい順に残す。同じカードは先頭へまとめる
@@ -99,8 +110,8 @@ export function moveOne(state, deckId, cid, from, to, card, index) {
   if (areaTotal(findDeck(state, deckId), area) >= LIMITS[area]) return ng(FULL[area]);
   const s = clone(state);
   const deck = findDeck(s, deckId);
-  const wasMissing = take(deck, cid, from, index);
-  put(s, deck, cid, area, wasMissing);
+  const was = take(deck, cid, from, index);
+  put(s, deck, cid, area, was.missing, was.shared);
   return ok(s);
 }
 
@@ -109,6 +120,14 @@ export function tapCopy(state, deckId, cid, area, index) {
   const s = clone(state);
   const e = findEntry(findDeck(s, deckId), cid, area);
   setMask(e, maskOf(e) ^ (1 << index));
+  return ok(s);
+}
+
+// index 枚目（左から0）の共用を切り替える
+export function toggleShared(state, deckId, cid, area, index) {
+  const s = clone(state);
+  const e = findEntry(findDeck(s, deckId), cid, area);
+  setShared(e, sharedOf(e) ^ (1 << index));
   return ok(s);
 }
 
@@ -133,7 +152,8 @@ export function sortedEntries(deck, cards, area) {
 
 export function tilesOf(entry) {
   const mask = maskOf(entry);
-  return Array.from({ length: entry.count }, (_, i) => ({ missing: Boolean(mask & (1 << i)) }));
+  const shared = sharedOf(entry);
+  return Array.from({ length: entry.count }, (_, i) => ({ missing: Boolean(mask & (1 << i)), shared: Boolean(shared & (1 << i)) }));
 }
 
 export function warnings(deck, cards) {

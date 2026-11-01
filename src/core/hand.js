@@ -1,4 +1,5 @@
 // 初手の確率と、初手のテストで引くカード
+import { tilesOf } from "./deck.js";
 
 const choose = (n, k) => {
   if (k < 0 || k > n) return 0;
@@ -26,9 +27,9 @@ export function tagOdds(deck, tag, draw) {
   return { count, total: copies.length, dist, atLeastOne: dist ? 1 - dist[0] : null };
 }
 
-// メインデッキから draw 枚を重ならずに引く。足りなければ null
+// メインデッキから draw 枚を重ならずに引く。1枚ずつ {cid, shared} で返す。足りなければ null
 export function drawHand(deck, draw, random) {
-  const copies = mainCopies(deck);
+  const copies = deck.entries.filter((e) => e.area === "main").flatMap((e) => tilesOf(e).map((t) => ({ cid: e.cid, shared: t.shared })));
   if (copies.length < draw) return null;
   for (let i = 0; i < draw; i++) {
     const j = i + Math.floor(random() * (copies.length - i));

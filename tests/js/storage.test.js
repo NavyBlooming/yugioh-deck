@@ -65,6 +65,9 @@ test("不正な形は拒否", () => {
   s = good(); s.decks[0].entries[0].mask = 3; assert.equal(isValidState(s), false); // 暗い位置が2つで missing と合わない
   s = good(); s.decks[0].entries[0].mask = 8; assert.equal(isValidState(s), false); // 4枚目の位置
   s = good(); s.decks[0].entries[0].mask = 1.5; assert.equal(isValidState(s), false);
+  s = good(); s.decks[0].entries[0].shared = 1; assert.equal(isValidState(s), true);
+  s = good(); s.decks[0].entries[0].shared = 2 ** s.decks[0].entries[0].count; assert.equal(isValidState(s), false); // 枚数より外の位置
+  s = good(); s.decks[0].entries[0].shared = -1; assert.equal(isValidState(s), false);
   s = good(); s.decks[0].entries[0].count = 0; assert.equal(isValidState(s), false);
   s = good(); s.decks[0].entries[0].area = "side"; assert.equal(isValidState(s), false);
   s = good(); s.notes[12950].price = "580"; assert.equal(isValidState(s), false);

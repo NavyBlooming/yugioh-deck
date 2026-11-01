@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { parseCards } from "../../src/core/cards.js";
 import { emptyState, isValidState, exportJson, parseImport } from "../../src/core/storage.js";
-import { createDeck, addCard, tapCopy, toggleFavorite, sortedEntries, tilesOf, toggleTag } from "../../src/core/deck.js";
+import { createDeck, addCard, tapCopy, toggleFavorite, sortedEntries, tilesOf, toggleTag, toggleShared } from "../../src/core/deck.js";
 import { setNote } from "../../src/core/shopping.js";
 import { isEmptyState } from "../../src/core/sync.js";
 import { addCustomCard, removeCustomCard, customCardMap, replaceReleased, prereleaseMap, adoptPrerelease } from "../../src/core/custom.js";
@@ -81,10 +81,11 @@ test("replaceReleased: 同じ欄に一覧のカードが既にあればまとめ
   state = addCard(d.state, d.deckId, cards.get(9000), "deck").state;
   state = addCard(state, d.deckId, customCardMap(state).get(cid), "deck").state;
   state = tapCopy(state, d.deckId, cid, "main", 0).state;
+  state = toggleShared(state, d.deckId, cid, "main", 0).state;
   const r = replaceReleased(state, cards);
   const e = r.state.decks[0].entries;
   assert.equal(e.length, 1);
-  assert.deepEqual(tilesOf(e[0]).map((t) => t.missing), [false, true]);
+  assert.deepEqual(tilesOf(e[0]), [{ missing: false, shared: false }, { missing: true, shared: true }]);
 });
 
 test("replaceReleased: 一致が無ければ何も変えない", () => {

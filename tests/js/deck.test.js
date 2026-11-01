@@ -4,7 +4,7 @@ import { parseCards } from "../../src/core/cards.js";
 import { emptyState } from "../../src/core/storage.js";
 import {
   createDeck, renameDeck, deleteDeck, addCard, removeOne, moveOne, tapCopy,
-  sortedEntries, tilesOf, warnings, deckSummary, addHandTraps, toggleFavorite, toggleTag, hasTag,
+  sortedEntries, tilesOf, warnings, deckSummary, addHandTraps, toggleFavorite, toggleTag, hasTag, toggleShared,
 } from "../../src/core/deck.js";
 
 const cards = parseCards({
@@ -256,11 +256,11 @@ test("sortedEntries: cand は main 群の後に extra 群、未知 cid は末尾
 });
 
 test("tilesOf: 位置の記録が無い前の形は、明るい札のあとに暗い札", () => {
-  assert.deepEqual(tilesOf({ count: 3, missing: 1 }), [{ missing: false }, { missing: false }, { missing: true }]);
+  assert.deepEqual(tilesOf({ count: 3, missing: 1 }).map((t) => t.missing), [false, false, true]);
 });
 
 test("tilesOf: 位置の記録どおりに暗くする", () => {
-  assert.deepEqual(tilesOf({ count: 3, missing: 1, mask: 1 }), [{ missing: true }, { missing: false }, { missing: false }]);
+  assert.deepEqual(tilesOf({ count: 3, missing: 1, mask: 1 }).map((t) => t.missing), [true, false, false]);
 });
 
 test("warnings", () => {
@@ -422,4 +422,32 @@ test("toggleTag: 誘発・初動の印はデッキごと・カードごとに付
 test("hasTag: 印が無いデッキでも false", () => {
   const { state, id } = setup();
   assert.equal(hasTag(deckOf(state, id), 2, "hand"), false);
+});
+
+test("toggleShared: 1枚ずつ共用の印を切り替え、未所持とは別に持つ", () => {
+  let { state, id } = setup();
+  for (let i = 0; i < 3; i++) state = addCard(state, id, c(2), "deck").state;
+  state = toggleShared(state, id, 2, "main", 1).state;
+  state = tapCopy(state, id, 2, "main", 1).state;
+  const e = state.decks[0].entries[0];
+  assert.deepEqual(tilesOf(e), [{ missing: false, shared: false }, { missing: true, shared: true }, { missing: false, shared: false }]);
+  state = toggleShared(state, id, 2, "main", 1).state;
+  assert.deepEqual(tilesOf(state.decks[0].entries[0]).map((t) => t.shared), [false, false, false]);
+});
+
+test("共用の印は抜いた位置で詰め、移動に付いていく", () => {
+  let { state, id } = setup();
+  for (let i = 0; i < 3; i++) state = addCard(state, id, c(2), "deck").state;
+  state = toggleShared(state, id, 2, "main", 2).state;
+  state = removeOne(state, id, 2, "main", 0).state;
+  assert.deepEqual(tilesOf(state.decks[0].entries[0]).map((t) => t.shared), [false, true]);
+  state = moveOne(state, id, 2, "main", "cand", c(2), 1).state;
+  const cand = state.decks[0].entries.find((e) => e.area === "cand");
+  assert.deepEqual(tilesOf(cand), [{ missing: false, shared: true }]);
+  state = addCard(state, id, c(2), "deck").state;
+  assert.deepEqual(tilesOf(state.decks[0].entries.find((e) => e.area === "main")).map((t) => t.shared), [false, false]);
+});
+
+test("共用の印が無い前の形は、共用なしとして読む", () => {
+  assert.deepEqual(tilesOf({ cid: 1, area: "main", count: 2, missing: 1, mask: 2, seq: 0 }), [{ missing: false, shared: false }, { missing: true, shared: false }]);
 });

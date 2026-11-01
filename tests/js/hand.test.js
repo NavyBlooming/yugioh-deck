@@ -49,8 +49,15 @@ test("drawHand: メインから重ならずに引く", () => {
   const seq = [0.99, 0.01, 0.5, 0.2, 0.7, 0.3];
   const hand = drawHand(deck, 5, () => seq[i++ % seq.length]);
   assert.equal(hand.length, 5);
-  assert.ok(hand.every((c) => [1, 2, 3].includes(c)));
+  assert.ok(hand.every((c) => [1, 2, 3].includes(c.cid)));
   const many = drawHand(deck, 40, Math.random);
-  assert.deepEqual([...many].sort((a, b) => a - b), [1, 1, 1, 2, 2, ...Array(35).fill(3)]);
+  assert.deepEqual(many.map((c) => c.cid).sort((a, b) => a - b), [1, 1, 1, 2, 2, ...Array(35).fill(3)]);
   assert.equal(drawHand({ entries: [] }, 5, Math.random), null);
+});
+
+test("drawHand: 引いた1枚ごとに共用の印が付いてくる", () => {
+  const d = { entries: [{ cid: 7, area: "main", count: 3, missing: 0, shared: 0b100, seq: 0 }, { cid: 8, area: "main", count: 2, missing: 0, seq: 1 }] };
+  const hand = drawHand(d, 5, Math.random);
+  assert.equal(hand.filter((c) => c.shared).length, 1);
+  assert.ok(hand.find((c) => c.shared).cid === 7);
 });

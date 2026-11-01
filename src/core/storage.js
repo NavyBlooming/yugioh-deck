@@ -18,6 +18,7 @@ function validEntry(e) {
     Number.isInteger(e.count) && e.count >= 1 &&
     Number.isInteger(e.missing) && e.missing >= 0 && e.missing <= e.count &&
     (e.mask === undefined || (Number.isInteger(e.mask) && e.mask >= 0 && e.mask < 2 ** e.count && bitCount(e.mask) === e.missing)) &&
+    (e.shared === undefined || (Number.isInteger(e.shared) && e.shared >= 0 && e.shared < 2 ** e.count)) &&
     isNum(e.seq)
   );
 }

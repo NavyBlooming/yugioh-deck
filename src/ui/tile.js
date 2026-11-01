@@ -23,7 +23,7 @@ const seen = typeof IntersectionObserver === "undefined" ? null : new Intersecti
   }
 });
 
-export function tileEl(card, { missing = false, area = "", index = null, lazy = false } = {}) {
+export function tileEl(card, { missing = false, shared = false, area = "", index = null, lazy = false } = {}) {
   const pend = card.frame.endsWith("_pendulum");
   const base = pend ? card.frame.slice(0, -"_pendulum".length) : card.frame;
   const art = h("div", { class: "art" });
@@ -40,6 +40,7 @@ export function tileEl(card, { missing = false, area = "", index = null, lazy = 
     art,
     h("div", { class: "name" }, card.name),
     LIMIT_MARK[card.limit] ? h("span", { class: "lim" }, LIMIT_MARK[card.limit]) : null,
+    shared ? h("span", { class: "shared-band" }, "共用") : null,
   );
   const load = () =>
     Promise.resolve(provider(card.cid))

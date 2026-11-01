@@ -1,4 +1,4 @@
-import { addCard, addHandTraps, deleteDeck, hasTag, moveOne, removeOne, renameDeck, sortedEntries, tapCopy, tilesOf, toggleFavorite, toggleTag, warnings } from "../core/deck.js";
+import { addCard, addHandTraps, deleteDeck, hasTag, moveOne, removeOne, renameDeck, sortedEntries, tapCopy, tilesOf, toggleFavorite, toggleShared, toggleTag, warnings } from "../core/deck.js";
 import { cardRushUrl, officialDbUrl } from "../core/shopping.js";
 import { search, searchWithText } from "../core/search.js";
 import { artState, cardText, loadTexts } from "./art.js";
@@ -88,7 +88,7 @@ function handDialog(ctx, deck) {
       body.replaceChildren(h("p", { class: "muted" }, `メインデッキが${draw}枚以上になると、初手を引けます`));
       return;
     }
-    const count = (tag) => hand.filter((cid) => hasTag(deck, cid, tag)).length;
+    const count = (tag) => hand.filter((c) => hasTag(deck, c.cid, tag)).length;
     const head = h("tr", {}, h("th", {}, ""), ["0枚", "1枚", "2枚", "3枚以上", "1枚以上"].map((x) => h("th", {}, x)));
     const rows = Object.entries(TAG_TEXT).map(([tag, [, label]]) => {
       const o = tagOdds(deck, tag, draw);
@@ -97,8 +97,8 @@ function handDialog(ctx, deck) {
       return h("tr", { "data-tag": tag }, h("th", {}, `${label}（${o.count}枚）`), cells.map((p) => h("td", {}, pct(p))));
     });
     body.replaceChildren(
-      h("div", { class: "grid hand-grid", id: "hand-cards" }, hand.map((cid) => {
-        const el = tileEl(cardOr(ctx.cards, cid), {});
+      h("div", { class: "grid hand-grid", id: "hand-cards" }, hand.map(({ cid, shared }) => {
+        const el = tileEl(cardOr(ctx.cards, cid), { shared });
         const marks = tagMarks(deck, cid);
         if (marks) el.append(marks);
         return el;
@@ -272,6 +272,19 @@ export function deckView(ctx, deckId) {
       showCounts();
     };
     const fav = (ctx.state.favorites ?? []).includes(cid);
+    const sharedNow = () => {
+      const e = deckOf().entries.find((x) => x.cid === cid && x.area === area);
+      return Boolean(e && pressed !== undefined && pressed < e.count && tilesOf(e)[pressed].shared);
+    };
+    const sharedBtn = () => {
+      const b = h("button", { class: "btn tag-btn", type: "button", id: "cd-shared", "data-tag": "shared", "aria-pressed": String(sharedNow()), onclick: () => {
+        // −1 で並びが変わると、長押しした1枚がどれか分からなくなる
+        if (pressed === undefined || !countIn(area)) return toast("枚数を変えたので、印を付ける札をもう一度長押ししてください");
+        ctx.commit(toggleShared(ctx.state, deckId, cid, area, pressed).state);
+        b.setAttribute("aria-pressed", String(sharedNow()));
+      } }, "共用の印（この1枚）");
+      return b;
+    };
     const text = h("div", { class: "cd-text", id: "cd-text" }, "効果テキストを読み込んでいます…");
     const noText = card.custom ? (card.set ? `発売前のカードです（${card.set}）。効果テキストはありません。` : "発売前のカードです。効果テキストはありません。") : "効果テキストがありません。";
     // 自分で登録したカード（-1, -2, …）には効果テキストが無い。Wiki から取得したカードは遊戯王カードWiki の文がある
@@ -312,7 +325,9 @@ export function deckView(ctx, deckId) {
             b.setAttribute("aria-pressed", on());
           } }, `${label}の印`);
           return b;
-        })),
+        }),
+        // 共用は長押しした1枚だけに付ける。デッキの外から開いたときは出さない
+        area && index != null ? sharedBtn() : null),
         h("div", { class: "cd-acts" },
           h("button", { class: `btn${fav ? " on" : ""}`, type: "button", "aria-pressed": String(fav), onclick: act(() => {
             ctx.commit(toggleFavorite(ctx.state, cid));
@@ -376,7 +391,7 @@ export function deckView(ctx, deckId) {
           entries.flatMap((e) => {
             const card = cardOr(ctx.cards, e.cid);
             return tilesOf(e).map((t, i) => {
-              const el = tileEl(card, { missing: t.missing, area, index: i });
+              const el = tileEl(card, { missing: t.missing, shared: t.shared, area, index: i });
               const marks = tagMarks(deck, e.cid);
               if (marks) el.append(marks);
               return el;

@@ -78,6 +78,8 @@ function moveCard(s, from, to) {
         same.count += e.count;
         same.mask = mask;
         same.missing = bitCount(mask);
+        const shared = (same.shared ?? 0) | ((e.shared ?? 0) << (same.count - e.count));
+        if (shared) same.shared = shared;
         d.entries.splice(d.entries.indexOf(e), 1);
       } else e.cid = to;
     }

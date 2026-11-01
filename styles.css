@@ -178,6 +178,11 @@ input[type="text"], input[type="number"], select {
   box-shadow: 0 0 0 1px #fff;
 }
 .tag.hand { background: #c2410c; }
+/* 共用の印は札の下端の角丸に帯で出す */
+.tile .shared-band {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 13px; background: #7c3aed; color: #fff;
+  font-size: 9px; font-weight: 700; line-height: 13px; text-align: center; letter-spacing: .1em;
+}
 .tag.starter { background: #1d6fd8; }
 .hist-mark.out { background: #6b6b6b; }
 .results-more { grid-column: 1 / -1; height: 1px; }
@@ -286,8 +291,10 @@ input[type="text"], input[type="number"], select {
 .cd-pm .btn { min-height: 52px; padding: 0 6px; font-size: 16px; font-weight: 700; white-space: nowrap; }
 .cd-pm .btn.minus { color: #ff9b8f; border-color: #8a3a32; }
 .cd-tags { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cd-tags #cd-shared { grid-column: 1 / -1; }
 .tag-btn[aria-pressed="true"][data-tag="hand"] { background: #c2410c; border-color: #c2410c; color: #fff; }
 .tag-btn[aria-pressed="true"][data-tag="starter"] { background: #1d6fd8; border-color: #1d6fd8; color: #fff; }
+.tag-btn[aria-pressed="true"][data-tag="shared"] { background: #7c3aed; border-color: #7c3aed; color: #fff; }
 .cd-acts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 .cd-acts .btn.on { color: #ffd479; border-color: #8a6a1f; }
 .btn:disabled { opacity: .4; cursor: default; }
