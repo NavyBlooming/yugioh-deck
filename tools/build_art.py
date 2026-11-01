@@ -53,6 +53,15 @@ def _save_provisional(art: Path, prov: dict, index) -> None:
     _write_json(art / "provisional.json", {str(k): prov[k] for k in sorted(prov) if k in index})
 
 
+# 絵を差し替えたカードの版の番号。画面は復号した絵を cid ごとに保存しているので、番号が変われば取り直す
+def _bump_versions(art: Path, cids) -> None:
+    p = art / "versions.json"
+    v = {int(k): n for k, n in json.loads(p.read_text(encoding="utf-8")).items()} if p.exists() else {}
+    for cid in cids:
+        v[cid] = v.get(cid, 0) + 1
+    _write_json(p, {str(k): v[k] for k in sorted(v)})
+
+
 def load_passphrase(repo: Path, environ) -> str:
     value = (environ.get(ENV_KEY) or "").strip()
     env_file = repo / ".env"
@@ -206,10 +215,12 @@ def build_art(repo, passphrase, fetch_ypd, fetch_image, limit=None, iterations=3
                 _write_json(index_path, sorted(index))
     _write_json(index_path, sorted(index))
     # 今回切り出したばかりの絵は、すぐには取り直さない
-    for cid in sorted(c for c in prov if c in index and c in pws_of and c not in targets):
-        if upgrade(cid):
-            del prov[cid]
-            stats["upgraded"] += 1
+    upgraded = [cid for cid in sorted(c for c in prov if c in index and c in pws_of and c not in targets) if upgrade(cid)]
+    for cid in upgraded:
+        del prov[cid]
+    stats["upgraded"] = len(upgraded)
+    if upgraded:
+        _bump_versions(art, upgraded)
     _save_provisional(art, prov, index)
     return stats
 

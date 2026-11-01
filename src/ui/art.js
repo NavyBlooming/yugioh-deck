@@ -6,6 +6,7 @@ const PASS_KEY = "ygo.pass.v1";
 
 let meta = null;
 let index = new Set();
+let versions = {}; // 絵を差し替えたカードの版の番号（cid → 番号）
 let key = null;
 const urls = new Map(); // cid → Promise<objectURL|null>
 let texts = null; // Promise<Map cid → 正規化した効果テキスト | null>
@@ -17,7 +18,8 @@ const store = {
   del: (k) => { try { localStorage.removeItem(k); } catch {} },
 };
 
-// 復号した絵は IndexedDB に塩と cid の組で置く。合言葉を変えて作り直すと塩も変わるので、古い分は使われない。
+// 復号した絵は IndexedDB に塩と cid（差し替えたカードは版の番号も）の組で置く。
+// 合言葉を変えて作り直すと塩も、絵を差し替えると版の番号も変わるので、古い分は使われない。
 function openDb() {
   return new Promise((resolve) => {
     let req;
@@ -45,10 +47,11 @@ async function idb(mode, fn) {
 }
 
 async function load(cid) {
-  const k = `${meta.salt}:${cid}`;
+  const v = versions[cid];
+  const k = v ? `${meta.salt}:${cid}:${v}` : `${meta.salt}:${cid}`;
   let blob = await idb("readonly", (s) => s.get(k));
   if (!blob) {
-    const r = await fetch(`art/${cid}.bin`);
+    const r = await fetch(v ? `art/${cid}.bin?v=${v}` : `art/${cid}.bin`);
     if (!r.ok) return null;
     blob = new Blob([await decryptArt(key, await r.arrayBuffer())], { type: "image/webp" });
     await idb("readwrite", (s) => s.put(blob, k));
@@ -73,12 +76,14 @@ export const initArt = () => (started ??= init());
 
 async function init() {
   try {
-    const [m, i] = await Promise.all([
+    const [m, i, v] = await Promise.all([
       fetch("art/meta.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)),
       fetch("art/index.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : [])),
+      fetch("art/versions.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : {})).catch(() => ({})),
     ]);
     meta = m;
     index = new Set(i);
+    versions = v;
   } catch {
     meta = null;
   }

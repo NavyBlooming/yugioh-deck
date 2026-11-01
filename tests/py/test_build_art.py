@@ -483,3 +483,20 @@ def test_一覧の番号に画像が無ければygocdbの番号でも取りに�
     net.calls.clear()
     stats = ba.build_art(repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None, fetch_full=net.full, fetch_ids=lambda: {20: 9020})
     assert stats["upgraded"] == 1 and net.calls[-2:] == [1020, 9020] and provisional(repo) == {}
+
+
+def versions(repo):
+    p = repo / "art" / "versions.json"
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+
+
+def test_差し替えた絵は版の番号を上げる(repo):
+    net = FallbackNet()
+    ba.build_art(repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None, fetch_full=net.full)
+    assert versions(repo) == {}
+    net.missing = {1030}
+    ba.build_art(repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None, fetch_full=net.full)
+    assert versions(repo) == {"20": 1}
+    # 差し替えた後は仮の絵ではないので、もう上がらない
+    ba.build_art(repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None, fetch_full=net.full)
+    assert versions(repo) == {"20": 1}
