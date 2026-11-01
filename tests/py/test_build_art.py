@@ -359,3 +359,87 @@ def test_発売されたカードに絵があれば発売前の絵は消す(repo
     stats = run_pre(repo, PreNet())
     assert stats["carried"] == 0 and stats["removed"] == 1
     assert (repo / "art" / "10.bin").read_bytes() == before
+
+
+def provisional(repo):
+    p = repo / "art" / "provisional.json"
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+
+
+def test_カード全体から切り出した絵は仮の絵として記録する(repo):
+    net = FallbackNet()
+    ba.build_art(repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None, fetch_full=net.full)
+    assert provisional(repo) == {"20": "full"}
+
+
+def test_発売前から引き継いだ絵は仮の絵として記録する(repo):
+    from build_prerelease import cid_of
+
+    old = cid_of("白鴉の騎士マルト")
+    write_pre(repo, [{**pre(old, "NEWP-JP001"), "name": "白鴉の騎士マルト"}])
+    run_pre(repo, PreNet())
+    cards = json.loads((repo / "data" / "cards.json").read_text(encoding="utf-8"))
+    cards["cards"].append([23821, "白鴉の騎士マルト", "はくあのきしマルト", "effect", "effect", 3])
+    (repo / "data" / "cards.json").write_text(json.dumps(cards, ensure_ascii=False), encoding="utf-8")
+    write_pre(repo, [])
+    run_pre(repo, PreNet())
+    assert provisional(repo) == {"23821": "carried"}
+
+
+def blue_jpeg():
+    buf = io.BytesIO()
+    Image.new("RGB", (300, 300), (20, 30, 220)).save(buf, "JPEG")
+    return buf.getvalue()
+
+
+def test_仮の絵は正式な画像が出たら取り直して差し替える(repo):
+    net = FallbackNet()
+    ba.build_art(repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None, fetch_full=net.full)
+    before = (repo / "art" / "20.bin").read_bytes()
+    # 取り込み時の保存分が残っていても、取得元から取り直す
+    (repo / ".cache" / "art" / "1020.jpg").write_bytes(jpeg())
+    net.missing = {1030}
+    net.image = lambda pw: (net.calls.append(pw), blue_jpeg())[1]
+    stats = ba.build_art(repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None, fetch_full=net.full)
+    assert stats["upgraded"] == 1 and 1020 in net.calls
+    assert provisional(repo) == {}
+    assert (repo / "art" / "20.bin").read_bytes() != before
+    key = ac.key_from_meta(json.loads((repo / "art" / "meta.json").read_text(encoding="utf-8")), PASS)
+    r, g, b = Image.open(io.BytesIO(ac.decrypt(key, (repo / "art" / "20.bin").read_bytes()))).convert("RGB").getpixel((3, 3))
+    assert b > 180 and r < 70
+
+
+def test_仮の絵は正式な画像がまだ無ければそのまま残す(repo):
+    net = FallbackNet()
+    ba.build_art(repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None, fetch_full=net.full)
+    before = (repo / "art" / "20.bin").read_bytes()
+    net.calls.clear()
+    stats = ba.build_art(repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None, fetch_full=net.full)
+    assert stats["upgraded"] == 0 and net.calls.count(1020) == 1
+    assert provisional(repo) == {"20": "full"}
+    assert (repo / "art" / "20.bin").read_bytes() == before
+
+
+def test_裏面の画像は絵が無いとみなす(repo, monkeypatch):
+    monkeypatch.setattr(ba, "CARD_BACKS", {ba.webp_hash(ba.to_webp(jpeg()))})
+    stats = run(repo, Net())
+    assert stats["no_image"] == 3 and index(repo) == []
+
+
+def test_仮の絵の取り直しで裏面の画像が来たら差し替えない(repo, monkeypatch):
+    net = FallbackNet()
+    ba.build_art(repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None, fetch_full=net.full)
+    before = (repo / "art" / "20.bin").read_bytes()
+    monkeypatch.setattr(ba, "CARD_BACKS", {ba.webp_hash(ba.to_webp(blue_jpeg()))})
+    net.missing = {1030}
+    net.image = lambda pw: blue_jpeg()
+    stats = ba.build_art(repo, PASS, net.ypd, net.image, iterations=IT, sleep=lambda s: None, fetch_full=net.full)
+    assert stats["upgraded"] == 0 and provisional(repo) == {"20": "full"}
+    assert (repo / "art" / "20.bin").read_bytes() == before
+
+
+def test_発売前のカードも裏面の画像は絵が無いとみなす(repo, monkeypatch):
+    monkeypatch.setattr(ba, "CARD_BACKS", {ba.webp_hash(ba.to_webp(full_card(), ba.ART_BOX))})
+    write_pre(repo, PRE)
+    stats = run_pre(repo, PreNet())
+    assert stats["no_image"] == 3 and stats["new"] == 0

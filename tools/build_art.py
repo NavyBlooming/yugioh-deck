@@ -1,6 +1,7 @@
 """data/cards.json の cid のうち絵が未作成のものを、暗号化した art/<cid>.bin にする。
 --prerelease のときは、data/prerelease.json の発売前のカードの絵を作る。"""
 
+import hashlib
 import io
 import json
 import os
@@ -23,8 +24,33 @@ WIDTH = 200
 FLUSH_EVERY = 200
 
 
+# 取得元に絵がまだ無いときに返ってくる、カードの裏面の画像（WebP にした後の MD5）。これは絵が無いとみなす
+CARD_BACKS = {"7685140bdfd278b9e2b8a55aa8b93071"}
+
+
 class ImageNotFound(Exception):
     pass
+
+
+def webp_hash(webp: bytes) -> str:
+    return hashlib.md5(webp).hexdigest()
+
+
+def _webp(jpeg: bytes, box=None) -> bytes:
+    webp = to_webp(jpeg, box)
+    if webp_hash(webp) in CARD_BACKS:
+        raise ImageNotFound("card back")
+    return webp
+
+
+# 正式な絵だけの画像ではない絵（仮の絵）。cid → "full"（カード全体から切り出した）か "carried"（発売前から引き継いだ）
+def _load_provisional(art: Path) -> dict:
+    p = art / "provisional.json"
+    return {int(k): v for k, v in json.loads(p.read_text(encoding="utf-8")).items()} if p.exists() else {}
+
+
+def _save_provisional(art: Path, prov: dict, index) -> None:
+    _write_json(art / "provisional.json", {str(k): prov[k] for k in sorted(prov) if k in index})
 
 
 def load_passphrase(repo: Path, environ) -> str:
@@ -120,12 +146,13 @@ def build_art(repo, passphrase, fetch_ypd, fetch_image, limit=None, iterations=3
         pw = pw_of[cid]
         try:
             try:
-                blob = art_crypto.encrypt(key, to_webp(get(cache / f"{pw}.jpg", fetch_image, pw)))
+                blob = art_crypto.encrypt(key, _webp(get(cache / f"{pw}.jpg", fetch_image, pw)))
             except ImageNotFound:
                 # 絵だけの画像が無いカードは、カード全体の画像から絵の枠を切り出す。ペンデュラムは枠の形が違うので除く
                 if fetch_full is None or pw in pendulum:
                     raise
-                blob = art_crypto.encrypt(key, to_webp(get(cache / f"full-{pw}.jpg", fetch_full, pw), ART_BOX))
+                blob = art_crypto.encrypt(key, _webp(get(cache / f"full-{pw}.jpg", fetch_full, pw), ART_BOX))
+                prov[cid] = "full"
         except ImageNotFound:
             return "no_image", 0
         except Exception:
@@ -133,7 +160,23 @@ def build_art(repo, passphrase, fetch_ypd, fetch_image, limit=None, iterations=3
         _write_bytes(art / f"{cid}.bin", blob)
         return "new", len(blob)
 
-    stats = {"processed": 0, "new": 0, "no_image": 0, "failed": 0, "bytes": 0}
+    def upgrade(cid):
+        # 仮の絵は、取り込み時の保存分を使わず取得元から絵だけの画像を取り直す
+        pw = pw_of[cid]
+        try:
+            try:
+                jpeg = fetch_image(pw)
+            finally:
+                sleep(0.2)
+            blob = art_crypto.encrypt(key, _webp(jpeg))
+        except Exception:
+            return False
+        _write_bytes(cache / f"{pw}.jpg", jpeg)
+        _write_bytes(art / f"{cid}.bin", blob)
+        return True
+
+    prov = _load_provisional(art)
+    stats = {"processed": 0, "new": 0, "no_image": 0, "failed": 0, "bytes": 0, "upgraded": 0}
     # 応答の遅い画像で全体が止まらないよう並行で取る。index の更新はこのスレッドだけで行う
     with ThreadPoolExecutor(max_workers=workers) as pool:
         for cid, (result, size) in zip(targets, pool.map(one, targets)):
@@ -146,6 +189,12 @@ def build_art(repo, passphrase, fetch_ypd, fetch_image, limit=None, iterations=3
             if stats["new"] % FLUSH_EVERY == 0:
                 _write_json(index_path, sorted(index))
     _write_json(index_path, sorted(index))
+    # 今回切り出したばかりの絵は、すぐには取り直さない
+    for cid in sorted(c for c in prov if c in index and c in pw_of and c not in targets):
+        if upgrade(cid):
+            del prov[cid]
+            stats["upgraded"] += 1
+    _save_provisional(art, prov, index)
     return stats
 
 
@@ -206,6 +255,7 @@ def build_prerelease_art(repo, passphrase, fetch_ypd, fetch_image, iterations=30
     if meta is not None:
         _write_json(art / "meta.json", meta)
     stats = {"matched": len(matched), "new": 0, "carried": 0, "removed": 0, "no_image": 0, "failed": 0}
+    prov = _load_provisional(art)
     alive = {c["cid"] for c in pre}
     # 発売前の番号は名前から決まるので、カードデータの名前から元の番号が分かる
     released = {cid_of(c[1]): c[0] for c in json.loads((repo / "data" / "cards.json").read_text(encoding="utf-8"))["cards"]}
@@ -214,6 +264,7 @@ def build_prerelease_art(repo, passphrase, fetch_ypd, fetch_image, iterations=30
         if to is not None and to not in index:
             os.replace(art / f"{cid}.bin", art / f"{to}.bin")
             index.add(to)
+            prov[to] = "carried"
             stats["carried"] += 1
         else:
             (art / f"{cid}.bin").unlink(missing_ok=True)
@@ -234,7 +285,7 @@ def build_prerelease_art(repo, passphrase, fetch_ypd, fetch_image, iterations=30
                 finally:
                     sleep(0.2)
                 _write_bytes(cached, jpeg)
-            blob = art_crypto.encrypt(key, to_webp(jpeg, ART_BOX))
+            blob = art_crypto.encrypt(key, _webp(jpeg, ART_BOX))
         except ImageNotFound:
             stats["no_image"] += 1
             continue
@@ -245,13 +296,14 @@ def build_prerelease_art(repo, passphrase, fetch_ypd, fetch_image, iterations=30
         index.add(cid)
         stats["new"] += 1
     _write_json(art / "index.json", sorted(index))
+    _save_provisional(art, prov, index)
     return stats
 
 
 def _summary(s: dict) -> str:
     return (
         f"processed {s['processed']} / new {s['new']} / no image {s['no_image']}"
-        f" / failed {s['failed']} / size {s['bytes']} bytes"
+        f" / failed {s['failed']} / upgraded {s['upgraded']} / size {s['bytes']} bytes"
     )
 
 

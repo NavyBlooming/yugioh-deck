@@ -2,7 +2,7 @@ name: カードデータの更新
 
 on:
   schedule:
-    - cron: "0 18 * * 0" # 月曜 3:00（日本時間）
+    - cron: "0 3 * * 0" # 日曜 12:00（日本時間）。新しいパックはたいてい土曜に出る
   workflow_dispatch:
 
 permissions:
