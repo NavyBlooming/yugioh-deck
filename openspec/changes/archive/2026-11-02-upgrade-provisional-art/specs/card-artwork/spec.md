@@ -22,3 +22,12 @@ The system SHALL treat the card back image that the source returns for a card wi
 
 - **WHEN** 取得元が、絵の代わりにカードの裏面の画像を返す
 - **THEN** その画像は絵として使わない
+
+### Requirement: 画像の番号の候補
+
+The system SHALL look up the artwork image by the passcode in the YGOPRODeck card list first, and SHALL try the passcode in ygocdb when the card is not in the list or the image is not available under the first passcode.
+
+#### Scenario: 発売前の仮の番号に画像がある
+
+- **WHEN** YGOPRODeck の一覧の番号では絵だけの画像が無く、ygocdb の番号（発売前の仮の番号）には画像がある
+- **THEN** ygocdb の番号の画像を絵に使う

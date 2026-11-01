@@ -131,3 +131,12 @@ The system SHALL show the fetched pre-release cards in search like other cards. 
 
 - **WHEN** 取得した発売前のカードを検索してデッキに入れる
 - **THEN** そのカードは「設定」の発売前のカードの一覧に載り、発売後はカードデータのカードに置き換わる
+
+### Requirement: 定期更新の曜日
+
+The weekly update SHALL run every Sunday at 12:00 Japan time, because new products are usually released on Saturday.
+
+#### Scenario: 土曜発売のパック
+
+- **WHEN** 土曜に新しいパックが発売される
+- **THEN** 翌日の日曜 12:00 の更新で、そのパックのカードが取り込まれる
