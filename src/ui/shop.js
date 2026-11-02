@@ -9,8 +9,20 @@ export function toolTabs(active) {
   return h("nav", { class: "seg-group tool-tabs", "aria-label": "ツール" }, tab("shop", "#/shop", "買い物"), tab("utility", "#/utility", "ユーティリティ"), tab("other", "#/other", "その他"));
 }
 
+// 畳んだデッキ。タブを移っても、開いている間は残す
+const folded = new Set();
+
 export function shopView(ctx) {
   const root = h("div", { class: "view" });
+
+  // 上に留まった帯を押して畳むと帯が画面の外へ行くので、畳んだデッキの頭まで戻す
+  function toggle(deckId, section) {
+    const stuck = section.getBoundingClientRect().top < 0;
+    if (folded.has(deckId)) folded.delete(deckId);
+    else folded.add(deckId);
+    refresh();
+    if (stuck) root.querySelector(`.shop-group[data-deck="${CSS.escape(deckId)}"]`)?.scrollIntoView({ block: "start" });
+  }
 
   function row(group, r) {
     const card = cardOr(ctx.cards, r.cid);
@@ -43,19 +55,22 @@ export function shopView(ctx) {
       root.replaceChildren(toolTabs("shop"), head, h("div", { class: "empty" }, h("p", {}, "未所持のカードはありません")));
       return;
     }
-    root.replaceChildren(toolTabs("shop"), head, ...list.map((g) =>
-      h("section", { class: "panel shop-group", "data-deck": g.deckId },
-        h("div", { class: "shop-head" },
+    root.replaceChildren(toolTabs("shop"), head, ...list.map((g) => {
+      const open = !folded.has(g.deckId);
+      const onKey = (e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), toggle(g.deckId, e.currentTarget.parentElement));
+      return h("section", { class: "panel shop-group", "data-deck": g.deckId },
+        h("div", { class: "shop-head", role: "button", tabindex: "0", "aria-expanded": String(open), onclick: (e) => toggle(g.deckId, e.currentTarget.parentElement), onkeydown: onKey },
+          h("span", { class: "fold-mark", "aria-hidden": "true" }, open ? "▼" : "▶"),
           h("h2", {}, g.name),
           h("span", { class: "total" }, `合計 ${yen(g.total)}`),
           g.unpriced > 0 ? h("span", { class: "warn-mark" }, `価格未入力 ${g.unpriced}枚`) : null,
         ),
-        g.items.map((r) => row(g, r)),
-        g.candidates.length
+        open ? g.items.map((r) => row(g, r)) : null,
+        open && g.candidates.length
           ? [h("h3", { class: "sub-head" }, "候補", h("span", { class: "muted" }, "（合計に含みません）")), ...g.candidates.map((r) => row(g, r))]
           : null,
-      ),
-    ));
+      );
+    }));
   }
   refresh();
   return { el: root, refresh };
