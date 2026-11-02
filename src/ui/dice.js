@@ -19,7 +19,7 @@ const setCoin = (el, side) => {
 };
 
 // 振った・投げた直後の動き。角度は経過時間から決め、止まったときに結果の目・面になる
-const DURATION = 700;
+const DURATION = 1400;
 let anim = 0;
 function animate(result, root) {
   cancelAnimationFrame(anim);
