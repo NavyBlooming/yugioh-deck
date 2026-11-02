@@ -52,4 +52,5 @@ export function setNote(state, cid, patch) {
 }
 
 export const cardRushUrl = (name) => "https://www.cardrush.jp/product-list?keyword=" + encodeURIComponent(name);
+export const dorasutaUrl = (name) => "https://dorasuta.jp/yugioh-jp/product-list?kw=" + encodeURIComponent(name);
 export const officialDbUrl = (cid) => "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=" + cid;

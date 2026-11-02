@@ -1,4 +1,4 @@
-import { buildShoppingList, cardRushUrl, markBought } from "../core/shopping.js";
+import { buildShoppingList, cardRushUrl, dorasutaUrl, markBought } from "../core/shopping.js";
 import { h, yen } from "./dom.js";
 import { noteDialog } from "./dialogs.js";
 import { cardOr, tileEl } from "./tile.js";
@@ -43,6 +43,7 @@ export function shopView(ctx) {
         h("div", { class: "shop-actions" },
           h("button", { class: "btn primary small", type: "button", onclick: () => ctx.commit(markBought(ctx.state, group.deckId, r.cid, r.area)) }, "買った"),
           h("a", { class: "btn small", href: cardRushUrl(r.name || card.name), target: "_blank", rel: "noopener" }, "カードラッシュ"),
+          h("a", { class: "btn small", href: dorasutaUrl(r.name || card.name), target: "_blank", rel: "noopener" }, "ドラスタ"),
         ),
       ),
     );

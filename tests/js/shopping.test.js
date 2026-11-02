@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { parseCards } from "../../src/core/cards.js";
 import { emptyState } from "../../src/core/storage.js";
 import { createDeck, addCard, tapCopy } from "../../src/core/deck.js";
-import { buildShoppingList, markBought, setNote, cardRushUrl, officialDbUrl } from "../../src/core/shopping.js";
+import { buildShoppingList, markBought, setNote, cardRushUrl, dorasutaUrl, officialDbUrl } from "../../src/core/shopping.js";
 
 const cards = parseCards({
   version: 1,
@@ -87,5 +87,7 @@ test("setNote はマージ", () => {
 
 test("URL", () => {
   assert.equal(cardRushUrl("灰流うらら"), "https://www.cardrush.jp/product-list?keyword=" + encodeURIComponent("灰流うらら"));
+  // ユーザーがドラスタで検索したときの住所と同じ形
+  assert.equal(dorasutaUrl("灰流うらら"), "https://dorasuta.jp/yugioh-jp/product-list?kw=%E7%81%B0%E6%B5%81%E3%81%86%E3%82%89%E3%82%89");
   assert.equal(officialDbUrl(12950), "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=12950");
 });
