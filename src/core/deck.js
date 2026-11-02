@@ -82,6 +82,16 @@ function record(deck, cid, op) {
   deck.history = [{ cid, op }, ...(deck.history ?? []).filter((h) => h.cid !== cid)].slice(0, HISTORY_MAX);
 }
 
+// デッキに初めて入れたときに誘発（hand）の印を付けるカード
+export const DEFAULT_HAND_TAGS = [
+  11708, 14741, 6980, 12312, // 幽鬼うさぎ・原始生命態ニビル・D.D.クロウ・浮幽さくら
+  8933, 12950, 12070, 12627, 9278, 13587, 15022, // エフェクト・ヴェーラー・灰流うらら・PSYフレームギア・γ・古聖戴サウラヴィス・スカル・マイスター・屋敷わらし・朔夜しぐれ
+  9455, 11829, 10642, 11243, 14740, 9279, // 増殖するG・応戦するG・飛翔するG・アーティファクト－ロンギヌス・ディメンション・アトラクター・ドロール＆ロックバード
+  20206, 20500, 20764, 14275, 13631, // マルチャミー・プルリア・マルチャミー・フワロス・マルチャミー・ニャルス・儚無みずき・無限泡影
+  20555, 22586, 21845, 20257, // 霊王の波動・霆王の閃光・命王の螺旋・聖王の粉砕
+  21215, 23504, // 列王詩篇・聖王女ローズパメラ
+];
+
 export function addCard(state, deckId, card, dest) {
   const deck = findDeck(state, deckId);
   const area = destArea(card, dest);
@@ -90,6 +100,9 @@ export function addCard(state, deckId, card, dest) {
   if (areaTotal(deck, area) >= LIMITS[area]) return ng(FULL[area]);
   const s = clone(state);
   const d = findDeck(s, deckId);
+  if (same === 0 && DEFAULT_HAND_TAGS.includes(card.cid) && !hasTag(d, card.cid, "hand")) {
+    d.tags = { ...d.tags, hand: [...(d.tags?.hand ?? []), card.cid].sort((a, b) => a - b) };
+  }
   put(s, d, card.cid, area, false);
   record(d, card.cid, "in");
   return ok(s);

@@ -4,7 +4,7 @@ import { parseCards } from "../../src/core/cards.js";
 import { emptyState } from "../../src/core/storage.js";
 import {
   createDeck, renameDeck, deleteDeck, addCard, removeOne, moveOne, tapCopy,
-  sortedEntries, tilesOf, warnings, deckSummary, addHandTraps, toggleFavorite, toggleTag, hasTag, toggleShared,
+  sortedEntries, tilesOf, warnings, deckSummary, addHandTraps, toggleFavorite, toggleTag, hasTag, toggleShared, DEFAULT_HAND_TAGS,
 } from "../../src/core/deck.js";
 
 const cards = parseCards({
@@ -450,4 +450,28 @@ test("共用の印は抜いた位置で詰め、移動に付いていく", () =>
 
 test("共用の印が無い前の形は、共用なしとして読む", () => {
   assert.deepEqual(tilesOf({ cid: 1, area: "main", count: 2, missing: 1, mask: 2, seq: 0 }), [{ missing: false, shared: false }, { missing: true, shared: false }]);
+});
+
+test("addCard: 誘発の一覧のカードは、デッキに初めて入れたときに誘発の印が付く", () => {
+  const ht = parseCards({ version: 1, cards: [[12950, "灰流うらら", "はるうらら", "effect", "effect", 3], [2, "効果A", "こうかえー", "effect", "effect", 3]] });
+  let { state, deckId: id } = createDeck(emptyState(), "誘発");
+  state = addCard(state, id, ht.get(12950), "deck").state;
+  state = addCard(state, id, ht.get(2), "deck").state;
+  const d = () => state.decks[0];
+  assert.equal(hasTag(d(), 12950, "hand"), true);
+  assert.equal(hasTag(d(), 2, "hand"), false);
+  // 印を外したあと2枚目を入れても付け直さない
+  state = toggleTag(state, id, 12950, "hand");
+  state = addCard(state, id, ht.get(12950), "deck").state;
+  assert.equal(hasTag(d(), 12950, "hand"), false);
+  // 候補に入れたときも付く
+  let other = createDeck(emptyState(), "候補");
+  other = addCard(other.state, other.deckId, ht.get(12950), "cand").state;
+  assert.equal(hasTag(other.decks[0], 12950, "hand"), true);
+});
+
+test("DEFAULT_HAND_TAGS: 依頼された28枚", () => {
+  assert.equal(DEFAULT_HAND_TAGS.length, 28);
+  assert.equal(new Set(DEFAULT_HAND_TAGS).size, 28);
+  for (const cid of [12950, 9279, 20555, 23504]) assert.ok(DEFAULT_HAND_TAGS.includes(cid));
 });
