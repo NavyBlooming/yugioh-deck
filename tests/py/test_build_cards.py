@@ -181,3 +181,37 @@ def test_unknown_bits():
     ]
     assert bc.unknown_bits(rows) == {"attribute": [128], "race": [67108864], "type": [134217728]}
     assert bc.unknown_bits(rows[2:]) == {}
+
+
+def test_passcodes():
+    cdb = {
+        "a": {"cid": 1, "id": 111},  # 両方同じ
+        "b": {"cid": 2, "id": 100200300},  # ygocdb は仮の番号、YGOPRODeck に正式な番号
+        "c": {"cid": 3, "id": 333},  # YGOPRODeck では別の絵の番号として載っている
+        "d": {"cid": 4, "id": 101307030},  # 仮の番号しか無い
+        "e": {"cid": 5, "id": 0},  # 番号が無い
+        "f": {"cid": 9, "id": 999},  # カードデータに入っていないカード
+    }
+    ypd = {"data": [
+        {"id": 111, "misc_info": [{"konami_id": 1}], "card_images": [{"id": 111}, {"id": 112}]},
+        {"id": 222, "misc_info": [{"konami_id": 2}]},
+        {"id": 330, "misc_info": [{"konami_id": 3}], "card_images": [{"id": 330}, {"id": 333}]},
+        {"id": 501000000, "misc_info": [{"konami_id": 5}]},  # YGOPRODeck の仮の番号
+    ]}  # fmt: skip
+    p = bc.passcodes(cdb, ypd, {1, 2, 3, 4, 5})
+    # 書き出しは ygocdb の番号。仮の番号なら YGOPRODeck の正式な番号。どちらも無ければ入れない
+    assert p["export"] == {"1": 111, "2": 222, "3": 333}
+    # 読み込みは書き出しの番号のほかに、別の絵の番号と ygocdb の仮の番号でも読める
+    assert p["alias"] == {"112": 1, "330": 3, "100200300": 2, "101307030": 4}
+
+
+def test_main_writes_passcodes(tmp_path):
+    ft, fb = make_fetchers()
+    bc.main(ft, fb, tmp_path)
+    p = json.loads((tmp_path / "passcodes.json").read_text(encoding="utf-8"))
+    assert p["export"]["12950"] == 14558127
+    assert "5925" not in p["export"]
+    # パスワードの表だけが無いときも作り直す
+    (tmp_path / "passcodes.json").unlink()
+    bc.main(ft, fb, tmp_path)
+    assert (tmp_path / "passcodes.json").exists()

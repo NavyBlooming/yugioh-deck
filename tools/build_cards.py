@@ -152,6 +152,37 @@ def unknown_bits(rows: list) -> dict:
     return {k: sorted(v) for k, v in sorted(out.items())}
 
 
+# 1億以上は発売前のカードに付く仮の番号（ygocdb は 100000000 台、YGOPRODeck は 501000000 など）
+TEMP_PASSCODE = 100_000_000
+
+
+def passcodes(cdb: dict, ypd: dict, cids: set) -> dict:
+    """YDKE の読み書きに使うパスワードの表。export は cid → 書き出す番号、alias はそれ以外に読める番号 → cid。"""
+    real = lambda n: bool(n) and n < TEMP_PASSCODE  # noqa: E731
+    ypd_by_cid = {}
+    for c in ypd["data"]:
+        info = c.get("misc_info")
+        if info and info[0].get("konami_id") in cids:
+            ypd_by_cid.setdefault(info[0]["konami_id"], []).append(c)
+    export, seen = {}, {}
+    for c in cdb.values():
+        cid = c.get("cid")
+        if cid not in cids:
+            continue
+        ys = ypd_by_cid.get(cid, [])
+        own = c.get("id") or 0
+        pw = own if real(own) else next((y["id"] for y in ys if real(y["id"])), None)
+        if pw:
+            export[str(cid)] = pw
+        # ygocdb の仮の番号は、ほかのアプリが書き出していることがあるので読めるようにしておく
+        for n in [own] + [y["id"] for y in ys] + [im["id"] for y in ys for im in y.get("card_images", [])]:
+            if n and n != pw and (n == own or real(n)):
+                seen.setdefault(n, cid)
+    used = set(export.values())
+    alias = {str(n): cid for n, cid in seen.items() if n not in used}
+    return {"export": export, "alias": alias}
+
+
 def _write(path: Path, obj, **kw) -> None:
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         json.dump(obj, f, ensure_ascii=False, **kw)
@@ -164,7 +195,8 @@ def main(fetch_text, fetch_bytes, out_dir: Path) -> int:
     meta_path = out_dir / "meta.json"
     if meta_path.exists():
         old = json.loads(meta_path.read_text(encoding="utf-8"))
-        if old.get("source_md5") == md5 and old.get("limits_hash") == lhash and old.get("format") == FORMAT:
+        same = old.get("source_md5") == md5 and old.get("limits_hash") == lhash and old.get("format") == FORMAT
+        if same and (out_dir / "passcodes.json").exists():
             print("unchanged")
             return 0
     with zipfile.ZipFile(io.BytesIO(fetch_bytes(ZIP_URL))) as z:
@@ -173,6 +205,7 @@ def main(fetch_text, fetch_bytes, out_dir: Path) -> int:
     rows, excluded = build(cdb, ypd, limits)
     out_dir.mkdir(parents=True, exist_ok=True)
     _write(out_dir / "cards.json", {"version": FORMAT, "cards": rows}, separators=(",", ":"))
+    _write(out_dir / "passcodes.json", passcodes(cdb, ypd, {r[0] for r in rows}), separators=(",", ":"))
     meta = {
         "format": FORMAT,
         "source_md5": md5,
