@@ -53,7 +53,11 @@ export function noteDialog(ctx, cid) {
   const card = ctx.cards.get(cid);
   const note = ctx.state.notes[cid] ?? { price: null, rarity: "", print: "" };
   const price = h("input", { type: "number", id: "note-price", inputmode: "numeric", min: "0", step: "1", value: note.price ?? "" });
-  const rarity = h("input", { type: "text", id: "note-rarity", list: "rarity-list", value: note.rarity, autocomplete: "off" });
+  const rarities = note.rarity && !RARITIES.includes(note.rarity) ? [note.rarity, ...RARITIES] : RARITIES;
+  const rarity = h("select", { id: "note-rarity" },
+    h("option", { value: "" }, "（未選択）"),
+    rarities.map((r) => h("option", { value: r, selected: r === note.rarity }, r)),
+  );
   const printBox = h("div", {}, h("span", { class: "muted" }, "読み込み中…"));
   let printEl = null;
   const setPrintEl = (el) => {
@@ -95,7 +99,6 @@ export function noteDialog(ctx, cid) {
       h("p", { class: "muted" }, card?.name ?? ""),
       h("label", {}, "単価（円）", price),
       h("label", {}, "レアリティ", rarity),
-      h("datalist", { id: "rarity-list" }, RARITIES.map((r) => h("option", { value: r }))),
       h("label", {}, "収録パック", printBox),
       h("div", { class: "row-btns" },
         h("button", { class: "btn", type: "button", onclick: () => close() }, "キャンセル"),
