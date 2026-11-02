@@ -1,5 +1,5 @@
 import { addCard, addHandTraps, deleteDeck, hasTag, moveOne, removeOne, renameDeck, sortedEntries, tapCopy, tilesOf, toggleFavorite, toggleShared, toggleTag, warnings } from "../core/deck.js";
-import { cardRushUrl, officialDbUrl } from "../core/shopping.js";
+import { officialDbUrl } from "../core/shopping.js";
 import { search, searchWithText } from "../core/search.js";
 import { artState, cardText, loadTexts } from "./art.js";
 import { areaOf, compareCards, monsterInfo } from "../core/cards.js";
@@ -341,7 +341,6 @@ export function deckView(ctx, deckId) {
           }) }, "表紙にする") : null,
           h("button", { class: "btn", type: "button", onclick: act(() => noteDialog(ctx, cid)) }, "購入メモ"),
           card.custom ? null : h("a", { class: "btn", href: officialDbUrl(cid), target: "_blank", rel: "noopener" }, "公式DB"),
-          h("a", { class: "btn", href: cardRushUrl(card.name), target: "_blank", rel: "noopener" }, "カードラッシュ"),
         ),
       ),
       { sheet: true },
