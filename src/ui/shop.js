@@ -52,7 +52,7 @@ export function shopView(ctx) {
         ),
         g.items.map((r) => row(g, r)),
         g.candidates.length
-          ? [h("h3", { class: "sub-head" }, "候補", h("span", { class: "muted" }, "（合計に含みません）")), g.candidates.map((r) => row(g, r))]
+          ? [h("h3", { class: "sub-head" }, "候補", h("span", { class: "muted" }, "（合計に含みません）")), ...g.candidates.map((r) => row(g, r))]
           : null,
       ),
     ));
