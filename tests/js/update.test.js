@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createVersionWatch } from "../../src/core/update.js";
+import { createVersionWatch, sameTag } from "../../src/core/update.js";
 
 // base: 開いたときに読み込んだ版、fresh: サーバーの今の版
 const setup = (base, fresh) => {
@@ -63,4 +63,19 @@ test("createVersionWatch: 問い合わせ中に呼ばれても重ねて問い合
   const { w, calls } = setup({ "a.js": "1" }, { "a.js": "1" });
   await Promise.all([w.check(), w.check()]);
   assert.equal(calls.fresh, 1);
+});
+
+test("sameTag: GitHub Pages のサーバーの間で時刻が1秒ずれただけなら同じ版", () => {
+  // 公開ページで実際に返ってきた2通りの ETag（同じ公開の index.html）
+  assert.equal(sameTag('W/"6ae894c1-269"', 'W/"6ae894c0-269"'), true);
+  assert.equal(sameTag('"6ae894c1-269"', 'W/"6ae894c1-269"'), true); // 圧縮の有無で W/ が付くだけ
+  assert.equal(sameTag('W/"6ae894c0-269"', 'W/"6ae8950c-269"'), false); // 時刻が60秒より離れていれば公開し直した版
+  assert.equal(sameTag('W/"6ae894c0-269"', 'W/"6ae894c0-26a"'), false); // 大きさが違えば別の版
+  assert.equal(sameTag("Mon, 02 Nov 2026 13:47:39 GMT", "Mon, 02 Nov 2026 13:47:39 GMT"), true); // 形が違えばそのまま比べる
+  assert.equal(sameTag('"abc"', '"abd"'), false);
+});
+
+test("createVersionWatch: サーバーの間の時刻のずれでは新しい版にしない", async () => {
+  const { w } = setup({ "index.html": 'W/"6ae894c1-269"' }, { "index.html": 'W/"6ae894c0-269"' });
+  assert.equal(await w.check(), false);
 });
