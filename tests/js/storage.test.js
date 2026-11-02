@@ -105,3 +105,11 @@ test("save → load", () => {
   st.setItem(STORAGE_KEY, JSON.stringify({ version: 9 }));
   assert.deepEqual(loadState(st), emptyState());
 });
+
+test("applied: 1回だけの書き換えの記録は文字列の並び。書き出しにも入る", () => {
+  const s = { ...emptyState(), applied: ["hand-tags-1"] };
+  assert.ok(isValidState(s));
+  assert.deepEqual(JSON.parse(exportJson(s)).applied, ["hand-tags-1"]);
+  assert.equal(isValidState({ ...emptyState(), applied: [1] }), false);
+  assert.equal(isValidState({ ...emptyState(), applied: "hand-tags-1" }), false);
+});

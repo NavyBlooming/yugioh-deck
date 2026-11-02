@@ -51,13 +51,14 @@ export function isValidState(obj) {
     isObj(obj.notes) && Object.values(obj.notes).every(validNote) &&
     isNum(obj.nextSeq) &&
     (obj.favorites === undefined || (Array.isArray(obj.favorites) && obj.favorites.every(isNum))) &&
-    (obj.customCards === undefined || (Array.isArray(obj.customCards) && obj.customCards.every(validCustomCard)))
+    (obj.customCards === undefined || (Array.isArray(obj.customCards) && obj.customCards.every(validCustomCard))) &&
+    (obj.applied === undefined || (Array.isArray(obj.applied) && obj.applied.every((x) => typeof x === "string")))
   );
 }
 
 export function exportJson(state) {
-  const { version, decks, notes, nextSeq, favorites, customCards } = state;
-  return JSON.stringify({ version, decks, notes, nextSeq, favorites, customCards });
+  const { version, decks, notes, nextSeq, favorites, customCards, applied } = state;
+  return JSON.stringify({ version, decks, notes, nextSeq, favorites, customCards, applied });
 }
 
 export function parseImport(text) {

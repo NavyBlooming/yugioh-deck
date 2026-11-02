@@ -3,6 +3,7 @@ import { buildIndex } from "../core/search.js";
 import { loadState, saveState } from "../core/storage.js";
 import { toast } from "./dialogs.js";
 import { adoptPrerelease, customCardMap, prereleaseMap, replaceReleased } from "../core/custom.js";
+import { applyDefaultHandTags } from "../core/deck.js";
 import { initArt } from "./art.js";
 import { cloudChanged, initCloud } from "./cloud.js";
 import { deckView } from "./deck.js";
@@ -97,6 +98,12 @@ async function boot() {
       ctx.state = r.state;
       saveState(localStorage, r.state);
       setTimeout(() => toast(`発売されたカードに置き換えました: ${r.replaced.join("、")}`), 500);
+    }
+    // 誘発の一覧を入れる前に作ったデッキにも、1回だけ印を付ける
+    const tagged = applyDefaultHandTags(ctx.state);
+    if (tagged !== ctx.state) {
+      ctx.state = tagged;
+      saveState(localStorage, tagged);
     }
     syncCards();
   } catch (e) {

@@ -92,6 +92,20 @@ export const DEFAULT_HAND_TAGS = [
   21215, 23504, // 列王詩篇・聖王女ローズパメラ
 ];
 
+// 一覧を入れる前に作ったデッキにも、入っている誘発のカードに印を付ける。
+// 済んだら applied に記録し、その後に外した印は付け直さない
+const HAND_TAGS_APPLIED = "hand-tags-1";
+export function applyDefaultHandTags(state) {
+  if (state.applied?.includes(HAND_TAGS_APPLIED)) return state;
+  const s = clone(state);
+  for (const d of s.decks) {
+    const add = [...new Set(d.entries.map((e) => e.cid))].filter((cid) => DEFAULT_HAND_TAGS.includes(cid) && !hasTag(d, cid, "hand"));
+    if (add.length) d.tags = { ...d.tags, hand: [...(d.tags?.hand ?? []), ...add].sort((a, b) => a - b) };
+  }
+  s.applied = [...(s.applied ?? []), HAND_TAGS_APPLIED];
+  return s;
+}
+
 export function addCard(state, deckId, card, dest) {
   const deck = findDeck(state, deckId);
   const area = destArea(card, dest);

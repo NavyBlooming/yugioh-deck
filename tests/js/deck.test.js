@@ -4,7 +4,7 @@ import { parseCards } from "../../src/core/cards.js";
 import { emptyState } from "../../src/core/storage.js";
 import {
   createDeck, renameDeck, deleteDeck, addCard, removeOne, moveOne, tapCopy,
-  sortedEntries, tilesOf, warnings, deckSummary, addHandTraps, toggleFavorite, toggleTag, hasTag, toggleShared, DEFAULT_HAND_TAGS,
+  sortedEntries, tilesOf, warnings, deckSummary, addHandTraps, toggleFavorite, toggleTag, hasTag, toggleShared, DEFAULT_HAND_TAGS, applyDefaultHandTags,
 } from "../../src/core/deck.js";
 
 const cards = parseCards({
@@ -474,4 +474,22 @@ test("DEFAULT_HAND_TAGS: 依頼された28枚", () => {
   assert.equal(DEFAULT_HAND_TAGS.length, 28);
   assert.equal(new Set(DEFAULT_HAND_TAGS).size, 28);
   for (const cid of [12950, 9279, 20555, 23504]) assert.ok(DEFAULT_HAND_TAGS.includes(cid));
+});
+
+test("applyDefaultHandTags: 今あるデッキの誘発のカードに1回だけ印を付ける", () => {
+  const ht = parseCards({ version: 1, cards: [[12950, "灰流うらら", "はるうらら", "effect", "effect", 3], [13631, "無限泡影", "むげんほうよう", "trap", "trap", 3], [2, "効果A", "こうかえー", "effect", "effect", 3]] });
+  let { state, deckId: id } = createDeck(emptyState(), "前から");
+  for (const cid of [12950, 13631, 2]) state = addCard(state, id, ht.get(cid), cid === 13631 ? "cand" : "deck").state;
+  // 印が付く前に作ったデッキのつもりで、印を消しておく
+  delete state.decks[0].tags;
+  const once = applyDefaultHandTags(state);
+  assert.deepEqual(once.decks[0].tags.hand, [12950, 13631]);
+  assert.deepEqual(once.applied, ["hand-tags-1"]);
+  assert.equal(state.applied, undefined); // 元の状態は変えない
+  // 済んだ後に外した印は、次に開いても付け直さない
+  const off = toggleTag(once, id, 12950, "hand");
+  assert.equal(applyDefaultHandTags(off), off);
+  // すでに付いている印は重ねない
+  const again = applyDefaultHandTags({ ...once, applied: undefined });
+  assert.deepEqual(again.decks[0].tags.hand, [12950, 13631]);
 });
