@@ -6,6 +6,7 @@ import { adoptPrerelease, customCardMap, prereleaseMap, replaceReleased } from "
 import { initArt } from "./art.js";
 import { cloudChanged, initCloud } from "./cloud.js";
 import { deckView } from "./deck.js";
+import { diceView } from "./dice.js";
 import { listView } from "./list.js";
 import { settingsView } from "./settings.js";
 import { shopView } from "./shop.js";
@@ -55,6 +56,9 @@ function route() {
   if (m) view = deckView(ctx, decodeURIComponent(m[1]));
   else if (hash === "#/shop") {
     view = shopView(ctx);
+    tab = "shop";
+  } else if (hash === "#/dice") {
+    view = diceView();
     tab = "shop";
   } else if (hash === "#/settings") {
     view = settingsView(ctx);

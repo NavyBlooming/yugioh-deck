@@ -3,6 +3,12 @@ import { h, yen } from "./dom.js";
 import { noteDialog } from "./dialogs.js";
 import { cardOr, tileEl } from "./tile.js";
 
+// ツールタブの中の切り替え。買い物とダイスで使う
+export function toolTabs(active) {
+  const tab = (key, href, text) => h("a", { class: "seg", href, "aria-current": key === active ? "page" : null }, text);
+  return h("nav", { class: "seg-group tool-tabs", "aria-label": "ツール" }, tab("shop", "#/shop", "買い物"), tab("dice", "#/dice", "ダイス"));
+}
+
 export function shopView(ctx) {
   const root = h("div", { class: "view" });
 
@@ -34,10 +40,10 @@ export function shopView(ctx) {
     const list = buildShoppingList(ctx.state, ctx.cards);
     const head = h("div", { class: "page-head" }, h("h1", {}, "買い物リスト"));
     if (list.length === 0) {
-      root.replaceChildren(head, h("div", { class: "empty" }, h("p", {}, "未所持のカードはありません")));
+      root.replaceChildren(toolTabs("shop"), head, h("div", { class: "empty" }, h("p", {}, "未所持のカードはありません")));
       return;
     }
-    root.replaceChildren(head, ...list.map((g) =>
+    root.replaceChildren(toolTabs("shop"), head, ...list.map((g) =>
       h("section", { class: "panel shop-group", "data-deck": g.deckId },
         h("div", { class: "shop-head" },
           h("h2", {}, g.name),
