@@ -37,7 +37,7 @@ export function diceView() {
     const countBtns = [1, 2, 3].map((n) =>
       h("button", { class: "seg", type: "button", "aria-pressed": String(n === count), onclick: () => { count = n; refresh(); } }, `${n}個`));
     root.replaceChildren(
-      toolTabs("dice"),
+      toolTabs("utility"),
       h("section", { class: "panel dice-panel" },
         h("div", { class: "seg-group", role: "group", "aria-label": "ダイスの数" }, h("span", { class: "muted" }, "ダイスの数"), countBtns),
         h("div", { class: "dice-acts" },

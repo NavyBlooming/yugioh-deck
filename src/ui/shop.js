@@ -3,10 +3,10 @@ import { h, yen } from "./dom.js";
 import { noteDialog } from "./dialogs.js";
 import { cardOr, tileEl } from "./tile.js";
 
-// ツールタブの中の切り替え。買い物とダイスで使う
+// ツールタブの中の切り替え
 export function toolTabs(active) {
   const tab = (key, href, text) => h("a", { class: "seg", href, "aria-current": key === active ? "page" : null }, text);
-  return h("nav", { class: "seg-group tool-tabs", "aria-label": "ツール" }, tab("shop", "#/shop", "買い物"), tab("dice", "#/dice", "ダイス"));
+  return h("nav", { class: "seg-group tool-tabs", "aria-label": "ツール" }, tab("shop", "#/shop", "買い物"), tab("utility", "#/utility", "ユーティリティ"), tab("other", "#/other", "その他"));
 }
 
 export function shopView(ctx) {

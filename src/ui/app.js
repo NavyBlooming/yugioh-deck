@@ -8,6 +8,7 @@ import { cloudChanged, initCloud } from "./cloud.js";
 import { deckView } from "./deck.js";
 import { diceView } from "./dice.js";
 import { listView } from "./list.js";
+import { otherView } from "./other.js";
 import { settingsView } from "./settings.js";
 import { shopView } from "./shop.js";
 import { initUpdate } from "./update.js";
@@ -57,8 +58,11 @@ function route() {
   else if (hash === "#/shop") {
     view = shopView(ctx);
     tab = "shop";
-  } else if (hash === "#/dice") {
+  } else if (hash === "#/utility") {
     view = diceView();
+    tab = "shop";
+  } else if (hash === "#/other") {
+    view = otherView(ctx);
     tab = "shop";
   } else if (hash === "#/settings") {
     view = settingsView(ctx);

@@ -325,3 +325,10 @@ input[type="text"], input[type="number"], select {
 @keyframes die-roll { from { transform: rotate(-300deg) scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes coin-flip { from { transform: rotateY(1080deg) scale(.6); } to { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .die, .coin { animation: none; } }
+.ydke-panel { display: grid; gap: 10px; margin-bottom: 12px; }
+.ydke-panel h2 { margin: 0; font-size: 16px; }
+.ydke-panel p { margin: 0; }
+.ydke-text { width: 100%; box-sizing: border-box; padding: 8px; border-radius: 8px; border: 1px solid var(--line); background: #0b1530; color: var(--text); font: 13px/1.5 ui-monospace, monospace; word-break: break-all; resize: vertical; }
+.ydke-panel .btn { justify-self: start; }
+.ydke-result { display: grid; gap: 6px; }
+.ydke-result a { margin-left: 8px; color: var(--accent); }
