@@ -47,10 +47,11 @@ export function soloPicker(ctx) {
   const select = h("select", { id: "solo-deck" }, decks.map((d) => h("option", { value: d.id }, d.name)));
   const area = h("div", { class: "panel solo-pick" });
   const open = () => (location.hash = `#/solo/${encodeURIComponent(select.value)}`);
+  // replaceChildren は null を "null" の文字にするので、盤面が無いときは何も足さない
   const show = () => area.replaceChildren(
     h("label", {}, "デッキ", select),
     startButtons(ctx, select.value, open),
-    sessions.has(select.value) ? h("button", { class: "btn", type: "button", id: "solo-resume", onclick: open }, "続きから") : null,
+    ...(sessions.has(select.value) ? [h("button", { class: "btn", type: "button", id: "solo-resume", onclick: open }, "続きから")] : []),
   );
   select.addEventListener("change", show);
   show();
@@ -126,7 +127,7 @@ export function soloView(ctx, deckId) {
       h("div", { class: "solo-top" },
         h("a", { class: "btn small", href: `#/deck/${encodeURIComponent(deckId)}` }, "←"),
         placing
-          ? h("div", { class: "solo-placing", id: "solo-placing" }, "置く場所を押してください", h("button", { class: "btn small", type: "button", onclick: () => ((placing = null), refresh()) }, "やめる"))
+          ? h("div", { class: "solo-placing", id: "solo-placing" }, placing.set ? "セットする場所を押してください" : "置く場所を押してください", h("button", { class: "btn small", type: "button", onclick: () => ((placing = null), refresh()) }, "やめる"))
           : h("h1", { class: "solo-name" }, deckOf(ctx, deckId).name),
         h("span", { class: "solo-turn", id: "solo-turn" }, `ターン${b.turn}`),
         h("button", { class: "btn small solo-life", type: "button", id: "solo-life", onclick: lifeSheet }, `LP ${b.life}`),
@@ -197,6 +198,7 @@ export function soloView(ctx, deckId) {
     const dests = [["hand", "手札へ"], ["gy", "墓地へ"], ["ban", "除外へ"], ["deck", "デッキの上へ"], ["deck-bottom", "デッキの下へ"], ["extra", "EXデッキへ"]];
     rows.push(h("div", { class: "solo-acts" },
       SLOTS.includes(zone) ? null : btn("場へ置く", () => ((placing = { id }), refresh()), { id: "menu-place" }),
+      SLOTS.includes(zone) || c.token ? null : btn("セット", () => ((placing = { id, set: true }), refresh()), { id: "menu-place-set" }),
       ...dests.filter(([d]) => d !== zone).map(([d, text]) => btn(text, () => commit(d === "deck-bottom" ? moveCard(board(), id, "deck", { bottom: true }) : moveCard(board(), id, d)), { "data-dest": d }))));
     if (!c.token) rows.push(btn("カード詳細", () => detail(c), { id: "menu-detail" }));
     close = openModal(h("div", { class: "sheet-body", id: "solo-menu" }, h("h2", {}, card(c).name), ...rows), { sheet: true });
@@ -293,6 +295,11 @@ export function soloView(ctx, deckId) {
       const p = placing;
       placing = null;
       if (p.token) return commit(placeToken(board(), zone), "トークンは空いたモンスターゾーンに置けます");
+      // セットは裏側で置く。モンスターゾーンなら裏側守備表示
+      if (p.set) {
+        const moved = board().slots[zone] ? null : moveCard(board(), p.id, zone);
+        return commit(moved && setPosition(moved, p.id, { face: "down", pos: isMonsterSlot(zone) ? "def" : "atk" }), "セットは空いたゾーンにできます");
+      }
       return moveTo(p.id, zone);
     }
     if (zone === "deck") return deckSheet();

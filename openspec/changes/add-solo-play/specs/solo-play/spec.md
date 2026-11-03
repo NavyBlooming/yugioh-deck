@@ -20,7 +20,7 @@ The board SHALL have five main monster zones, two extra monster zones, five spel
 
 ### Requirement: カードを動かす
 
-The user SHALL move a card by dragging it to a zone. Tapping a card SHALL show its details; a long press (right click with a mouse) SHALL open a menu to change its position, attach or detach materials, change counters and return it to the top or bottom of the deck. Tapping the deck, graveyard, banishment or extra deck SHALL list their cards, from which a card can be moved.
+The user SHALL move a card by dragging it to a zone. Tapping a card SHALL show its details; a long press (right click with a mouse) SHALL open a menu to change its position, attach or detach materials, change counters and return it to the top or bottom of the deck. Cards not on the field SHALL also offer "セット", which places the card face down in the next empty zone the user taps (face-down defense in a monster zone). Tapping the deck, graveyard, banishment or extra deck SHALL list their cards, from which a card can be moved.
 
 #### Scenario: ドラッグで召喚
 
@@ -31,6 +31,11 @@ The user SHALL move a card by dragging it to a zone. Tapping a card SHALL show i
 
 - **WHEN** EXデッキのエクシーズモンスターを、モンスターのいるゾーンへドラッグし「上に重ねる」を選ぶ
 - **THEN** エクシーズモンスターがそのゾーンに置かれ、元のモンスターが素材になる
+
+#### Scenario: デッキからセット
+
+- **WHEN** デッキの一覧でカードを押し、「セット」を選んで空いた魔法罠ゾーンを押す
+- **THEN** そのカードが裏側で置かれる。モンスターゾーンを押したときは裏側守備表示で置かれる
 
 #### Scenario: 墓地から手札へ
 
