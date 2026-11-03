@@ -6,7 +6,7 @@ import { cardOr, tileEl } from "./tile.js";
 // ツールタブの中の切り替え
 export function toolTabs(active) {
   const tab = (key, href, text) => h("a", { class: "seg", href, "aria-current": key === active ? "page" : null }, text);
-  return h("nav", { class: "seg-group tool-tabs", "aria-label": "ツール" }, tab("shop", "#/shop", "買い物"), tab("utility", "#/utility", "ユーティリティ"), tab("other", "#/other", "その他"));
+  return h("nav", { class: "seg-group tool-tabs", "aria-label": "ツール" }, tab("shop", "#/shop", "買い物"), tab("utility", "#/utility", "ユーティリティ"), tab("solo", "#/solo", "一人回し"), tab("other", "#/other", "その他"));
 }
 
 // 畳んだデッキ。タブを移っても、開いている間は残す

@@ -12,6 +12,7 @@ import { listView } from "./list.js";
 import { otherView } from "./other.js";
 import { settingsView } from "./settings.js";
 import { shopView } from "./shop.js";
+import { soloPicker, soloView } from "./solo.js";
 import { initUpdate } from "./update.js";
 
 let current = null;
@@ -62,6 +63,12 @@ function route() {
   } else if (hash === "#/utility") {
     view = diceView();
     tab = "shop";
+  } else if (hash === "#/solo") {
+    view = soloPicker(ctx);
+    tab = "shop";
+  } else if (hash.startsWith("#/solo/")) {
+    view = soloView(ctx, decodeURIComponent(hash.slice("#/solo/".length)));
+    tab = "shop";
   } else if (hash === "#/other") {
     view = otherView(ctx);
     tab = "shop";
@@ -71,6 +78,7 @@ function route() {
   } else view = listView(ctx);
   current = view;
   app.classList.toggle("has-search", Boolean(view.hasSearch));
+  app.classList.toggle("solo-mode", Boolean(view.solo));
   app.replaceChildren(view.el);
   window.scrollTo(0, 0);
   for (const a of document.querySelectorAll("#tabs a")) {
