@@ -1,7 +1,7 @@
 # solo-play Specification
 
 ## Purpose
-TBD - created by archiving change add-solo-play. Update Purpose after archive.
+組んだデッキの動きを確かめるため、デッキの中身をそのまま使って、一人でカードを動かせる盤面を提供する。ルールの自動処理はしない。
 
 ## Requirements
 
