@@ -82,27 +82,31 @@ function record(deck, cid, op) {
   deck.history = [{ cid, op }, ...(deck.history ?? []).filter((h) => h.cid !== cid)].slice(0, HISTORY_MAX);
 }
 
-// デッキに初めて入れたときに誘発（hand）の印を付けるカード
-export const DEFAULT_HAND_TAGS = [
+// デッキに初めて入れたときに誘発（hand）の印を付けるカード。足した回ごとに分ける
+const HAND_TAG_BATCHES = [["hand-tags-1", [
   11708, 14741, 6980, 12312, // 幽鬼うさぎ・原始生命態ニビル・D.D.クロウ・浮幽さくら
   8933, 12950, 12070, 12627, 9278, 13587, 15022, // エフェクト・ヴェーラー・灰流うらら・PSYフレームギア・γ・古聖戴サウラヴィス・スカル・マイスター・屋敷わらし・朔夜しぐれ
   9455, 11829, 10642, 11243, 14740, 9279, // 増殖するG・応戦するG・飛翔するG・アーティファクト－ロンギヌス・ディメンション・アトラクター・ドロール＆ロックバード
   20206, 20500, 20764, 14275, 13631, // マルチャミー・プルリア・マルチャミー・フワロス・マルチャミー・ニャルス・儚無みずき・無限泡影
   20555, 22586, 21845, 20257, // 霊王の波動・霆王の閃光・命王の螺旋・聖王の粉砕
   21215, 23504, // 列王詩篇・聖王女ローズパメラ
-];
+]], ["hand-tags-2", [
+  17763, 17764, 18149, 17762, // 深淵の獣サロニール・深淵の獣ドルイドヴルム・深淵の獣バルドレイク・深淵の獣マグナムート
+]]];
+export const DEFAULT_HAND_TAGS = HAND_TAG_BATCHES.flatMap(([, cids]) => cids);
 
 // 一覧を入れる前に作ったデッキにも、入っている誘発のカードに印を付ける。
-// 済んだら applied に記録し、その後に外した印は付け直さない
-const HAND_TAGS_APPLIED = "hand-tags-1";
+// 回ごとに、済んだら applied に記録する。その後に外した印は付け直さない
 export function applyDefaultHandTags(state) {
-  if (state.applied?.includes(HAND_TAGS_APPLIED)) return state;
+  const todo = HAND_TAG_BATCHES.filter(([key]) => !state.applied?.includes(key));
+  if (!todo.length) return state;
+  const cids = todo.flatMap(([, list]) => list);
   const s = clone(state);
   for (const d of s.decks) {
-    const add = [...new Set(d.entries.map((e) => e.cid))].filter((cid) => DEFAULT_HAND_TAGS.includes(cid) && !hasTag(d, cid, "hand"));
+    const add = [...new Set(d.entries.map((e) => e.cid))].filter((cid) => cids.includes(cid) && !hasTag(d, cid, "hand"));
     if (add.length) d.tags = { ...d.tags, hand: [...(d.tags?.hand ?? []), ...add].sort((a, b) => a - b) };
   }
-  s.applied = [...(s.applied ?? []), HAND_TAGS_APPLIED];
+  s.applied = [...(s.applied ?? []), ...todo.map(([key]) => key)];
   return s;
 }
 

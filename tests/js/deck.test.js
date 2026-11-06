@@ -470,10 +470,10 @@ test("addCard: 誘発の一覧のカードは、デッキに初めて入れた�
   assert.equal(hasTag(other.decks[0], 12950, "hand"), true);
 });
 
-test("DEFAULT_HAND_TAGS: 依頼された28枚", () => {
-  assert.equal(DEFAULT_HAND_TAGS.length, 28);
-  assert.equal(new Set(DEFAULT_HAND_TAGS).size, 28);
-  for (const cid of [12950, 9279, 20555, 23504]) assert.ok(DEFAULT_HAND_TAGS.includes(cid));
+test("DEFAULT_HAND_TAGS: 依頼された32枚", () => {
+  assert.equal(DEFAULT_HAND_TAGS.length, 32);
+  assert.equal(new Set(DEFAULT_HAND_TAGS).size, 32);
+  for (const cid of [12950, 9279, 20555, 23504, 17762, 17763, 17764, 18149]) assert.ok(DEFAULT_HAND_TAGS.includes(cid));
 });
 
 test("applyDefaultHandTags: 今あるデッキの誘発のカードに1回だけ印を付ける", () => {
@@ -484,7 +484,7 @@ test("applyDefaultHandTags: 今あるデッキの誘発のカードに1回だけ
   delete state.decks[0].tags;
   const once = applyDefaultHandTags(state);
   assert.deepEqual(once.decks[0].tags.hand, [12950, 13631]);
-  assert.deepEqual(once.applied, ["hand-tags-1"]);
+  assert.deepEqual(once.applied, ["hand-tags-1", "hand-tags-2"]);
   assert.equal(state.applied, undefined); // 元の状態は変えない
   // 済んだ後に外した印は、次に開いても付け直さない
   const off = toggleTag(once, id, 12950, "hand");
@@ -492,4 +492,17 @@ test("applyDefaultHandTags: 今あるデッキの誘発のカードに1回だけ
   // すでに付いている印は重ねない
   const again = applyDefaultHandTags({ ...once, applied: undefined });
   assert.deepEqual(again.decks[0].tags.hand, [12950, 13631]);
+});
+
+test("applyDefaultHandTags: 後から足したカードにだけ印を付け、前に外した印は戻さない", () => {
+  const ht = parseCards({ version: 1, cards: [[12950, "灰流うらら", "はるうらら", "effect", "effect", 3], [17763, "深淵の獣サロニール", "びーすてっどさろにーる", "effect", "effect", 3]] });
+  let { state, deckId: id } = createDeck(emptyState(), "前から");
+  for (const cid of [12950, 17763]) state = addCard(state, id, ht.get(cid), "deck").state;
+  // 1回目だけ済んだデータ。うららの印は利用者が外し、サロニールはまだ印が無い
+  delete state.decks[0].tags;
+  state = { ...state, applied: ["hand-tags-1"] };
+  const next = applyDefaultHandTags(state);
+  assert.deepEqual(next.decks[0].tags.hand, [17763]);
+  assert.deepEqual(next.applied, ["hand-tags-1", "hand-tags-2"]);
+  assert.equal(applyDefaultHandTags(next), next);
 });
